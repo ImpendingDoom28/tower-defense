@@ -8,6 +8,7 @@ import {
   setShowAudioSettingsSelector,
   useGameStore,
 } from "../../core/stores/useGameStore";
+import { HUDWrapper } from "./HUDWrapper";
 
 type HUDGameMenuProps = {
   gameStatus: GameStatus;
@@ -27,7 +28,7 @@ export const HUDGameMenu: FC<HUDGameMenuProps> = ({
   if (gameStatus !== "gameMenu") return null;
 
   return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
+    <HUDWrapper className="items-center justify-center bg-black bg-opacity-75">
       <div className="w-full max-w-md p-8 mx-4 bg-gray-800 rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto">
         <UITypography variant="h1" className="mb-8 text-center">
           Game Menu
@@ -49,6 +50,6 @@ export const HUDGameMenu: FC<HUDGameMenuProps> = ({
 
         <HUDAudioControls />
       </div>
-    </div>
+    </HUDWrapper>
   );
 };

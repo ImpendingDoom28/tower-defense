@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useGameStore } from "../stores/useGameStore";
 import { useLevelStore } from "../stores/useLevelStore";
+import { useAlmanacStore } from "../stores/useAlmanacStore";
 import {
   Enemy,
   EnemyType,
@@ -39,6 +40,7 @@ export const useLevelSystem = () => {
     setSelectedTowerType,
     towerSellPriceMultiplier,
     pathWidth,
+    gameStatus,
   } = useGameStore();
 
   const getNextTowerId = useNextId();
@@ -191,10 +193,22 @@ export const useLevelSystem = () => {
         z: startPosition.z,
       };
 
+      if (gameStatus === "playing") {
+        // Mark enemy type as discovered in the almanac
+        useAlmanacStore.getState().discoverEnemy(enemyType);
+      }
+
       setEnemies((prev) => [...prev, enemy]);
       return enemy;
     },
-    [enemyTypes, getNextEnemyId, setEnemies, pathWaypoints, calcPathIndex]
+    [
+      enemyTypes,
+      calcPathIndex,
+      pathWaypoints,
+      getNextEnemyId,
+      gameStatus,
+      setEnemies,
+    ]
   );
 
   const updateEnemy = useCallback(

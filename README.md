@@ -20,6 +20,7 @@ A 3D tower defense game built with React, Tailwind CSS, and React Three Fiber.
 - **Health system** - Lose health when enemies reach the end (varies by enemy type)
 - **Audio system** - Sound effects with adjustable volume controls (master, SFX, music, ambient)
 - **Main menu** - Start screen with game menu (pause, restart, audio settings)
+- **Enemy Almanac** - Bestiary that tracks discovered enemy types with stats and descriptions (persists to localStorage)
 - **Wave controls** - Start waves early or wait for automatic wave progression
 - **3D graphics** - Built with React Three Fiber for immersive gameplay
 - **JSON-based configuration** - Game settings, tower stats, and level data stored in JSON files
@@ -49,7 +50,8 @@ npm run build
 ## How to Play
 
 1. **Start the game**: Click "Play" on the main menu to begin
-2. **Select a tower**: Click on a tower in the shop (left side) to select it
+2. **View the almanac**: Click "Enemy Almanac" to see discovered enemies (undiscovered show as silhouettes)
+3. **Select a tower**: Click on a tower in the shop (left side) to select it
 3. **Place towers**: Click on a tile in the grid to place the selected tower (cannot place on paths or occupied tiles)
 4. **Manage towers**: Click on a placed tower to view its stats and sell it if needed
 5. **Defend**: Towers automatically target and shoot at enemies based on their targeting mode
@@ -82,5 +84,10 @@ npm run build
 - **Targeting**: Towers target either the nearest or furthest enemy based on their type
 - **Projectile Types**: Single-target, area-of-effect, and piercing beam projectiles
 - **Audio**: Adjustable volume controls for master, SFX, music, and ambient sounds
+- **Enemy Almanac**: 
+  - Accessed from the main menu
+  - Undiscovered enemies appear as silhouettes with "???" names
+  - Enemies are revealed when you encounter them in battle
+  - Discovery progress persists across browser sessions via localStorage
 
 Enjoy the game!

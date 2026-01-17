@@ -16,9 +16,57 @@ import {
   useGameStore,
 } from "../../core/stores/useGameStore";
 import { UISlider } from "../ui/UISlider";
+import { UITypography } from "../ui/UITypography";
+import { formatVolume } from "../../utils/formatters";
 
 type HUDAudioControlsProps = {
   className?: string;
+};
+
+type AudioSliderProps = {
+  volume: number;
+  setVolume: (volume: number) => void;
+  disabled: boolean;
+  label: string;
+  sliderId: string;
+};
+
+const defaultSliderProps = {
+  min: 0,
+  max: 100,
+  step: 0.1,
+};
+
+const AudioSlider: FC<AudioSliderProps> = ({
+  sliderId,
+  volume,
+  setVolume,
+  disabled,
+  label,
+}) => {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <label
+          aria-disabled={disabled}
+          htmlFor={sliderId}
+          className="text-sm font-medium aria-disabled:opacity-50"
+        >
+          {label}
+        </label>
+        <span className="text-xs text-gray-400">{formatVolume(volume)}%</span>
+      </div>
+      <UISlider
+        id={sliderId}
+        {...defaultSliderProps}
+        disabled={disabled}
+        value={[volume]}
+        onValueChange={(value) => {
+          setVolume(value[0]);
+        }}
+      />
+    </div>
+  );
 };
 
 export const HUDAudioControls: FC<HUDAudioControlsProps> = ({
@@ -42,17 +90,6 @@ export const HUDAudioControls: FC<HUDAudioControlsProps> = ({
 
   if (!showAudioSettings) return null;
 
-  const formatVolume = (volume: number): string => {
-    return Math.round(volume).toString();
-  };
-
-  const defaultSliderProps = {
-    min: 0,
-    max: 100,
-    step: 0.1,
-    disabled: muted,
-  };
-
   return (
     <UICard className={className}>
       <UICardHeader>
@@ -64,7 +101,7 @@ export const HUDAudioControls: FC<HUDAudioControlsProps> = ({
           >
             <ArrowLeft />
           </UIButton>
-          Audio Settings
+          <UITypography variant="body">Audio Settings</UITypography>
         </UICardTitle>
         <UICardAction>
           <UIButton
@@ -81,82 +118,35 @@ export const HUDAudioControls: FC<HUDAudioControlsProps> = ({
           </UIButton>
         </UICardAction>
       </UICardHeader>
-      <UICardContent className="space-y-4">
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label htmlFor="master-volume" className="text-sm font-medium">
-              Master Volume
-            </label>
-            <span className="text-xs text-gray-400">
-              {formatVolume(masterVolume)}%
-            </span>
-          </div>
-          <UISlider
-            id="master-volume"
-            {...defaultSliderProps}
-            value={[masterVolume]}
-            onValueChange={(value) => {
-              setMasterVolume(value[0]);
-            }}
-          />
-        </div>
-
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label htmlFor="sfx-volume" className="text-sm font-medium">
-              Sound Effects
-            </label>
-            <span className="text-xs text-gray-400">
-              {formatVolume(sfxVolume)}%
-            </span>
-          </div>
-          <UISlider
-            id="sfx-volume"
-            {...defaultSliderProps}
-            value={[sfxVolume]}
-            onValueChange={(value) => {
-              setSfxVolume(value[0]);
-            }}
-          />
-        </div>
-
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label htmlFor="music-volume" className="text-sm font-medium">
-              Music
-            </label>
-            <span className="text-xs text-gray-400">
-              {formatVolume(musicVolume)}%
-            </span>
-          </div>
-          <UISlider
-            id="music-volume"
-            {...defaultSliderProps}
-            value={[musicVolume]}
-            onValueChange={(value) => {
-              setMusicVolume(value[0]);
-            }}
-          />
-        </div>
-
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label htmlFor="ambient-volume" className="text-sm font-medium">
-              Ambient
-            </label>
-            <span className="text-xs text-gray-400">
-              {formatVolume(ambientVolume)}%
-            </span>
-          </div>
-          <UISlider
-            id="ambient-volume"
-            {...defaultSliderProps}
-            value={[ambientVolume]}
-            onValueChange={(value) => {
-              setAmbientVolume(value[0]);
-            }}
-          />
-        </div>
+      <UICardContent className="gap-6">
+        <AudioSlider
+          volume={masterVolume}
+          setVolume={setMasterVolume}
+          disabled={muted}
+          label="Master Volume"
+          sliderId="master-volume"
+        />
+        <AudioSlider
+          volume={sfxVolume}
+          setVolume={setSfxVolume}
+          disabled={muted}
+          label="Sound Effects"
+          sliderId="sfx-volume"
+        />
+        <AudioSlider
+          volume={musicVolume}
+          setVolume={setMusicVolume}
+          disabled={muted}
+          label="Music"
+          sliderId="music-volume"
+        />
+        <AudioSlider
+          volume={ambientVolume}
+          setVolume={setAmbientVolume}
+          disabled={muted}
+          label="Ambient"
+          sliderId="ambient-volume"
+        />
       </UICardContent>
     </UICard>
   );

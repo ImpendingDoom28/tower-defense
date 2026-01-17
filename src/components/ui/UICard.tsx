@@ -25,7 +25,7 @@ function UICardHeader({ className, ...props }: ComponentProps<"div">) {
     <div
       data-slot="card-header"
       className={cn(
-        "gap-x-1 rounded-none px-4 group-data-[size=sm]/card:px-3 [.border-b]:pb-4 group-data-[size=sm]/card:[.border-b]:pb-3 group/card-header @container/card-header grid auto-rows-min items-center has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-action]:grid-rows-[1fr] h-[28px]",
+        "gap-x-1 rounded-none px-4 group-data-[size=sm]/card:px-3 [.border-b]:pb-4 group-data-[size=sm]/card:[.border-b]:pb-3 group/card-header @container/card-header grid auto-rows-min items-center has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-action]:grid-rows-[1fr] min-h-[28px]",
         className
       )}
       {...props}
@@ -37,10 +37,7 @@ function UICardTitle({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
-      className={cn(
-        "text-sm font-medium flex items-center gap-x-1 group-data-[size=sm]/card:text-sm",
-        className
-      )}
+      className={cn("flex items-center gap-x-1", className)}
       {...props}
     />
   );
@@ -73,7 +70,10 @@ function UICardContent({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-slot="card-content"
-      className={cn("px-4 group-data-[size=sm]/card:px-3", className)}
+      className={cn(
+        "flex flex-col px-4 group-data-[size=sm]/card:px-3",
+        className
+      )}
       {...props}
     />
   );

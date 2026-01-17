@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from "react";
+import { FC, useState, useEffect, useMemo } from "react";
 
 import { UIButton } from "../ui/UIButton";
 import { UITypography } from "../ui/UITypography";
@@ -8,7 +8,9 @@ import {
   useGameStore,
 } from "../../core/stores/useGameStore";
 import { HUDAudioControls } from "./HUDAudioControls";
+import { HUDAlmanac } from "./HUDAlmanac";
 import { UICard, UICardContent } from "../ui/UICard";
+import { HUDWrapper } from "./HUDWrapper";
 
 type HUDMainMenuProps = {
   onPlay: () => void | Promise<void>;
@@ -16,6 +18,7 @@ type HUDMainMenuProps = {
 
 export const HUDMainMenu: FC<HUDMainMenuProps> = ({ onPlay }) => {
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [showAlmanac, setShowAlmanac] = useState(false);
   const showAudioSettings = useGameStore(showAudioSettingsSelector);
   const setShowAudioSettings = useGameStore(setShowAudioSettingsSelector);
 
@@ -37,39 +40,59 @@ export const HUDMainMenu: FC<HUDMainMenuProps> = ({ onPlay }) => {
     };
   }, [hasInteracted]);
 
+  const mainMenuContent = useMemo(() => {
+    if (showAudioSettings) {
+      return <HUDAudioControls className="ring-0" />;
+    }
+    if (showAlmanac) {
+      return <HUDAlmanac onBack={() => setShowAlmanac(false)} />;
+    }
+    return (
+      <UICard
+        className={`ring-0 ${hasInteracted ? "translate-x-0" : "translate-x-full"}`}
+      >
+        <UICardContent>
+          <div className="flex flex-col justify-center flex-1 gap-8">
+            <UITypography variant="body">
+              Defend your base against waves of enemies. Build towers
+              strategically to survive!
+            </UITypography>
+
+            <div className="flex flex-col justify-center flex-1 gap-2">
+              <UIButton onClick={onPlay}>Play</UIButton>
+              <UIButton onClick={() => setShowAlmanac(true)} variant="outline">
+                Enemy Almanac
+              </UIButton>
+            </div>
+
+            <UIButton
+              onClick={() => setShowAudioSettings(true)}
+              variant="outline"
+            >
+              Audio Settings
+            </UIButton>
+          </div>
+        </UICardContent>
+      </UICard>
+    );
+  }, [
+    showAudioSettings,
+    showAlmanac,
+    hasInteracted,
+    onPlay,
+    setShowAudioSettings,
+  ]);
+
   return (
-    <div className="absolute inset-0 z-50 flex">
-      <div className="relative z-10 flex flex-col w-full h-full max-w-md p-8 ml-auto transition-transform duration-1000 ease-out shadow-2xl bg-card">
+    <HUDWrapper>
+      <div
+        className={`relative z-10 flex flex-col w-full h-full max-w-md p-8 ml-auto transition-transform duration-1000 ease-out shadow-2xl bg-card ${hasInteracted ? "translate-x-0" : "translate-x-full"}`}
+      >
         <UITypography variant="h1" className="text-center">
           Tower defense
         </UITypography>
-        {!showAudioSettings ? (
-          <UICard
-            className={`ring-0 ${hasInteracted ? "translate-x-0" : "translate-x-full"}`}
-          >
-            <UICardContent>
-              <div className="flex flex-col justify-center flex-1 gap-4 text-end">
-                <UITypography variant="body">
-                  Defend your base against waves of enemies. Build towers
-                  strategically to survive!
-                </UITypography>
-
-                <UIButton onClick={onPlay} size={"lg"}>
-                  Play
-                </UIButton>
-                <UIButton
-                  onClick={() => setShowAudioSettings(true)}
-                  variant="outline"
-                >
-                  Audio Settings
-                </UIButton>
-              </div>
-            </UICardContent>
-          </UICard>
-        ) : (
-          <HUDAudioControls className="ring-0" />
-        )}
+        {mainMenuContent}
       </div>
-    </div>
+    </HUDWrapper>
   );
 };

@@ -71,6 +71,7 @@ export type EnemyConfig = {
   color: string;
   size: number;
   healthLoss: number;
+  description?: string;
 };
 
 // Enemy instance

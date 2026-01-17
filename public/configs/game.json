@@ -3,6 +3,7 @@
   "enemyTypes": {
     "basic": {
       "color": "#22c55e",
+      "description": "Standard infantry unit. Balanced stats make them reliable.",
       "health": 50,
       "healthLoss": 1,
       "id": "basic",
@@ -13,6 +14,7 @@
     },
     "fast": {
       "color": "#f59e0b",
+      "description": "Swift scout unit that sacrifices durability for speed.",
       "health": 35,
       "healthLoss": 1,
       "id": "fast",
@@ -23,6 +25,7 @@
     },
     "tank": {
       "color": "#6366f1",
+      "description": "Slow, but can take a punch. A modern approach for a tank.",
       "health": 200,
       "healthLoss": 2,
       "id": "tank",
@@ -34,7 +37,7 @@
   },
   "pathWidth": 0.85,
   "pathYOffset": 0.05,
-  "projectileSize": 0.2,
+  "projectileSize": 0.1,
   "startingHealth": 20,
   "startingMoney": 10000,
   "tileSize": 1,

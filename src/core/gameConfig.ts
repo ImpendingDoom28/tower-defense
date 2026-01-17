@@ -38,6 +38,7 @@ const enemyConfigSchema: z.ZodType<EnemyConfig> = z.object({
   color: z.string(),
   size: z.number(),
   healthLoss: z.number(),
+  description: z.string().optional(),
 });
 
 export const gameConfigSchema = z.object({
