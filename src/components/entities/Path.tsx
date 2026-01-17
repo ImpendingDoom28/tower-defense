@@ -11,6 +11,8 @@ import {
   tileSizeSelector,
   useGameStore,
 } from "../../core/stores/useGameStore";
+import { Portal } from "./Portal";
+import { EndBuilding } from "./EndBuilding";
 
 type PathProps = {
   currentWave: number;
@@ -81,11 +83,18 @@ export const Path: FC<PathProps> = ({
           </mesh>
         </group>
       ))}
-      {/* Start marker */}
-      <mesh position={[path[0].x, path[0].y + 0.1, path[0].z]}>
-        <cylinderGeometry args={[0.15, 0.15, 0.2, 16]} />
-        <meshStandardMaterial color="#22c55e" />
-      </mesh>
+      {/* Portal at start point */}
+      <Portal position={[path[0].x, path[0].y + 0.5, path[0].z]} />
+
+      {/* End building at final waypoint */}
+      <EndBuilding
+        position={[
+          path[path.length - 1].x,
+          path[path.length - 1].y,
+          path[path.length - 1].z,
+        ]}
+      />
+
       {/* Next wave preview */}
       <GUINextWavePreview
         currentWave={currentWave}
