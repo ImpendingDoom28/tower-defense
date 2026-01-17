@@ -117,6 +117,9 @@ export const Enemy: FC<EnemyProps> = ({
   const hasTriggeredSpawnEffect = useRef(false);
   const hasReachedEnd = useRef(false);
   const [isSlowed, setIsSlowed] = useState(false);
+  const pauseDurationRef = useRef<number>(0);
+  const lastPausedTimeRef = useRef<number | null>(null);
+  const previousShouldStopMovementRef = useRef<boolean>(shouldStopMovement);
 
   // Trigger spawn effect when enemy first appears
   useEffect(() => {
@@ -140,16 +143,53 @@ export const Enemy: FC<EnemyProps> = ({
 
   useFrame((state, delta) => {
     if (!enemy || enemy.health <= 0) return;
-    if (shouldStopMovement) return;
+
+    const now = state.clock.elapsedTime;
+
+    // Track pause duration to adjust slow effect timing
+    const wasPaused = previousShouldStopMovementRef.current;
+    const isPaused = shouldStopMovement;
+
+    if (!wasPaused && isPaused) {
+      // Just paused - record the pause start time
+      lastPausedTimeRef.current = now;
+    } else if (wasPaused && !isPaused && lastPausedTimeRef.current !== null) {
+      // Just unpaused - add the pause duration to total
+      const pauseDuration = now - lastPausedTimeRef.current;
+      pauseDurationRef.current += pauseDuration;
+      lastPausedTimeRef.current = null;
+    }
+
+    previousShouldStopMovementRef.current = isPaused;
+
+    if (shouldStopMovement) {
+      // Still check slow effect even when paused, but don't update movement
+      // Account for current pause duration if still paused
+      const currentPauseDuration =
+        lastPausedTimeRef.current !== null
+          ? now - lastPausedTimeRef.current
+          : 0;
+      const adjustedTime =
+        now - pauseDurationRef.current - currentPauseDuration;
+      const currentlySlowed =
+        enemy.slowUntil > 0 &&
+        enemy.slowUntil > adjustedTime &&
+        enemy.slowMultiplier < 1;
+      setIsSlowed(currentlySlowed);
+      return;
+    }
 
     // Calculate effective speed (accounting for slow debuff)
     let effectiveSpeed = enemy.speed;
-    const now = state.clock.elapsedTime;
 
     // Check if slow debuff is still active
     // slowUntil is stored as elapsed time when debuff expires
+    // Subtract pause duration to account for time spent paused
+    const adjustedTime = now - pauseDurationRef.current;
     const currentlySlowed =
-      enemy.slowUntil > 0 && enemy.slowUntil > now && enemy.slowMultiplier < 1;
+      enemy.slowUntil > 0 &&
+      enemy.slowUntil > adjustedTime &&
+      enemy.slowMultiplier < 1;
     setIsSlowed(currentlySlowed);
 
     if (currentlySlowed) {

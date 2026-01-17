@@ -68,6 +68,9 @@ export const useLevelStore = create<LevelStore>((set) => ({
     const towerTypes = useGameStore.getState().towerTypes;
     const enemyTypes = useGameStore.getState().enemyTypes;
 
+    // Calculate grid offset first (needed for coordinate conversion)
+    const gridOffset = -(levelData.gridSize * tileSize) / 2;
+
     // Only used if we have defined enemies in the level config
     const enemies = levelData.enemies.map((enemy) => ({
       ...enemyTypes![enemy.type],
@@ -82,17 +85,24 @@ export const useLevelStore = create<LevelStore>((set) => ({
       ...tower,
     }));
 
+    // Convert building grid coordinates to world coordinates
+    const buildings = levelData.buildings.map((building) => ({
+      ...building,
+      x: gridOffset + building.gridX + tileSize / 2,
+      z: gridOffset + building.gridZ + tileSize / 2,
+    }));
+
     set({
       gridSize: levelData.gridSize,
       pathWaypoints: levelData.pathWaypoints,
       totalWaves: levelData.waveConfigs.length,
       waveConfigs: levelData.waveConfigs,
-      buildings: levelData.buildings,
+      buildings: buildings,
       towers: towers,
       enemies: enemies,
       projectiles: levelData.projectiles,
       enemyWeights: levelData.enemyWeights as Record<EnemyType, number>,
-      gridOffset: -(levelData.gridSize * tileSize) / 2,
+      gridOffset: gridOffset,
       isInitialized: true,
     });
   },
