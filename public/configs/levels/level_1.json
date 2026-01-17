@@ -1,0 +1,271 @@
+{
+  "buildings": [
+    {
+      "color": "#8b7355",
+      "depth": 0.8,
+      "gridX": 3,
+      "gridZ": 3,
+      "height": 2,
+      "id": 1,
+      "shape": "box",
+      "width": 0.8,
+      "x": 3,
+      "z": 3
+    },
+    {
+      "color": "#6b7280",
+      "depth": 0.7,
+      "gridX": 7,
+      "gridZ": 4,
+      "height": 1.8,
+      "id": 2,
+      "shape": "cylinder",
+      "width": 0.7,
+      "x": 7,
+      "z": 4
+    },
+    {
+      "color": "#78716c",
+      "depth": 0.9,
+      "gridX": 12,
+      "gridZ": 6,
+      "height": 2.2,
+      "id": 3,
+      "shape": "box",
+      "width": 0.9,
+      "x": 12,
+      "z": 6
+    },
+    {
+      "color": "#57534e",
+      "depth": 0.6,
+      "gridX": 15,
+      "gridZ": 8,
+      "height": 1.6,
+      "id": 4,
+      "shape": "cylinder",
+      "width": 0.6,
+      "x": 15,
+      "z": 8
+    },
+    {
+      "color": "#8b7355",
+      "depth": 0.86,
+      "gridX": 6,
+      "gridZ": 12,
+      "height": 2.1,
+      "id": 5,
+      "shape": "box",
+      "width": 0.86,
+      "x": 6,
+      "z": 12
+    },
+    {
+      "color": "#6b7280",
+      "depth": 0.75,
+      "gridX": 4,
+      "gridZ": 15,
+      "height": 1.9,
+      "id": 6,
+      "shape": "cylinder",
+      "width": 0.75,
+      "x": 4,
+      "z": 15
+    },
+    {
+      "color": "#78716c",
+      "depth": 0.8,
+      "gridX": 16,
+      "gridZ": 3,
+      "height": 2,
+      "id": 7,
+      "shape": "box",
+      "width": 0.8,
+      "x": 16,
+      "z": 3
+    },
+    {
+      "color": "#57534e",
+      "depth": 0.7,
+      "gridX": 11,
+      "gridZ": 15,
+      "height": 1.8,
+      "id": 8,
+      "shape": "cylinder",
+      "width": 0.7,
+      "x": 11,
+      "z": 15
+    }
+  ],
+  "enemies": [],
+  "enemyWeights": null,
+  "gridSize": 20,
+  "pathWaypoints": [
+    [
+      {
+        "x": -4.5,
+        "y": 0,
+        "z": -4.5
+      },
+      {
+        "x": -1.5,
+        "y": 0,
+        "z": -4.5
+      },
+      {
+        "x": -1.5,
+        "y": 0,
+        "z": -1.5
+      },
+      {
+        "x": 2.5,
+        "y": 0,
+        "z": -1.5
+      },
+      {
+        "x": 2.5,
+        "y": 0,
+        "z": 2.5
+      },
+      {
+        "x": -1.5,
+        "y": 0,
+        "z": 2.5
+      },
+      {
+        "x": -1.5,
+        "y": 0,
+        "z": 4.5
+      },
+      {
+        "x": 4.5,
+        "y": 0,
+        "z": 4.5
+      }
+    ]
+  ],
+  "projectiles": [],
+  "towers": [],
+  "waveConfigs": [
+    {
+      "enemies": [
+        {
+          "count": 8,
+          "spawnInterval": 1,
+          "type": "basic"
+        }
+      ],
+      "totalEnemies": 8
+    },
+    {
+      "enemies": [
+        {
+          "count": 10,
+          "spawnInterval": 0.8,
+          "type": "basic"
+        },
+        {
+          "count": 3,
+          "spawnInterval": 1.2,
+          "type": "fast"
+        }
+      ],
+      "totalEnemies": 13
+    },
+    {
+      "enemies": [
+        {
+          "count": 12,
+          "spawnInterval": 0.7,
+          "type": "basic"
+        },
+        {
+          "count": 5,
+          "spawnInterval": 1,
+          "type": "fast"
+        }
+      ],
+      "totalEnemies": 17
+    },
+    {
+      "enemies": [
+        {
+          "count": 15,
+          "spawnInterval": 0.6,
+          "type": "basic"
+        },
+        {
+          "count": 8,
+          "spawnInterval": 0.9,
+          "type": "fast"
+        },
+        {
+          "count": 2,
+          "spawnInterval": 2,
+          "type": "tank"
+        }
+      ],
+      "totalEnemies": 23
+    },
+    {
+      "enemies": [
+        {
+          "count": 18,
+          "spawnInterval": 0.5,
+          "type": "basic"
+        },
+        {
+          "count": 10,
+          "spawnInterval": 0.8,
+          "type": "fast"
+        },
+        {
+          "count": 3,
+          "spawnInterval": 1.5,
+          "type": "tank"
+        }
+      ],
+      "totalEnemies": 28
+    },
+    {
+      "enemies": [
+        {
+          "count": 20,
+          "spawnInterval": 0.4,
+          "type": "basic"
+        },
+        {
+          "count": 12,
+          "spawnInterval": 0.7,
+          "type": "fast"
+        },
+        {
+          "count": 5,
+          "spawnInterval": 1.2,
+          "type": "tank"
+        }
+      ],
+      "totalEnemies": 33
+    },
+    {
+      "enemies": [
+        {
+          "count": 25,
+          "spawnInterval": 0.3,
+          "type": "basic"
+        },
+        {
+          "count": 15,
+          "spawnInterval": 0.6,
+          "type": "fast"
+        },
+        {
+          "count": 8,
+          "spawnInterval": 1,
+          "type": "tank"
+        }
+      ],
+      "totalEnemies": 38
+    }
+  ]
+}

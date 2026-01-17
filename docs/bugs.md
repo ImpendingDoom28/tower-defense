@@ -1,0 +1,1 @@
+- Slow effect duration runs out then `gameState` is `paused`. Need to make it so that it respects the paused state and continues only after unpausing

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "aliases": {
+    "components": "@/components",
+    "ui": "@/components/ui",
+    "utils": "@/ui/lib/twUtils"
+  },
+  "iconLibrary": "lucide",
+  "menuAccent": "subtle",
+  "menuColor": "default",
+  "registries": {},
+  "rsc": false,
+  "style": "radix-lyra",
+  "tailwind": {
+    "baseColor": "neutral",
+    "config": "tailwind.config.js",
+    "css": "src/styles/index.css",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "tsx": true
+}

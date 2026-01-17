@@ -1,0 +1,210 @@
+{
+  "buildings": [],
+  "enemies": [],
+  "enemySpawning": {
+    "maxEnemies": 50,
+    "spawnIntervalMax": 2,
+    "spawnIntervalMin": 0.5,
+    "speedDivisor": 20
+  },
+  "enemyWeights": {
+    "basic": 10,
+    "fast": 5,
+    "tank": 2
+  },
+  "gridSize": 20,
+  "pathWaypoints": [
+    [
+      {
+        "x": -8,
+        "y": 0,
+        "z": -8
+      },
+      {
+        "x": -4,
+        "y": 0,
+        "z": -8
+      },
+      {
+        "x": -4,
+        "y": 0,
+        "z": -2
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": -2
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    ],
+    [
+      {
+        "x": -8,
+        "y": 0,
+        "z": 8
+      },
+      {
+        "x": -4,
+        "y": 0,
+        "z": 8
+      },
+      {
+        "x": -4,
+        "y": 0,
+        "z": 4
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 4
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    ],
+    [
+      {
+        "x": 8,
+        "y": 0,
+        "z": -8
+      },
+      {
+        "x": 4,
+        "y": 0,
+        "z": -8
+      },
+      {
+        "x": 4,
+        "y": 0,
+        "z": -4
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": -4
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    ],
+    [
+      {
+        "x": 8,
+        "y": 0,
+        "z": 8
+      },
+      {
+        "x": 4,
+        "y": 0,
+        "z": 8
+      },
+      {
+        "x": 4,
+        "y": 0,
+        "z": 2
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 2
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    ]
+  ],
+  "projectiles": [],
+  "towers": [
+    {
+      "gridX": -3,
+      "gridZ": -3,
+      "id": 1,
+      "type": "basic",
+      "x": -3,
+      "z": -3
+    },
+    {
+      "gridX": 3,
+      "gridZ": -3,
+      "id": 2,
+      "type": "basic",
+      "x": 3,
+      "z": -3
+    },
+    {
+      "gridX": -3,
+      "gridZ": 3,
+      "id": 3,
+      "type": "basic",
+      "x": -3,
+      "z": 3
+    },
+    {
+      "gridX": 3,
+      "gridZ": 3,
+      "id": 10,
+      "type": "basic",
+      "x": 3,
+      "z": 3
+    },
+    {
+      "gridX": -1,
+      "gridZ": -1,
+      "id": 4,
+      "type": "slow",
+      "x": -1,
+      "z": -1
+    },
+    {
+      "gridX": 1,
+      "gridZ": 1,
+      "id": 5,
+      "type": "slow",
+      "x": 1,
+      "z": 1
+    },
+    {
+      "gridX": 1,
+      "gridZ": -2,
+      "id": 6,
+      "type": "aoe",
+      "x": 1,
+      "z": -2
+    },
+    {
+      "gridX": -1,
+      "gridZ": 2,
+      "id": 7,
+      "type": "aoe",
+      "x": -1,
+      "z": 2
+    },
+    {
+      "gridX": -2,
+      "gridZ": 0,
+      "id": 8,
+      "type": "laser",
+      "x": -2,
+      "z": 0
+    },
+    {
+      "gridX": 2,
+      "gridZ": 0,
+      "id": 9,
+      "type": "laser",
+      "x": 2,
+      "z": 0
+    }
+  ],
+  "waveConfigs": []
+}
