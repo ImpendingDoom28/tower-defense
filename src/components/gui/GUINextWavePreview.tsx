@@ -11,8 +11,13 @@ import {
 } from "../../core/stores/useLevelStore";
 import {
   enemyTypesSelector,
+  enemyUpgradesSelector,
   useGameStore,
 } from "../../core/stores/useGameStore";
+import {
+  selectedUpgradesSelector,
+  useUpgradeStore,
+} from "../../core/stores/useUpgradeStore";
 import { EnemyConfig } from "../../types/game";
 
 type EnemyPreviewModelProps = {
@@ -49,6 +54,20 @@ export const GUINextWavePreview: FC<GUINextWavePreviewProps> = ({
   const totalWaves = useLevelStore(totalWavesSelector);
   const waveConfigs = useLevelStore(waveConfigsSelector);
   const enemyTypes = useGameStore(enemyTypesSelector);
+  const enemyUpgrades = useGameStore(enemyUpgradesSelector);
+  const selectedUpgrades = useUpgradeStore(selectedUpgradesSelector);
+
+  const totalRewardMultiplier = useMemo(() => {
+    if (!enemyUpgrades || selectedUpgrades.length === 0) return 1;
+    return selectedUpgrades.reduce((acc, upgradeId) => {
+      const upgrade = enemyUpgrades[upgradeId];
+      return acc * (upgrade?.rewardMultiplier ?? 1);
+    }, 1);
+  }, [selectedUpgrades, enemyUpgrades]);
+
+  const bonusPercentage = useMemo(() => {
+    return Math.round((totalRewardMultiplier - 1) * 100);
+  }, [totalRewardMultiplier]);
 
   const shouldShow = useMemo(() => {
     return (
@@ -98,6 +117,37 @@ export const GUINextWavePreview: FC<GUINextWavePreviewProps> = ({
                 );
               })}
             </div>
+
+            {selectedUpgrades.length > 0 && enemyUpgrades && (
+              <div className="pt-2 mt-2 border-t border-gray-600">
+                <UITypography variant="small" className="mb-1 text-yellow-400">
+                  Empowered
+                </UITypography>
+                <div className="flex flex-wrap gap-1">
+                  {selectedUpgrades.map((upgradeId) => {
+                    const upgrade = enemyUpgrades[upgradeId];
+                    if (!upgrade) return null;
+                    return (
+                      <span
+                        key={upgradeId}
+                        className="px-1.5 py-0.5 text-xs rounded"
+                        style={{
+                          backgroundColor: upgrade.indicatorColor,
+                          color: "#000",
+                        }}
+                      >
+                        {upgrade.name}
+                      </span>
+                    );
+                  })}
+                </div>
+                {bonusPercentage > 0 && (
+                  <UITypography variant="small" className="mt-1 text-green-400">
+                    +{bonusPercentage}% gold
+                  </UITypography>
+                )}
+              </div>
+            )}
           </UICardContent>
         </UICard>
       </GUIWrapper>

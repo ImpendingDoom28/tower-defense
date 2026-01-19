@@ -1,7 +1,12 @@
 import { useCallback, useRef, useEffect } from "react";
 
 import { useWaveStore } from "../stores/useWaveStore";
-import type { EnemyType, WaveEnemyGroup, GameStatus } from "../types/game";
+import type {
+  EnemyType,
+  EnemyUpgradeId,
+  WaveEnemyGroup,
+  GameStatus,
+} from "../../types/game";
 import type { GameState } from "./useGameSystem";
 import {
   totalWavesSelector,
@@ -11,10 +16,15 @@ import {
 } from "../stores/useLevelStore";
 import { useGameStore, waveDelaySelector } from "../stores/useGameStore";
 import { useLevelSystem } from "./useLevelSystem";
+import {
+  selectedUpgradesSelector,
+  useUpgradeStore,
+} from "../stores/useUpgradeStore";
 
 type SpawnQueueItem = {
   type: EnemyType;
   delay: number;
+  upgrades: EnemyUpgradeId[];
 };
 
 /**
@@ -59,8 +69,11 @@ export const useWaveSystem = (gameState: GameState) => {
   const { addEnemy } = useLevelSystem();
 
   const { timeUntilNextWave, setTimeUntilNextWave } = useWaveStore();
+  const selectedUpgrades = useUpgradeStore(selectedUpgradesSelector);
+  const clearUpgrades = useUpgradeStore((state) => state.clearUpgrades);
 
   const spawnQueueRef = useRef<SpawnQueueItem[]>([]);
+  const waveUpgradesRef = useRef<EnemyUpgradeId[]>([]);
   const lastSpawnTimeRef = useRef<number>(0);
   const waveStartedRef = useRef<boolean>(false);
   const lastInitializedWaveRef = useRef<number>(0);
@@ -96,6 +109,9 @@ export const useWaveSystem = (gameState: GameState) => {
     lastCountdownPlayingTimeRef.current = 0;
     timeUntilNextWaveRef.current = null;
 
+    waveUpgradesRef.current = [...selectedUpgrades];
+    clearUpgrades();
+
     const currentWaveIndex = currentWave - 1;
     const waveConfig = waveConfigs[currentWaveIndex];
     if (!waveConfig) return;
@@ -122,6 +138,7 @@ export const useWaveSystem = (gameState: GameState) => {
       spawnQueueRef.current.push({
         type: chosenEnemy.type,
         delay: cumulativeDelay,
+        upgrades: waveUpgradesRef.current,
       });
 
       cumulativeDelay += chosenEnemy.spawnInterval * 1000;
@@ -131,7 +148,7 @@ export const useWaveSystem = (gameState: GameState) => {
 
     spawnQueueRef.current.sort((a, b) => a.delay - b.delay);
     totalPauseDurationRef.current = 0;
-  }, [currentWave, totalWaves, waveConfigs]);
+  }, [currentWave, totalWaves, waveConfigs, selectedUpgrades, clearUpgrades]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -244,7 +261,7 @@ export const useWaveSystem = (gameState: GameState) => {
         currentTime - lastSpawnTimeRef.current - totalPauseDurationRef.current;
 
       if (timeSinceWaveStart >= nextSpawn.delay) {
-        addEnemy(nextSpawn.type);
+        addEnemy(nextSpawn.type, nextSpawn.upgrades);
         spawnQueueRef.current.shift();
       }
     },

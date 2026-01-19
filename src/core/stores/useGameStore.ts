@@ -7,6 +7,8 @@ import type {
   TowerConfig,
   EnemyType,
   EnemyConfig,
+  EnemyUpgradeId,
+  EnemyUpgradeConfig,
   Tower,
 } from "../../types/game";
 import { GameConfigData } from "../../core/gameConfig";
@@ -29,6 +31,7 @@ type GameStoreState = {
   waveDelay: number;
   enemyTypes: Record<EnemyType, EnemyConfig> | null;
   towerTypes: Record<TowerType, TowerConfig> | null;
+  enemyUpgrades: Record<EnemyUpgradeId, EnemyUpgradeConfig> | null;
   projectileSize: number;
 
   isInitialized: boolean;
@@ -61,6 +64,7 @@ type GameStore = GameStoreState & GameStoreActions;
 const DEFAULT_STATE: GameStoreState = {
   enemyTypes: null,
   towerTypes: null,
+  enemyUpgrades: null,
   activeEffects: [],
   currentWave: 0,
   selectedTowerType: null,
@@ -99,6 +103,7 @@ export const useGameStore = create<GameStore>((set) => ({
       waveDelay,
       enemyTypes,
       towerTypes,
+      enemyUpgrades,
       pathWidth,
       pathYOffset,
       projectileSize,
@@ -115,6 +120,10 @@ export const useGameStore = create<GameStore>((set) => ({
       waveDelay,
       enemyTypes: enemyTypes as Record<EnemyType, EnemyConfig>,
       towerTypes: towerTypes as Record<TowerType, TowerConfig>,
+      enemyUpgrades: enemyUpgrades as Record<
+        EnemyUpgradeId,
+        EnemyUpgradeConfig
+      >,
       pathWidth,
       pathYOffset,
       projectileSize,
@@ -202,5 +211,6 @@ export const towerTypesSelector = (state: GameStore) => state.towerTypes;
 export const projectileSizeSelector = (state: GameStore) =>
   state.projectileSize;
 export const waveDelaySelector = (state: GameStore) => state.waveDelay;
+export const enemyUpgradesSelector = (state: GameStore) => state.enemyUpgrades;
 export const initializeGameStateSelector = (state: GameStore) =>
   state.initializeGameState;

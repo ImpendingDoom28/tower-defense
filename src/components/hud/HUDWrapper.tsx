@@ -8,7 +8,7 @@ type HUDWrapperProps = {
 
 export const HUDWrapper: FC<HUDWrapperProps> = ({ children, className }) => {
   return (
-    <div className={cn("absolute inset-0 z-50 flex", className)}>
+    <div className={cn("absolute inset-0 z-50 flex shadow-lg", className)}>
       {children}
     </div>
   );

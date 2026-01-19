@@ -15,6 +15,11 @@ A 3D tower defense game built with React, Tailwind CSS, and React Three Fiber.
   - Fastero: Fast-moving enemy with lower health
   - Tankee: Slow but heavily armored enemy that causes more health loss
 - **Enemy wave system** - 7 waves of increasing difficulty with configurable enemy compositions
+- **Enemy upgrade system** - Optional risk/reward mechanic to empower waves for bonus gold:
+  - Armored: +50% health, +40% gold reward
+  - Swift: +30% speed, +30% gold reward
+  - Unstoppable: Immune to slow effects, +50% gold reward
+  - Regenerating: Heals 3 HP/sec, +60% gold reward
 - **Economy system** - Earn money by killing enemies, spend it on towers
 - **Tower management** - Click on placed towers to view info and sell them (50% refund)
 - **Health system** - Lose health when enemies reach the end (varies by enemy type)
@@ -49,15 +54,16 @@ npm run build
 
 ## How to Play
 
-1. **Start the game**: Click "Play" on the main menu to begin
+1. **Start the game**: Click "Play" on the main menu to enter the game
 2. **View the almanac**: Click "Enemy Almanac" to see discovered enemies (undiscovered show as silhouettes)
 3. **Select a tower**: Click on a tower in the shop (left side) to select it
-3. **Place towers**: Click on a tile in the grid to place the selected tower (cannot place on paths or occupied tiles)
-4. **Manage towers**: Click on a placed tower to view its stats and sell it if needed
-5. **Defend**: Towers automatically target and shoot at enemies based on their targeting mode
-6. **Start waves**: Waves start automatically after a delay, or click "Start Wave Early" to begin immediately
-7. **Survive**: Defend against 7 waves of enemies without losing all your health
-8. **Win**: Complete all waves to win the game
+4. **Place towers**: Click on a tile in the grid to place the selected tower (cannot place on paths or occupied tiles)
+5. **Manage towers**: Click on a placed tower to view its stats and sell it if needed
+6. **Start the first wave**: Click "Start next wave" to begin the first wave (gives you time to place towers first)
+7. **Defend**: Towers automatically target and shoot at enemies based on their targeting mode
+8. **Continue waves**: After each wave, start the next wave early or wait for the automatic countdown
+9. **Survive**: Defend against 7 waves of enemies without losing all your health
+10. **Win**: Complete all waves to win the game
 
 ## Controls
 
@@ -73,7 +79,8 @@ npm run build
 - **Money**: Start with $10,000, earn more by killing enemies (rewards vary by enemy type)
 - **Health**: Start with 20 health, lose health when enemies reach the end (amount varies by enemy type)
 - **Waves**: 7 waves with increasing difficulty, each containing multiple enemy types
-  - Waves start automatically after a 15-second delay (configurable)
+  - The first wave must be started manually, giving you time to place initial towers
+  - Subsequent waves start automatically after a 15-second delay (configurable)
   - You can start waves early if all enemies from the previous wave are defeated
 - **Tower Types**: Each tower has unique stats:
   - **Basic Tower**: $50, 20 damage, 3.5 range, 1s fire rate
@@ -89,5 +96,16 @@ npm run build
   - Undiscovered enemies appear as silhouettes with "???" names
   - Enemies are revealed when you encounter them in battle
   - Discovery progress persists across browser sessions via localStorage
+- **Enemy Upgrades** (Risk/Reward System):
+  - Between waves (starting from wave 4), you can optionally "empower" the next wave
+  - Select upgrades to make enemies stronger in exchange for bonus gold rewards
+  - Upgrades unlock progressively:
+    - Waves 4-6: Tier 1 upgrades (Armored, Swift), max 1 upgrade
+    - Waves 7-10: Tier 1-2 upgrades (adds Unstoppable, Regenerating), max 2 upgrades
+    - Waves 11+: All tiers, max 3 upgrades
+  - Upgrade effects stack multiplicatively for gold rewards
+  - Upgraded enemies display colored rings indicating their active upgrades
+  - Slow-immune enemies cannot be slowed by Slow Towers
+  - Regenerating enemies heal over time (can be countered with burst damage)
 
 Enjoy the game!

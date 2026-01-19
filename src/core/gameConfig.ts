@@ -1,12 +1,13 @@
 import { z } from "zod";
 
-import type { TowerConfig, EnemyConfig } from "../types/game";
+import type { TowerConfig, EnemyConfig, EnemyUpgradeConfig } from "../types/game";
 import { loadFile } from "../utils/fileLoader";
 
 const towerTargetingSchema = z.enum(["nearest", "furthest"]);
 const projectileTypeSchema = z.enum(["aoe", "single", "beam"]);
 const towerTypeSchema = z.enum(["basic", "slow", "aoe", "laser"]);
 const enemyTypeSchema = z.enum(["basic", "fast", "tank"]);
+const enemyUpgradeIdSchema = z.enum(["armored", "swift", "slowImmune", "regenerating"]);
 
 const towerConfigSchema: z.ZodType<TowerConfig> = z.object({
   id: towerTypeSchema,
@@ -41,6 +42,27 @@ const enemyConfigSchema: z.ZodType<EnemyConfig> = z.object({
   description: z.string().optional(),
 });
 
+const enemyUpgradeConfigSchema: z.ZodType<EnemyUpgradeConfig> = z.object({
+  id: enemyUpgradeIdSchema,
+  name: z.string(),
+  description: z.string(),
+  tier: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  rewardMultiplier: z.number(),
+  healthMultiplier: z.number().optional(),
+  speedMultiplier: z.number().optional(),
+  resistances: z
+    .object({
+      slow: z.number().optional(),
+    })
+    .optional(),
+  abilities: z
+    .object({
+      regeneration: z.number().optional(),
+    })
+    .optional(),
+  indicatorColor: z.string(),
+});
+
 export const gameConfigSchema = z.object({
   tileSize: z.number(),
   startingMoney: z.number(),
@@ -49,6 +71,7 @@ export const gameConfigSchema = z.object({
   enemyHealthLoss: z.number(),
   towerTypes: z.record(towerTypeSchema, towerConfigSchema),
   enemyTypes: z.record(enemyTypeSchema, enemyConfigSchema),
+  enemyUpgrades: z.record(enemyUpgradeIdSchema, enemyUpgradeConfigSchema),
   waveDelay: z.number(),
   pathWidth: z.number(),
   pathYOffset: z.number(),

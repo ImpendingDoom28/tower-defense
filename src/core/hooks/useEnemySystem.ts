@@ -1,6 +1,7 @@
 import { useCallback } from "react";
-import type { Enemy } from "../types/game";
-import { LevelSystem } from "./useLevelSystem";
+
+import type { Enemy } from "../../types/game";
+import type { LevelSystem } from "./useLevelSystem";
 import { enemiesSelector, useLevelStore } from "../stores/useLevelStore";
 
 export const useEnemySystem = (levelSystem: LevelSystem) => {
@@ -52,12 +53,39 @@ export const useEnemySystem = (levelSystem: LevelSystem) => {
       const enemy = enemies.find((e) => e.id === enemyId);
       if (!enemy) return;
 
-      const slowUntil = currentTime + duration;
+      // Check for slow resistance (1 = fully immune)
+      const resistance = enemy.slowResistance ?? 0;
+      if (resistance >= 1) return;
+
+      // Reduce slow effectiveness based on resistance
+      const effectiveSlowMultiplier =
+        1 - (1 - slowMultiplier) * (1 - resistance);
+      const slowUntil = currentTime + duration * (1 - resistance);
 
       updateEnemy(enemyId, {
-        slowMultiplier: slowMultiplier,
+        slowMultiplier: effectiveSlowMultiplier,
         slowUntil: slowUntil,
       });
+    },
+    [enemies, updateEnemy]
+  );
+
+  // Apply regeneration to all enemies that have it
+  // Should be called each frame with delta time
+  const applyRegeneration = useCallback(
+    (deltaTime: number) => {
+      for (const enemy of enemies) {
+        if (enemy.regeneration && enemy.regeneration > 0) {
+          const healAmount = enemy.regeneration * deltaTime;
+          const newHealth = Math.min(
+            enemy.maxHealth,
+            enemy.health + healAmount
+          );
+          if (newHealth !== enemy.health) {
+            updateEnemy(enemy.id, { health: newHealth });
+          }
+        }
+      }
     },
     [enemies, updateEnemy]
   );
@@ -67,6 +95,7 @@ export const useEnemySystem = (levelSystem: LevelSystem) => {
     onEnemyUpdate,
     damageEnemy,
     slowEnemy,
+    applyRegeneration,
   };
 };
 

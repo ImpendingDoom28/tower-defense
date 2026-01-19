@@ -1,4 +1,4 @@
-import { FC, useCallback } from "react";
+import { FC, useCallback, useEffect, useMemo } from "react";
 
 import { GameCanvas } from "./components/GameCanvas";
 import { MainMenuScene } from "./components/GameMainMenuScene";
@@ -7,6 +7,7 @@ import { HUDGameStats } from "./components/hud/HUDGameStats";
 import { HUDGameOver } from "./components/hud/HUDGameOver";
 import { HUDMainMenu } from "./components/hud/HUDMainMenu";
 import { HUDGameMenu } from "./components/hud/HUDGameMenu";
+import { HUDUpgradePanel } from "./components/hud/HUDUpgradePanel";
 import { useGameSystem } from "./core/hooks/useGameSystem";
 import { useEnemySystem } from "./core/hooks/useEnemySystem";
 import { useProjectileSystem } from "./core/hooks/useProjectileSystem";
@@ -14,7 +15,12 @@ import { useWaveSystem } from "./core/hooks/useWaveSystem";
 import { useAudioSystem } from "./core/hooks/useAudioSystem";
 import { KeyboardHandlingSystem } from "./components/systems/KeyboardHandlingSystem";
 import { useLevelSystem } from "./core/hooks/useLevelSystem";
-import type { Tower } from "./types/game";
+import type { EnemyUpgradeId, Tower } from "./types/game";
+import {
+  enemyUpgradesSelector,
+  useGameStore,
+} from "./core/stores/useGameStore";
+import { useUpgradeStore } from "./core/stores/useUpgradeStore";
 
 export const App: FC = () => {
   const gameState = useGameSystem();
@@ -52,8 +58,66 @@ export const App: FC = () => {
 
   const { onProjectileHit, onProjectileRemove } = projectileSystem;
 
-  const { getRemainingEnemiesInWave, timeUntilNextWave, startNextWaveEarly } =
-    waveSystem;
+  const {
+    getRemainingEnemiesInWave,
+    timeUntilNextWave,
+    startNextWaveEarly,
+    startFirstWave,
+  } = waveSystem;
+
+  const enemyUpgrades = useGameStore(enemyUpgradesSelector);
+  const setAvailableUpgrades = useUpgradeStore(
+    (state) => state.setAvailableUpgrades
+  );
+  const setMaxUpgradesPerWave = useUpgradeStore(
+    (state) => state.setMaxUpgradesPerWave
+  );
+  const clearUpgrades = useUpgradeStore((state) => state.clearUpgrades);
+
+  const showUpgradePanel = useMemo(() => {
+    const condition =
+      timeUntilNextWave !== null &&
+      timeUntilNextWave > 0 &&
+      currentWave > 0 &&
+      currentWave >= 4;
+
+    return condition;
+  }, [timeUntilNextWave, currentWave]);
+
+  useEffect(() => {
+    if (!enemyUpgrades) return;
+
+    const allUpgradeIds = Object.keys(enemyUpgrades) as EnemyUpgradeId[];
+
+    if (currentWave < 4) {
+      setAvailableUpgrades([]);
+      setMaxUpgradesPerWave(0);
+    } else if (currentWave <= 6) {
+      const tier1Upgrades = allUpgradeIds.filter(
+        (id) => enemyUpgrades[id].tier === 1
+      );
+      setAvailableUpgrades(tier1Upgrades);
+      setMaxUpgradesPerWave(1);
+    } else if (currentWave <= 10) {
+      const tier1And2Upgrades = allUpgradeIds.filter(
+        (id) => enemyUpgrades[id].tier <= 2
+      );
+      setAvailableUpgrades(tier1And2Upgrades);
+      setMaxUpgradesPerWave(2);
+    } else {
+      setAvailableUpgrades(allUpgradeIds);
+      setMaxUpgradesPerWave(3);
+    }
+  }, [currentWave, enemyUpgrades, setAvailableUpgrades, setMaxUpgradesPerWave]);
+
+  const onConfirmUpgrades = useCallback(() => {
+    startNextWaveEarly();
+  }, [startNextWaveEarly]);
+
+  const onSkipUpgrades = useCallback(() => {
+    clearUpgrades();
+    startNextWaveEarly();
+  }, [clearUpgrades, startNextWaveEarly]);
 
   const onTileClick = useCallback(
     (gridX: number, gridZ: number) => {
@@ -137,7 +201,15 @@ export const App: FC = () => {
                 gameStatus={gameStatus}
                 timeUntilNextWave={timeUntilNextWave}
                 onStartWaveEarly={startNextWaveEarly}
+                onStartFirstWave={startFirstWave}
               />
+
+              {showUpgradePanel && (
+                <HUDUpgradePanel
+                  onConfirm={onConfirmUpgrades}
+                  onSkip={onSkipUpgrades}
+                />
+              )}
             </>
           )}
 

@@ -7,12 +7,86 @@ import {
   getPositionAlongMultiplePaths,
   isAtPathEnd,
 } from "../../utils/pathUtils";
-import type { Enemy as EnemyInstance } from "../../types/game";
+import type { Enemy as EnemyInstance, EnemyUpgradeId } from "../../types/game";
 import { GUIDebugInfo } from "../gui/GUIDebugInfo";
 import {
   pathWaypointsSelector,
   useLevelStore,
 } from "../../core/stores/useLevelStore";
+import {
+  enemyUpgradesSelector,
+  useGameStore,
+} from "../../core/stores/useGameStore";
+
+type UpgradeIndicatorProps = {
+  enemySize: number;
+  upgrades: EnemyUpgradeId[];
+  shouldStopMovement: boolean;
+};
+
+const UpgradeIndicator: FC<UpgradeIndicatorProps> = ({
+  enemySize,
+  upgrades,
+  shouldStopMovement,
+}) => {
+  const enemyUpgrades = useGameStore(enemyUpgradesSelector);
+  const ringRef = useRef<Mesh>(null);
+
+  useFrame((state) => {
+    if (shouldStopMovement) return;
+    const time = state.clock.elapsedTime;
+
+    if (ringRef.current) {
+      ringRef.current.rotation.y = time * 1.5;
+      const pulse = Math.sin(time * 2) * 0.05 + 1;
+      ringRef.current.scale.set(pulse, pulse, pulse);
+    }
+  });
+
+  if (!enemyUpgrades || upgrades.length === 0) return null;
+
+  // Get the primary upgrade color (first upgrade)
+  const primaryUpgrade = enemyUpgrades[upgrades[0]];
+  const primaryColor = primaryUpgrade?.indicatorColor ?? "#ffffff";
+
+  return (
+    <group position={[0, enemySize * 0.3, 0]}>
+      {/* Ring for each upgrade, stacked vertically */}
+      {upgrades.map((upgradeId, index) => {
+        const upgrade = enemyUpgrades[upgradeId];
+        if (!upgrade) return null;
+
+        return (
+          <mesh
+            key={upgradeId}
+            ref={index === 0 ? ringRef : undefined}
+            position={[0, index * 0.15, 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <torusGeometry
+              args={[enemySize * (1.1 + index * 0.15), 0.02, 8, 24]}
+            />
+            <meshStandardMaterial
+              color={upgrade.indicatorColor}
+              emissive={upgrade.indicatorColor}
+              emissiveIntensity={0.5}
+              transparent
+              opacity={0.7}
+            />
+          </mesh>
+        );
+      })}
+
+      {/* Central glow effect */}
+      <pointLight
+        color={primaryColor}
+        intensity={0.3}
+        distance={enemySize * 2}
+        decay={2}
+      />
+    </group>
+  );
+};
 
 type SlowEffectProps = {
   enemySize: number;
@@ -236,12 +310,28 @@ export const Enemy: FC<EnemyProps> = ({
       );
     }
 
-    // Update enemy state
-    onUpdate?.(enemy.id, {
-      pathProgress: newProgress,
-      x: position.x,
-      z: position.z,
-    });
+    // Apply regeneration if enemy has it
+    if (
+      enemy.regeneration &&
+      enemy.regeneration > 0 &&
+      enemy.health < enemy.maxHealth
+    ) {
+      const healAmount = enemy.regeneration * delta;
+      const newHealth = Math.min(enemy.maxHealth, enemy.health + healAmount);
+      onUpdate?.(enemy.id, {
+        pathProgress: newProgress,
+        x: position.x,
+        z: position.z,
+        health: newHealth,
+      });
+    } else {
+      // Update enemy state
+      onUpdate?.(enemy.id, {
+        pathProgress: newProgress,
+        x: position.x,
+        z: position.z,
+      });
+    }
   });
 
   // Get initial position from enemy state
@@ -269,6 +359,15 @@ export const Enemy: FC<EnemyProps> = ({
         initialPosition.z,
       ]}
     >
+      {/* Upgrade indicators */}
+      {enemy.upgrades && enemy.upgrades.length > 0 && (
+        <UpgradeIndicator
+          enemySize={enemy.size}
+          upgrades={enemy.upgrades}
+          shouldStopMovement={shouldStopMovement}
+        />
+      )}
+
       {/* Slow effect indicator */}
       {isSlowed && (
         <SlowEffect

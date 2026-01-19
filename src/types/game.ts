@@ -16,6 +16,26 @@ export type TowerTargeting = "nearest" | "furthest";
 // Enemy types
 export type EnemyType = "basic" | "fast" | "tank";
 
+// Enemy upgrade types
+export type EnemyUpgradeId = "armored" | "swift" | "slowImmune" | "regenerating";
+
+export type EnemyUpgradeConfig = {
+  id: EnemyUpgradeId;
+  name: string;
+  description: string;
+  tier: 1 | 2 | 3;
+  rewardMultiplier: number;
+  healthMultiplier?: number;
+  speedMultiplier?: number;
+  resistances?: {
+    slow?: number;
+  };
+  abilities?: {
+    regeneration?: number;
+  };
+  indicatorColor: string;
+};
+
 export type ProjectileType = "aoe" | "single" | "beam";
 
 // Path waypoint
@@ -85,6 +105,9 @@ export type Enemy = Omit<EnemyConfig, "id"> & {
   slowMultiplier: number;
   x: number;
   z: number;
+  upgrades: EnemyUpgradeId[];
+  regeneration?: number;
+  slowResistance?: number;
 };
 
 // Projectile instance

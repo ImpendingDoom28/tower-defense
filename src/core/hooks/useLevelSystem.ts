@@ -1,10 +1,11 @@
 import { useCallback } from "react";
-import { useGameStore } from "../stores/useGameStore";
+import { useGameStore, enemyUpgradesSelector } from "../stores/useGameStore";
 import { useLevelStore } from "../stores/useLevelStore";
 import { useAlmanacStore } from "../stores/useAlmanacStore";
 import {
   Enemy,
   EnemyType,
+  EnemyUpgradeId,
   Projectile,
   Tower,
   TowerType,
@@ -125,6 +126,8 @@ export const useLevelSystem = () => {
       isTileOccupiedByBuilding,
       gridOffset,
       tileSize,
+      pathWaypoints,
+      pathWidth,
       getNextTowerId,
       setTowers,
       spendMoney,
@@ -167,9 +170,14 @@ export const useLevelSystem = () => {
     [addMoney, removeTower, towers, towerSellPriceMultiplier]
   );
 
+  const enemyUpgrades = useGameStore(enemyUpgradesSelector);
+
   //Enemies
   const addEnemy = useCallback(
-    (enemyType: EnemyType): Enemy | null => {
+    (
+      enemyType: EnemyType,
+      applyUpgrades: EnemyUpgradeId[] = []
+    ): Enemy | null => {
       const enemyConfig = enemyTypes?.[enemyType];
       if (!enemyConfig) return null;
 
@@ -180,17 +188,52 @@ export const useLevelSystem = () => {
         0
       );
 
+      let health = enemyConfig.health;
+      let speed = enemyConfig.speed;
+      let reward = enemyConfig.reward;
+      let regeneration: number | undefined;
+      let slowResistance: number | undefined;
+
+      for (const upgradeId of applyUpgrades) {
+        const upgrade = enemyUpgrades?.[upgradeId];
+        if (!upgrade) continue;
+
+        if (upgrade.healthMultiplier) {
+          health = Math.round(health * upgrade.healthMultiplier);
+        }
+        if (upgrade.speedMultiplier) {
+          speed = speed * upgrade.speedMultiplier;
+        }
+        reward = Math.round(reward * upgrade.rewardMultiplier);
+
+        if (upgrade.abilities?.regeneration) {
+          regeneration = (regeneration ?? 0) + upgrade.abilities.regeneration;
+        }
+        if (upgrade.resistances?.slow) {
+          slowResistance = Math.max(
+            slowResistance ?? 0,
+            upgrade.resistances.slow
+          );
+        }
+      }
+
       const enemy: Enemy = {
         ...enemyConfig,
         id: getNextEnemyId(),
         type: enemyType,
-        maxHealth: enemyConfig.health,
+        health,
+        maxHealth: health,
+        speed,
+        reward,
         pathProgress: 0,
         pathIndex: pathIndex,
         slowUntil: 0,
         slowMultiplier: 1,
         x: startPosition.x,
         z: startPosition.z,
+        upgrades: applyUpgrades,
+        regeneration,
+        slowResistance,
       };
 
       if (gameStatus === "playing") {
@@ -203,6 +246,7 @@ export const useLevelSystem = () => {
     },
     [
       enemyTypes,
+      enemyUpgrades,
       calcPathIndex,
       pathWaypoints,
       getNextEnemyId,
