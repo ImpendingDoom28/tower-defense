@@ -2,17 +2,14 @@ import { FC, useMemo } from "react";
 
 import type { TowerType } from "../../types/game";
 import { UIButton } from "@/components/ui/UIButton";
-import {
-  UIAccordion,
-  UIAccordionContent,
-  UIAccordionItem,
-  UIAccordionTrigger,
-} from "@/components/ui/UIAccordion";
 import { UITypography } from "../ui/UITypography";
 import {
   towerTypesSelector,
   useGameStore,
 } from "../../core/stores/useGameStore";
+import { HUDWrapper } from "./HUDWrapper";
+import { UICard, UICardContent, UICardHeader, UICardTitle } from "../ui/UICard";
+import { UIMoney } from "../ui/UIMoney";
 
 type HUDTowerShopProps = {
   selectedTowerType: TowerType | null;
@@ -29,61 +26,60 @@ export const HUDTowerShop: FC<HUDTowerShopProps> = ({
 }) => {
   const towerTypes = useGameStore(towerTypesSelector);
   const towerTypesValues = useMemo(() => {
-    return Object.values(towerTypes ?? {});
+    return Object.values(towerTypes ?? {}).sort((a, b) => a.cost - b.cost);
   }, [towerTypes]);
 
   return (
-    <div className="absolute w-64 shadow-lg top-4 left-4">
-      <UIAccordion type="single">
-        <UIAccordionItem value="tower-shop">
-          <UIAccordionTrigger>Tower Shop</UIAccordionTrigger>
-          <UIAccordionContent>
-            {towerTypesValues.map((tower) => {
-              const canAfford = money >= tower.cost;
-              const isSelected = selectedTowerType === tower.id;
+    <HUDWrapper className="bottom-auto w-80 top-4 left-4">
+      <UICard>
+        <UICardHeader>
+          <UICardTitle>
+            <UITypography variant="h4">Tower Shop</UITypography>
+          </UICardTitle>
+        </UICardHeader>
+        <UICardContent className="gap-2">
+          {towerTypesValues.map((tower) => {
+            const canAfford = money >= tower.cost;
+            const isSelected = selectedTowerType === tower.id;
 
-              return (
+            const onTowerClick = () => {
+              if (isSelected) {
+                onDeselectTower();
+              } else if (canAfford) {
+                onSelectTower(tower.id);
+              }
+            };
+
+            return (
+              <div className="relative flex flex-1" key={tower.id}>
+                <div
+                  className={`${canAfford ? "text-green-400" : "text-red-400"} absolute top-2 right-2`}
+                >
+                  <UIMoney money={tower.cost} variant={"medium"} size={16} />
+                </div>
                 <UIButton
-                  key={tower.id}
-                  onClick={() => {
-                    if (isSelected) {
-                      onDeselectTower();
-                    } else if (canAfford) {
-                      onSelectTower(tower.id);
-                    }
-                  }}
+                  onClick={onTowerClick}
                   disabled={!canAfford}
+                  className={"h-24 w-full flex flex-col text-start items-start"}
                   variant={
                     isSelected ? "default" : canAfford ? "outline" : "ghost"
                   }
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <UITypography variant="medium">{tower.name}</UITypography>
-                    <span
-                      className={`text-sm ${
-                        canAfford ? "text-green-400" : "text-red-400"
-                      }`}
-                    >
-                      ${tower.cost}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-300">{tower.description}</p>
-                  <div className="mt-2 text-xs text-gray-400">
-                    <div>Damage: {tower.damage}</div>
-                    <div>Range: {tower.range.toFixed(1)}</div>
-                    <div>Fire Rate: {tower.fireRate.toFixed(1)}s</div>
-                  </div>
+                  <UITypography variant="medium">{tower.name}</UITypography>
+                  <UITypography className="text-gray-300" variant={"small"}>
+                    {tower.description}
+                  </UITypography>
                 </UIButton>
-              );
-            })}
-          </UIAccordionContent>
-        </UIAccordionItem>
-        {selectedTowerType && (
-          <UIButton onClick={onDeselectTower} variant="destructive">
-            Cancel Selection
-          </UIButton>
-        )}
-      </UIAccordion>
-    </div>
+              </div>
+            );
+          })}
+          {selectedTowerType && (
+            <UIButton onClick={onDeselectTower} variant="destructive">
+              Cancel Selection
+            </UIButton>
+          )}
+        </UICardContent>
+      </UICard>
+    </HUDWrapper>
   );
 };
