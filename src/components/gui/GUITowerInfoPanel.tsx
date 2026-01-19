@@ -34,7 +34,7 @@ export const GUITowerInfoPanel: FC<GUITowerInfoPanelProps> = ({
     >
       <GUIWrapper position={[0, 0.4, 0]}>
         <div
-          className="w-40 px-2 py-1 bg-gray-800 rounded-lg shadow-lg bg-opacity-90"
+          className="w-40 px-2 py-1 bg-gray-800 rounded-lg shadow-lg pointer-events-auto bg-opacity-90"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
