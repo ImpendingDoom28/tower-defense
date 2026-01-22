@@ -31,3 +31,4 @@ When writting js/ts code, use the following rules:
 
 - Always create a separate type for components props
 - Remove unused imports if after your changes there are any
+- Don't use barrel files (a.k.a. `index.js/index.ts` files)
