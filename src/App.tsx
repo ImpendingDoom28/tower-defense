@@ -1,7 +1,8 @@
-import { FC, useCallback, useEffect, useMemo } from "react";
+import { FC, Suspense, useCallback, useEffect, useMemo } from "react";
+import { Canvas } from "@react-three/fiber";
 
-import { GameCanvas } from "./components/GameCanvas";
-import { MainMenuScene } from "./components/GameMainMenuScene";
+import { GameScene } from "./components/scenes/game/GameScene";
+import { MainMenuScene } from "./components/scenes/mainMenu/MainMenuScene";
 import { HUDTowerShop } from "./components/hud/HUDTowerShop";
 import { HUDGameStats } from "./components/hud/HUDGameStats";
 import { HUDGameOver } from "./components/hud/HUDGameOver";
@@ -21,6 +22,10 @@ import {
   useGameStore,
 } from "./core/stores/useGameStore";
 import { useUpgradeStore } from "./core/stores/useUpgradeStore";
+import { Stats } from "@react-three/drei";
+
+const canvasStyle = { width: "100%", height: "100%" };
+const canvasGl = { antialias: true };
 
 export const App: FC = () => {
   const gameState = useGameSystem();
@@ -50,6 +55,7 @@ export const App: FC = () => {
     onEndEffect,
     onEffectComplete,
     shouldStopMovement,
+    debug,
   } = gameState;
 
   const { placeTower, sellTower } = levelSystem;
@@ -79,7 +85,7 @@ export const App: FC = () => {
       timeUntilNextWave !== null &&
       timeUntilNextWave > 0 &&
       currentWave > 0 &&
-      currentWave >= 4;
+      currentWave >= 1;
 
     return condition;
   }, [timeUntilNextWave, currentWave]);
@@ -151,39 +157,63 @@ export const App: FC = () => {
   }, [setSelectedTowerType]);
 
   const remainingEnemies = getRemainingEnemiesInWave();
+  const isMenu = gameStatus === "menu";
 
   return (
     <div className="relative w-screen h-screen bg-gray-900">
-      {gameStatus === "menu" ? (
-        <>
-          <MainMenuScene />
-          <HUDMainMenu onPlay={startGame} />
-        </>
-      ) : (
-        <>
-          <GameCanvas
-            onSpawnEffect={onSpawnEffect}
-            onEndEffect={onEndEffect}
-            onEffectComplete={onEffectComplete}
-            selectedTowerType={selectedTowerType}
-            selectedTower={selectedTower}
-            money={money}
-            activeEffects={activeEffects}
-            gameStatus={gameStatus}
-            waveSystem={waveSystem}
-            currentWave={currentWave}
-            timeUntilNextWave={timeUntilNextWave}
-            onTileClick={onTileClick}
-            onTowerClick={onTowerClick}
-            onEnemyReachEnd={onEnemyReachEnd}
-            onEnemyUpdate={onEnemyUpdate}
-            onProjectileHit={onProjectileHit}
-            onProjectileRemove={onProjectileRemove}
-            onSellTower={sellTower}
-            shouldDisableControls={shouldDisableControls}
-            shouldStopMovement={shouldStopMovement}
-          />
+      <Canvas style={canvasStyle} gl={canvasGl}>
+        <Suspense
+          fallback={
+            <div className="absolute inset-0 bg-gray-900">Loading...</div>
+          }
+        >
+          {isMenu && <MainMenuScene />}
+          {!isMenu && (
+            <GameScene
+              onSpawnEffect={onSpawnEffect}
+              onEndEffect={onEndEffect}
+              onEffectComplete={onEffectComplete}
+              selectedTowerType={selectedTowerType}
+              selectedTower={selectedTower}
+              money={money}
+              activeEffects={activeEffects}
+              gameStatus={gameStatus}
+              waveSystem={waveSystem}
+              currentWave={currentWave}
+              timeUntilNextWave={timeUntilNextWave}
+              onTileClick={onTileClick}
+              onTowerClick={onTowerClick}
+              onEnemyReachEnd={onEnemyReachEnd}
+              onEnemyUpdate={onEnemyUpdate}
+              onProjectileHit={onProjectileHit}
+              onProjectileRemove={onProjectileRemove}
+              onSellTower={sellTower}
+              shouldDisableControls={shouldDisableControls}
+              shouldStopMovement={shouldStopMovement}
+            />
+          )}
 
+          {debug && (
+            <>
+              <Stats showPanel={0} className="top-[calc(100%-48px)]!" />
+              <Stats
+                showPanel={1}
+                className="top-[calc(100%-48px)]! bottom-0! left-20!"
+              />
+              <Stats
+                showPanel={2}
+                className="top-[calc(100%-48px)]! left-40!"
+              />
+            </>
+          )}
+          <KeyboardHandlingSystem />
+        </Suspense>
+      </Canvas>
+
+      {isMenu && <HUDMainMenu onPlay={startGame} />}
+
+      {!isMenu && (
+        <>
           {!shouldDisableControls && (
             <>
               <HUDTowerShop
@@ -229,8 +259,6 @@ export const App: FC = () => {
           />
         </>
       )}
-
-      <KeyboardHandlingSystem />
     </div>
   );
 };

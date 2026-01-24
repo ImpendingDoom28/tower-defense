@@ -36,7 +36,7 @@ export const KeyboardHandlingSystem = () => {
         if (gameStatus === "playing" || gameStatus === "paused") {
           pauseGame();
         }
-      } else if (e.key === "D" && e.ctrlKey && e.shiftKey) {
+      } else if (e.ctrlKey && e.shiftKey && e.altKey && e.key === "D") {
         e.preventDefault();
         e.stopPropagation();
         toggleDebug();

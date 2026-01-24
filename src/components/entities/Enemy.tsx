@@ -191,6 +191,7 @@ export const Enemy: FC<EnemyProps> = ({
   const hasTriggeredSpawnEffect = useRef(false);
   const hasReachedEnd = useRef(false);
   const [isSlowed, setIsSlowed] = useState(false);
+  const isSlowedRef = useRef(false);
   const pauseDurationRef = useRef<number>(0);
   const lastPausedTimeRef = useRef<number | null>(null);
   const previousShouldStopMovementRef = useRef<boolean>(shouldStopMovement);
@@ -249,7 +250,11 @@ export const Enemy: FC<EnemyProps> = ({
         enemy.slowUntil > 0 &&
         enemy.slowUntil > adjustedTime &&
         enemy.slowMultiplier < 1;
-      setIsSlowed(currentlySlowed);
+      // Only trigger React update if value changed
+      if (isSlowedRef.current !== currentlySlowed) {
+        isSlowedRef.current = currentlySlowed;
+        setIsSlowed(currentlySlowed);
+      }
       return;
     }
 
@@ -264,7 +269,11 @@ export const Enemy: FC<EnemyProps> = ({
       enemy.slowUntil > 0 &&
       enemy.slowUntil > adjustedTime &&
       enemy.slowMultiplier < 1;
-    setIsSlowed(currentlySlowed);
+    // Only trigger React update if value changed
+    if (isSlowedRef.current !== currentlySlowed) {
+      isSlowedRef.current = currentlySlowed;
+      setIsSlowed(currentlySlowed);
+    }
 
     if (currentlySlowed) {
       effectiveSpeed *= enemy.slowMultiplier;

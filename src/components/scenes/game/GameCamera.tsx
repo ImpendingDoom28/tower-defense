@@ -6,8 +6,17 @@ import {
   gridOffsetSelector,
   gridSizeSelector,
   useLevelStore,
-} from "../core/stores/useLevelStore";
-import { tileSizeSelector, useGameStore } from "../core/stores/useGameStore";
+} from "../../../core/stores/useLevelStore";
+import {
+  tileSizeSelector,
+  useGameStore,
+} from "../../../core/stores/useGameStore";
+
+// Reusable vectors to avoid GC pressure in useFrame
+const forwardVector = new Vector3();
+const rightVector = new Vector3();
+const moveVector = new Vector3();
+const upVector = new Vector3(0, 1, 0);
 
 type GameCameraProps = {
   movementSpeed?: number;
@@ -178,15 +187,13 @@ export const GameCamera = ({
 
     const { forward, backward, left, right, up, down } = moveState.current;
 
-    const forwardVector = new Vector3();
     camera.getWorldDirection(forwardVector);
     forwardVector.y = 0;
     forwardVector.normalize();
 
-    const rightVector = new Vector3();
-    rightVector.crossVectors(forwardVector, new Vector3(0, 1, 0)).normalize();
+    rightVector.crossVectors(forwardVector, upVector).normalize();
 
-    const moveVector = new Vector3();
+    moveVector.set(0, 0, 0);
 
     if (forward) {
       moveVector.add(forwardVector);

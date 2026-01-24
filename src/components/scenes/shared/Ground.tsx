@@ -3,8 +3,11 @@ import { FC, memo } from "react";
 import {
   gridSizeSelector,
   useLevelStore,
-} from "../../core/stores/useLevelStore";
-import { tileSizeSelector, useGameStore } from "../../core/stores/useGameStore";
+} from "../../../core/stores/useLevelStore";
+import {
+  tileSizeSelector,
+  useGameStore,
+} from "../../../core/stores/useGameStore";
 
 export const Ground: FC = memo(() => {
   const gridSize = useLevelStore(gridSizeSelector);

@@ -1,11 +1,20 @@
-import { FC, useRef } from "react";
+import { FC, useRef, useMemo } from "react";
 import type { ThreeEvent } from "@react-three/fiber";
 import type { Group } from "three";
+import { CylinderGeometry, MeshStandardMaterial } from "three";
 
 import type { Tower as TowerInstance } from "../../types/game";
 import { GUIDebugInfo } from "../gui/GUIDebugInfo";
 import { Vector3D } from "../../types/utils";
 import { useGameStore } from "../../core/stores/useGameStore";
+
+// Shared base material (gray color for all tower bases)
+const baseMaterial = new MeshStandardMaterial({ color: "#4b5563" });
+const basePreviewMaterial = new MeshStandardMaterial({
+  color: "#4b5563",
+  transparent: true,
+  opacity: 0.5,
+});
 
 type TowerProps = {
   tower: TowerInstance | null;
@@ -29,6 +38,18 @@ export const Tower: FC<TowerProps> = ({
   ];
 
   const groupRef = useRef<Group>(null);
+
+  // Memoize base geometry to avoid recreation on each render
+  const baseGeometry = useMemo(
+    () =>
+      new CylinderGeometry(
+        towerBaseRadius,
+        towerBaseRadius * 1.2,
+        towerHeight * 0.3,
+        16
+      ),
+    [towerBaseRadius, towerHeight]
+  );
 
   if (!tower) return null;
 
@@ -129,16 +150,11 @@ export const Tower: FC<TowerProps> = ({
       }
     >
       {/* Tower base */}
-      <mesh position={towerBasePosition}>
-        <cylinderGeometry
-          args={[towerBaseRadius, towerBaseRadius * 1.2, towerHeight * 0.3, 16]}
-        />
-        <meshStandardMaterial
-          color="#4b5563"
-          transparent={isPreview}
-          opacity={previewOpacity}
-        />
-      </mesh>
+      <mesh
+        position={towerBasePosition}
+        geometry={baseGeometry}
+        material={isPreview ? basePreviewMaterial : baseMaterial}
+      />
 
       {/* Tower body */}
       <mesh position={towerBodyPosition}>

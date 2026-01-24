@@ -67,7 +67,7 @@ npm run build
 
 ## Controls
 
-- **Mouse**: 
+- **Mouse**:
   - Click tiles to place selected towers
   - Click placed towers to select/view info
   - Drag to rotate camera
@@ -91,7 +91,7 @@ npm run build
 - **Targeting**: Towers target either the nearest or furthest enemy based on their type
 - **Projectile Types**: Single-target, area-of-effect, and piercing beam projectiles
 - **Audio**: Adjustable volume controls for master, SFX, music, and ambient sounds
-- **Enemy Almanac**: 
+- **Enemy Almanac**:
   - Accessed from the main menu
   - Undiscovered enemies appear as silhouettes with "???" names
   - Enemies are revealed when you encounter them in battle
@@ -107,5 +107,44 @@ npm run build
   - Upgraded enemies display colored rings indicating their active upgrades
   - Slow-immune enemies cannot be slowed by Slow Towers
   - Regenerating enemies heal over time (can be countered with burst damage)
+
+## Object Pooling
+
+The project includes object pooling implementation in `src/utils/pooling/` for optimizing projectile performance:
+
+### Instanced Mesh Pool
+
+React Three Fiber native pool using `instancedMesh` for single draw call rendering.
+
+```typescript
+import { useInstancedProjectiles } from "../core/hooks/useInstancedProjectiles.tsx";
+import { useFrame } from "@react-three/fiber";
+
+const { InstancedProjectiles, fireProjectile, updateProjectiles } =
+  useInstancedProjectiles({
+    maxProjectiles: 500,
+    projectileSize: 0.1,
+    onHit: (projectile) => {
+      damageEnemy(projectile.targetId, projectile.damage);
+    },
+  });
+
+// Render the component:
+<InstancedProjectiles />;
+
+// In useFrame:
+useFrame((_, delta) => updateProjectiles(delta));
+
+// Fire projectiles:
+fireProjectile({
+  startPosition: [tower.x, 1, tower.z],
+  targetPosition: [target.x, 0.5, target.z],
+  speed: 10,
+  damage: 25,
+  range: 5,
+  targetId: target.id,
+  towerId: tower.id,
+});
+```
 
 Enjoy the game!

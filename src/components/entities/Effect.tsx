@@ -1,4 +1,4 @@
-import { FC, useRef, useEffect, useState } from "react";
+import { FC, useRef, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import type { Mesh } from "three";
 
@@ -18,15 +18,12 @@ export const Effect: FC<EffectProps> = ({
   const ring1Ref = useRef<Mesh>(null);
   const ring2Ref = useRef<Mesh>(null);
   const particlesRef = useRef<Mesh[]>([]);
-  const [startTime, setStartTime] = useState<number | null>(null);
+  const startTimeRef = useRef<number | null>(null);
 
   useFrame((state) => {
-    if (startTime === null) {
-      setStartTime(state.clock.elapsedTime);
-      return;
-    }
+    startTimeRef.current ??= state.clock.elapsedTime;
 
-    const elapsed = state.clock.elapsedTime - startTime;
+    const elapsed = state.clock.elapsedTime - startTimeRef.current;
     const progress = Math.min(elapsed / duration, 1);
 
     if (progress >= 1 && onComplete) {

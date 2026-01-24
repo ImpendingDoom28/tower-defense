@@ -1,13 +1,12 @@
+import { FC, useMemo } from "react";
+
 import { TowerSystem } from "./TowerSystem";
 import { Building } from "../entities/Building";
 import { Enemy } from "../entities/Enemy";
-import { Projectile } from "../entities/Projectile";
-import { FC, useMemo } from "react";
 import { useLevelSystem } from "../../core/hooks/useLevelSystem";
 import {
   buildingsSelector,
   enemiesSelector,
-  projectilesSelector,
   useLevelStore,
 } from "../../core/stores/useLevelStore";
 import type {
@@ -19,6 +18,7 @@ import type {
 } from "../../types/game";
 import type { TileData } from "../../types/utils";
 import { Effect } from "../entities/Effect";
+import { useInstancedProjectiles } from "../../core/hooks/useInstancedProjectiles";
 
 type EntitiesSystemProps = {
   activeEffects: ActiveEffect[];
@@ -62,13 +62,18 @@ export const EntitiesSystem: FC<EntitiesSystemProps> = ({
   const levelSystem = useLevelSystem();
   const buildings = useLevelStore(buildingsSelector);
   const enemies = useLevelStore(enemiesSelector);
-  const projectiles = useLevelStore(projectilesSelector);
-  const {
-    updateTower,
-    addProjectile,
-    isTileOccupiedByBuilding,
-    isTileOccupiedByTower,
-  } = levelSystem;
+  const { updateTower, isTileOccupiedByBuilding, isTileOccupiedByTower } =
+    levelSystem;
+
+  const { InstancedProjectiles, fireProjectile } = useInstancedProjectiles({
+    maxProjectiles: 500,
+    maxBeams: 50,
+    projectileSize: 0.1,
+    enemies,
+    onHit: onProjectileHit,
+    onRemove: onProjectileRemove,
+    isPaused: shouldStopMovement,
+  });
 
   const enemiesToRender = useMemo(() => {
     return enemies.filter((enemy) => enemy.health > 0);
@@ -80,6 +85,7 @@ export const EntitiesSystem: FC<EntitiesSystemProps> = ({
       hoveredTile?.gridZ ?? 0
     );
   }, [isTileOccupiedByTower, hoveredTile]);
+
   const isOccupiedByBuilding = useMemo(() => {
     return isTileOccupiedByBuilding(
       hoveredTile?.gridX ?? 0,
@@ -105,23 +111,14 @@ export const EntitiesSystem: FC<EntitiesSystemProps> = ({
         />
       ))}
 
-      {projectiles.map((projectile) => (
-        <Projectile
-          key={projectile.id}
-          projectile={projectile}
-          enemies={enemies}
-          onHit={onProjectileHit}
-          onRemove={onProjectileRemove}
-          shouldStopProjectile={shouldStopMovement}
-        />
-      ))}
+      <InstancedProjectiles />
 
       <TowerSystem
         updateTower={updateTower}
         onSellTower={onSellTower}
         hoveredTile={hoveredTile}
         onTowerClick={onTowerClick}
-        addProjectile={addProjectile}
+        fireProjectile={fireProjectile}
         selectedTower={selectedTower}
         selectedTowerType={selectedTowerType}
         isOccupiedByBuilding={isOccupiedByBuilding}
