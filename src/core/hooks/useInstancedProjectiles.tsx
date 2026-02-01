@@ -16,7 +16,7 @@ import {
   InstancedPoolRef,
   InstancedPoolStats,
 } from "../../utils/InstancedPool";
-import type { Projectile, Enemy } from "../../types/game";
+import type { Projectile, Enemy } from "../types/game";
 import { distance2D } from "../../utils/mathUtils";
 import { useNextId } from "./utils/useNextId";
 

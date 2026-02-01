@@ -7,7 +7,10 @@ import {
   getPositionAlongMultiplePaths,
   isAtPathEnd,
 } from "../../utils/pathUtils";
-import type { Enemy as EnemyInstance, EnemyUpgradeId } from "../../types/game";
+import type {
+  Enemy as EnemyInstance,
+  EnemyUpgradeId,
+} from "../../core/types/game";
 import { GUIDebugInfo } from "../gui/GUIDebugInfo";
 import {
   pathWaypointsSelector,

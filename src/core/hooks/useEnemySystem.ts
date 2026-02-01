@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 
-import type { Enemy } from "../../types/game";
+import type { Enemy } from "../types/game";
 import type { LevelSystem } from "./useLevelSystem";
 import { enemiesSelector, useLevelStore } from "../stores/useLevelStore";
 

@@ -1,13 +1,22 @@
 import { z } from "zod";
 
-import type { TowerConfig, EnemyConfig, EnemyUpgradeConfig } from "../types/game";
+import type {
+  TowerConfig,
+  EnemyConfig,
+  EnemyUpgradeConfig,
+} from "./types/game";
 import { loadFile } from "../utils/fileLoader";
 
 const towerTargetingSchema = z.enum(["nearest", "furthest"]);
 const projectileTypeSchema = z.enum(["aoe", "single", "beam"]);
 const towerTypeSchema = z.enum(["basic", "slow", "aoe", "laser"]);
 const enemyTypeSchema = z.enum(["basic", "fast", "tank"]);
-const enemyUpgradeIdSchema = z.enum(["armored", "swift", "slowImmune", "regenerating"]);
+const enemyUpgradeIdSchema = z.enum([
+  "armored",
+  "swift",
+  "slowImmune",
+  "regenerating",
+]);
 
 const towerConfigSchema: z.ZodType<TowerConfig> = z.object({
   id: towerTypeSchema,

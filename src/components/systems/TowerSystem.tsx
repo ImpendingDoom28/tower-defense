@@ -8,16 +8,15 @@ import {
   findEnemiesInLine,
 } from "../../utils/mathUtils";
 import { gameEvents } from "../../utils/eventEmitter";
-import { AudioEvent } from "../../core/audioConfig";
 import type {
   Tower as TowerInstance,
   Enemy,
   Projectile as ProjectileInstance,
   TowerType,
-} from "../../types/game";
+} from "../../core/types/game";
 import { Tower } from "../entities/Tower";
 import { GUITowerInfoPanel } from "../gui/GUITowerInfoPanel";
-import { TileData } from "../../types/utils";
+import { TileData } from "../../core/types/utils";
 import { useGameStore } from "../../core/stores/useGameStore";
 import {
   enemiesSelector,
@@ -25,6 +24,7 @@ import {
   gridOffsetSelector,
   useLevelStore,
 } from "../../core/stores/useLevelStore";
+import { GameEvent } from "../../core/types/enums/events";
 
 type TowerSystemProps = {
   fireProjectile: (
@@ -175,7 +175,7 @@ export const TowerSystem: FC<TowerSystemProps> = ({
       };
 
       fireProjectile(projectileData);
-      gameEvents.emit(AudioEvent.TOWER_FIRE, {
+      gameEvents.emit(GameEvent.TOWER_FIRE, {
         towerId: tower.id,
         towerType: tower.type,
       });

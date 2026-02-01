@@ -1,21 +1,17 @@
 import { useCallback, useRef, useEffect } from "react";
 
-import {
-  initializeGameStateSelector,
-  useGameStore,
-} from "../stores/useGameStore";
+import { useGameStore } from "../stores/useGameStore";
 import { useNextId } from "./utils/useNextId";
-import { GameStatus } from "../../types/game";
+import { GameStatus } from "../types/game";
 import { loadGameConfig } from "../gameConfig";
 import { gameEvents } from "../../utils/eventEmitter";
-import { AudioEvent } from "../audioConfig";
+import { GameEvent } from "../types/enums/events";
 
 export const useGameSystem = () => {
   const {
     money,
     health,
     activeEffects,
-    currentWave,
     gameStatus,
     previousStatus,
     selectedTowerType,
@@ -24,15 +20,14 @@ export const useGameSystem = () => {
     isInitialized,
 
     setActiveEffects,
-    setCurrentWave,
     setGameStatus,
     setPreviousStatus,
     setSelectedTowerType,
     setSelectedTower,
     setDebug,
     resetGameState,
+    initializeGameState,
   } = useGameStore();
-  const initializeGameState = useGameStore(initializeGameStateSelector);
   useEffect(() => {
     if (isInitialized) return;
 
@@ -56,7 +51,7 @@ export const useGameSystem = () => {
       gameStatus === "gameOver" &&
       previousGameStatusRef.current !== "gameOver"
     ) {
-      gameEvents.emit(AudioEvent.GAME_OVER);
+      gameEvents.emit(GameEvent.GAME_OVER);
     }
     previousGameStatusRef.current = gameStatus;
   }, [health, gameStatus]);
@@ -67,26 +62,18 @@ export const useGameSystem = () => {
     gameStatus === "gameMenu";
   const shouldStopMovement = shouldDisableControls || gameStatus === "paused";
 
-  const startNextWave = useCallback(() => {
-    setCurrentWave((prev) => {
-      const newWave = prev + 1;
-      gameEvents.emit(AudioEvent.WAVE_STARTED, { wave: newWave });
-      return newWave;
-    });
-  }, [setCurrentWave]);
-
   const winGame = useCallback(() => {
     setGameStatus("won");
-    gameEvents.emit(AudioEvent.GAME_WON);
+    gameEvents.emit(GameEvent.GAME_WON);
   }, [setGameStatus]);
 
   const pauseGame = useCallback(() => {
     if (gameStatus === "playing") {
       setGameStatus("paused");
-      gameEvents.emit(AudioEvent.GAME_PAUSED);
+      gameEvents.emit(GameEvent.GAME_PAUSED);
     } else if (gameStatus === "paused") {
       setGameStatus("playing");
-      gameEvents.emit(AudioEvent.GAME_RESUMED);
+      gameEvents.emit(GameEvent.GAME_RESUMED);
     }
   }, [setGameStatus, gameStatus]);
 
@@ -114,7 +101,7 @@ export const useGameSystem = () => {
     setDebug(!debug);
   }, [debug, setDebug]);
 
-  // TODO: Move to level system
+  // TODO: Move to effects system
   const onSpawnEffect = useCallback(
     (position: [number, number, number], color: string) => {
       const effectId = getNextEffectId();
@@ -150,7 +137,6 @@ export const useGameSystem = () => {
     // State
     money,
     health,
-    currentWave,
     gameStatus,
     selectedTowerType,
     selectedTower,
@@ -160,7 +146,6 @@ export const useGameSystem = () => {
     debug,
 
     // Actions
-    startNextWave,
     winGame,
     pauseGame,
     startGame,
@@ -169,7 +154,6 @@ export const useGameSystem = () => {
     closeGameMenu,
     setSelectedTowerType,
     setSelectedTower,
-    setCurrentWave,
     setActiveEffects,
     toggleDebug,
     onSpawnEffect,

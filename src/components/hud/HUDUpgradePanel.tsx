@@ -1,7 +1,7 @@
 import { FC, useMemo } from "react";
 import { Zap, Shield, Wind, Heart, X, LucideProps } from "lucide-react";
 
-import type { EnemyUpgradeId } from "../../types/game";
+import type { EnemyUpgradeId } from "../../core/types/game";
 import { UIButton } from "@/components/ui/UIButton";
 import {
   UICard,

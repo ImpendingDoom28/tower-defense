@@ -2,10 +2,10 @@ import { useCallback } from "react";
 
 import { findEnemiesInRange } from "../../utils/mathUtils";
 import { gameEvents } from "../../utils/eventEmitter";
-import { AudioEvent } from "../../core/audioConfig";
-import type { Enemy, Projectile } from "../../types/game";
+import type { Enemy, Projectile } from "../types/game";
 import type { EnemySystem } from "./useEnemySystem";
 import { enemiesSelector, useLevelStore } from "../stores/useLevelStore";
+import { GameEvent } from "../types/enums/events";
 
 export const useProjectileSystem = (enemySystem: EnemySystem) => {
   const enemies = useLevelStore(enemiesSelector);
@@ -44,7 +44,7 @@ export const useProjectileSystem = (enemySystem: EnemySystem) => {
           );
         }
       }
-      gameEvents.emit(AudioEvent.PROJECTILE_HIT, {
+      gameEvents.emit(GameEvent.PROJECTILE_HIT, {
         projectileId: projectile.id,
         projectileType: projectile.projectileType,
         towerType: projectile.towerType,

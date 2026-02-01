@@ -3,8 +3,11 @@ import { MeshStandardMaterialProps, useFrame } from "@react-three/fiber";
 import type { Mesh, Group } from "three";
 
 import { distance2D, normalize } from "../../utils/mathUtils";
-import type { Projectile as ProjectileInstance, Enemy } from "../../types/game";
-import type { Velocity } from "../../types/utils";
+import type {
+  Projectile as ProjectileInstance,
+  Enemy,
+} from "../../core/types/game";
+import type { Velocity } from "../../core/types/utils";
 import { GUIDebugInfo } from "../gui/GUIDebugInfo";
 import {
   debugSelector,

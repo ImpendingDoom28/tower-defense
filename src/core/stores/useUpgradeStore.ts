@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import type { EnemyUpgradeId } from "../../types/game";
+import type { EnemyUpgradeId } from "../types/game";
 
 type UpgradeStoreState = {
   selectedUpgrades: EnemyUpgradeId[];
@@ -72,3 +72,9 @@ export const availableUpgradesSelector = (state: UpgradeStore) =>
   state.availableUpgrades;
 export const maxUpgradesPerWaveSelector = (state: UpgradeStore) =>
   state.maxUpgradesPerWave;
+export const setAvailableUpgradesSelector = (state: UpgradeStore) =>
+  state.setAvailableUpgrades;
+export const setMaxUpgradesPerWaveSelector = (state: UpgradeStore) =>
+  state.setMaxUpgradesPerWave;
+export const clearUpgradesSelector = (state: UpgradeStore) =>
+  state.clearUpgrades;

@@ -7,7 +7,7 @@ import type {
   PathWaypoint,
   Projectile,
   WaveConfig,
-} from "../types/game";
+} from "./types/game";
 
 const towerTypeSchema = z.enum(["basic", "slow", "aoe", "laser"]);
 const enemyTypeSchema = z.enum(["basic", "fast", "tank"]);

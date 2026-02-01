@@ -8,7 +8,7 @@ import type {
   Projectile,
   Tower,
   WaveConfig,
-} from "../../types/game";
+} from "../types/game";
 import type { LevelConfigData } from "../../core/levelConfig";
 import { useGameStore } from "./useGameStore";
 
@@ -22,6 +22,7 @@ type LevelStoreState = {
   enemyWeights: Record<EnemyType, number> | null;
 
   // Calculated in game
+  currentWave: number;
   gridOffset: number;
   towers: Tower[];
   enemies: Enemy[];
@@ -32,6 +33,7 @@ type LevelStoreState = {
 type LevelStoreActions = {
   setGridSize: (gridSize: number, tileSize: number) => void;
   setPathWaypoints: (pathWaypoints: PathWaypoint[][]) => void;
+  setCurrentWave: (wave: number | ((prev: number) => number)) => void;
   setTotalWaves: (totalWaves: number) => void;
   setWaveConfigs: (waveConfigs: WaveConfig[]) => void;
   setBuildings: (buildings: Building[]) => void;
@@ -48,6 +50,7 @@ type LevelStoreActions = {
 type LevelStore = LevelStoreState & LevelStoreActions;
 
 const DEFAULT_STATE: LevelStoreState = {
+  currentWave: 0,
   gridOffset: 0,
   gridSize: 0,
   enemyWeights: null,
@@ -148,6 +151,12 @@ export const useLevelStore = create<LevelStore>((set) => ({
     }));
   },
 
+  setCurrentWave: (wave) => {
+    set((state) => ({
+      currentWave: typeof wave === "function" ? wave(state.currentWave) : wave,
+    }));
+  },
+
   removeProjectile: (projectileId: number) => {
     set((state) => ({
       projectiles: state.projectiles.filter((p) => p.id !== projectileId),
@@ -177,3 +186,6 @@ export const setBuildingsSelector = (state: LevelStore) => state.setBuildings;
 export const enemiesSelector = (state: LevelStore) => state.enemies;
 export const towersSelector = (state: LevelStore) => state.towers;
 export const projectilesSelector = (state: LevelStore) => state.projectiles;
+export const setCurrentWaveSelector = (state: LevelStore) =>
+  state.setCurrentWave;
+export const currentWaveSelector = (state: LevelStore) => state.currentWave;

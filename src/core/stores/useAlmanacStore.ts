@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import type { EnemyType } from "../../types/game";
+import type { EnemyType } from "../types/game";
 
 const STORAGE_KEY = "tower-defense-almanac";
 
@@ -27,8 +27,8 @@ export const useAlmanacStore = create<AlmanacStore>()(
       ...DEFAULT_STATE,
 
       discoverEnemy: (type: EnemyType) => {
-        const { discoveredEnemies } = get();
-        if (!discoveredEnemies.includes(type)) {
+        const { discoveredEnemies, isDiscovered } = get();
+        if (!isDiscovered(type)) {
           set({ discoveredEnemies: [...discoveredEnemies, type] });
         }
       },

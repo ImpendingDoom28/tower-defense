@@ -1,7 +1,7 @@
 import { FC, useMemo } from "react";
 import type { ThreeEvent } from "@react-three/fiber";
 
-import type { Tower as TowerInstance } from "../../types/game";
+import type { Tower as TowerInstance } from "../../core/types/game";
 import { useGameStore } from "../../core/stores/useGameStore";
 import { GUIWrapper } from "./GUIWrapper";
 

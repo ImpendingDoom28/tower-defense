@@ -18,7 +18,7 @@ import {
   selectedUpgradesSelector,
   useUpgradeStore,
 } from "../../core/stores/useUpgradeStore";
-import { EnemyConfig } from "../../types/game";
+import { EnemyConfig } from "../../core/types/game";
 
 type EnemyPreviewModelProps = {
   enemyConfig: EnemyConfig;

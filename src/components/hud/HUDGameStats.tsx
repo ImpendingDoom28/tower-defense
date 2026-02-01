@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Pause, Play } from "lucide-react";
 
-import type { GameStatus } from "../../types/game";
+import type { GameStatus } from "../../core/types/game";
 import { UITypography } from "../ui/UITypography";
 import { UIButton } from "../ui/UIButton";
 import { UICard, UICardContent } from "../ui/UICard";

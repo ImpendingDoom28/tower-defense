@@ -1,6 +1,6 @@
 import { FC, useMemo } from "react";
 
-import type { TowerType } from "../../types/game";
+import type { TowerType } from "../../core/types/game";
 import { UIButton } from "@/components/ui/UIButton";
 import { UITypography } from "../ui/UITypography";
 import {

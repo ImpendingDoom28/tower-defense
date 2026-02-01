@@ -10,7 +10,7 @@ import type {
   EnemyUpgradeId,
   EnemyUpgradeConfig,
   Tower,
-} from "../../types/game";
+} from "../types/game";
 import { GameConfigData } from "../../core/gameConfig";
 
 type GameStoreState = {
@@ -18,7 +18,6 @@ type GameStoreState = {
   enemyHealthLoss: number;
   health: number;
   activeEffects: ActiveEffect[];
-  currentWave: number;
   selectedTowerType: TowerType | null;
   selectedTower: Tower | null;
 
@@ -50,7 +49,6 @@ type GameStoreActions = {
   setActiveEffects: (
     effects: ActiveEffect[] | ((prev: ActiveEffect[]) => ActiveEffect[])
   ) => void;
-  setCurrentWave: (wave: number | ((prev: number) => number)) => void;
   setGameStatus: (status: GameStore["gameStatus"]) => void;
   setPreviousStatus: (status: GameStore["previousStatus"]) => void;
   setSelectedTowerType: (type: TowerType | null) => void;
@@ -66,7 +64,6 @@ const DEFAULT_STATE: GameStoreState = {
   towerTypes: null,
   enemyUpgrades: null,
   activeEffects: [],
-  currentWave: 0,
   selectedTowerType: null,
   selectedTower: null,
   money: 0,
@@ -162,12 +159,6 @@ export const useGameStore = create<GameStore>((set) => ({
     set((state) => ({
       activeEffects:
         typeof effects === "function" ? effects(state.activeEffects) : effects,
-    }));
-  },
-
-  setCurrentWave: (wave) => {
-    set((state) => ({
-      currentWave: typeof wave === "function" ? wave(state.currentWave) : wave,
     }));
   },
 

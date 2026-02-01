@@ -1,4 +1,4 @@
-import type { PathWaypoint } from "../types/game";
+import type { PathWaypoint } from "../core/types/game";
 
 export type PathSegment = {
   p1: PathWaypoint;
@@ -100,6 +100,24 @@ export function getPositionAlongPath(
 }
 
 /**
+ * Check if a point is within a tile's bounds
+ */
+export function isPointInTile(
+  pointX: number,
+  pointZ: number,
+  tileCenterX: number,
+  tileCenterZ: number,
+  halfTile: number
+): boolean {
+  return (
+    pointX >= tileCenterX - halfTile &&
+    pointX <= tileCenterX + halfTile &&
+    pointZ >= tileCenterZ - halfTile &&
+    pointZ <= tileCenterZ + halfTile
+  );
+}
+
+/**
  * Check if a grid tile intersects with the path
  */
 export function isGridTileOnPath(
@@ -117,28 +135,19 @@ export function isGridTileOnPath(
   // Calculate tile bounds (corners)
   const halfTile = tileSize / 2;
 
-  /**
-   * Check if a point is within a tile's bounds
-   */
-  function isPointInTile(
-    pointX: number,
-    pointZ: number,
-    tileCenterX: number,
-    tileCenterZ: number
-  ): boolean {
-    return (
-      pointX >= tileCenterX - halfTile &&
-      pointX <= tileCenterX + halfTile &&
-      pointZ >= tileCenterZ - halfTile &&
-      pointZ <= tileCenterZ + halfTile
-    );
-  }
-
   // First, check if any waypoint (corner) is within this tile
   // Corners take up the whole tile
   for (const path of pathWaypoints) {
     for (const waypoint of path) {
-      if (isPointInTile(waypoint.x, waypoint.z, tileCenterX, tileCenterZ)) {
+      if (
+        isPointInTile(
+          waypoint.x,
+          waypoint.z,
+          tileCenterX,
+          tileCenterZ,
+          halfTile
+        )
+      ) {
         return true;
       }
     }

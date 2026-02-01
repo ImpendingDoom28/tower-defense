@@ -1,7 +1,7 @@
 import { FC, useRef, useCallback } from "react";
 import { useFrame } from "@react-three/fiber";
 
-import type { EnemyType } from "../../../types/game";
+import type { EnemyType } from "../../../core/types/game";
 import { LevelSystem } from "../../systems/LevelSystem";
 import { useLevelStore } from "../../../core/stores/useLevelStore";
 import { useLevelSystem } from "../../../core/hooks/useLevelSystem";

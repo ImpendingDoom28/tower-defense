@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useGameStore, enemyUpgradesSelector } from "../stores/useGameStore";
+import { useGameStore } from "../stores/useGameStore";
 import { useLevelStore } from "../stores/useLevelStore";
 import { useAlmanacStore } from "../stores/useAlmanacStore";
 import {
@@ -9,14 +9,14 @@ import {
   Projectile,
   Tower,
   TowerType,
-} from "../../types/game";
+} from "../types/game";
 import {
   getPositionAlongMultiplePaths,
   isGridTileOnPath,
 } from "../../utils/pathUtils";
 import { useNextId } from "./utils/useNextId";
 import { gameEvents } from "../../utils/eventEmitter";
-import { AudioEvent } from "../../core/audioConfig";
+import { GameEvent } from "../types/enums/events";
 
 export const useLevelSystem = () => {
   const {
@@ -28,6 +28,7 @@ export const useLevelSystem = () => {
     setEnemies,
     setProjectiles,
     pathWaypoints,
+    currentWave,
   } = useLevelStore();
   const {
     towerTypes,
@@ -42,6 +43,7 @@ export const useLevelSystem = () => {
     towerSellPriceMultiplier,
     pathWidth,
     gameStatus,
+    enemyUpgrades,
   } = useGameStore();
 
   const getNextTowerId = useNextId();
@@ -112,7 +114,7 @@ export const useLevelSystem = () => {
 
       spendMoney(towerConfig.cost);
       setSelectedTowerType(null);
-      gameEvents.emit(AudioEvent.TOWER_PLACED, {
+      gameEvents.emit(GameEvent.TOWER_PLACED, {
         towerType,
         gridX,
         gridZ,
@@ -162,15 +164,13 @@ export const useLevelSystem = () => {
       const sellPrice = Math.floor(tower.cost * towerSellPriceMultiplier);
       addMoney(sellPrice);
       removeTower(towerId);
-      gameEvents.emit(AudioEvent.TOWER_SOLD, {
+      gameEvents.emit(GameEvent.TOWER_SOLD, {
         towerId,
         towerType: tower.type,
       });
     },
     [addMoney, removeTower, towers, towerSellPriceMultiplier]
   );
-
-  const enemyUpgrades = useGameStore(enemyUpgradesSelector);
 
   //Enemies
   const addEnemy = useCallback(
@@ -269,7 +269,7 @@ export const useLevelSystem = () => {
           // Enemy health reached 0, remove it and add reward
           const filtered = updated.filter((e) => e.id !== enemyId);
           addMoney(enemyToCheck.reward);
-          gameEvents.emit(AudioEvent.ENEMY_KILLED, {
+          gameEvents.emit(GameEvent.ENEMY_KILLED, {
             enemyId,
             enemyType: enemyToCheck.type,
           });
@@ -291,14 +291,14 @@ export const useLevelSystem = () => {
         // If enemy reached end, lose health
         if (reachedEnd) {
           loseHealth(enemy.healthLoss);
-          gameEvents.emit(AudioEvent.ENEMY_REACHED_END, {
+          gameEvents.emit(GameEvent.ENEMY_REACHED_END, {
             enemyId,
             enemyType: enemy.type,
           });
         } else {
           // Enemy was killed, add reward
           addMoney(enemy.reward);
-          gameEvents.emit(AudioEvent.ENEMY_KILLED, {
+          gameEvents.emit(GameEvent.ENEMY_KILLED, {
             enemyId,
             enemyType: enemy.type,
           });
@@ -354,6 +354,7 @@ export const useLevelSystem = () => {
 
     resetState,
 
+    currentWave,
     isTileOccupiedByBuilding,
     isTileOccupiedByTower,
   };

@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import type { GameStatus } from "../../types/game";
+import type { GameStatus } from "../../core/types/game";
 import { UIButton } from "../ui/UIButton";
 
 type HUDGameOverProps = {

@@ -1,7 +1,7 @@
 type EventCallback<T = unknown> = (data: T) => void;
 
 class EventEmitter {
-  private listeners: Map<string, Set<EventCallback>> = new Map();
+  private readonly listeners: Map<string, Set<EventCallback>> = new Map();
 
   /**
    * Subscribe to an event

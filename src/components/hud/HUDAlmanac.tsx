@@ -19,7 +19,7 @@ import {
   enemyTypesSelector,
   useGameStore,
 } from "../../core/stores/useGameStore";
-import type { EnemyConfig, EnemyType } from "../../types/game";
+import type { EnemyConfig, EnemyType } from "../../core/types/game";
 
 type AlmanacEnemyCardProps = {
   enemyConfig: EnemyConfig;

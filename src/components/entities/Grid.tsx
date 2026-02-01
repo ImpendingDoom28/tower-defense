@@ -2,8 +2,8 @@ import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
 
 import { Tile } from "./Tile";
 import { isGridTileOnPath } from "../../utils/pathUtils";
-import type { TowerType } from "../../types/game";
-import type { TileData } from "../../types/utils";
+import type { TowerType } from "../../core/types/game";
+import type { TileData } from "../../core/types/utils";
 import { useLevelStore } from "../../core/stores/useLevelStore";
 import { useGameStore } from "../../core/stores/useGameStore";
 

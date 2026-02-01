@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import type { Building as BuildingInstance } from "../../types/game";
+import type { Building as BuildingInstance } from "../../core/types/game";
 import { GUIDebugInfo } from "../gui/GUIDebugInfo";
 
 type BuildingProps = {

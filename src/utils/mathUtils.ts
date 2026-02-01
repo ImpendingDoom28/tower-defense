@@ -1,4 +1,4 @@
-import type { Enemy } from "../types/game";
+import type { Enemy } from "../core/types/game";
 
 /**
  * Calculate distance between two 2D points (ignoring Y)

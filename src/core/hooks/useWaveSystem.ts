@@ -6,13 +6,15 @@ import type {
   EnemyUpgradeId,
   WaveEnemyGroup,
   GameStatus,
-} from "../../types/game";
+} from "../types/game";
 import type { GameState } from "./useGameSystem";
 import {
   totalWavesSelector,
   useLevelStore,
   waveConfigsSelector,
   enemiesSelector,
+  setCurrentWaveSelector,
+  currentWaveSelector,
 } from "../stores/useLevelStore";
 import { useGameStore, waveDelaySelector } from "../stores/useGameStore";
 import { useLevelSystem } from "./useLevelSystem";
@@ -20,6 +22,8 @@ import {
   selectedUpgradesSelector,
   useUpgradeStore,
 } from "../stores/useUpgradeStore";
+import { GameEvent } from "../types/enums/events";
+import { gameEvents } from "../../utils/eventEmitter";
 
 type SpawnQueueItem = {
   type: EnemyType;
@@ -60,12 +64,14 @@ const selectWeightedEnemy = (
 };
 
 export const useWaveSystem = (gameState: GameState) => {
-  const { currentWave, startNextWave, winGame, gameStatus } = gameState;
+  const { winGame, gameStatus } = gameState;
   const waveDelay = useGameStore(waveDelaySelector);
 
   const totalWaves = useLevelStore(totalWavesSelector);
   const waveConfigs = useLevelStore(waveConfigsSelector);
   const enemies = useLevelStore(enemiesSelector);
+  const setCurrentWave = useLevelStore(setCurrentWaveSelector);
+  const currentWave = useLevelStore(currentWaveSelector);
   const { addEnemy } = useLevelSystem();
 
   const { timeUntilNextWave, setTimeUntilNextWave } = useWaveStore();
@@ -157,6 +163,35 @@ export const useWaveSystem = (gameState: GameState) => {
 
     return () => clearInterval(interval);
   }, [setTimeUntilNextWave]);
+
+  const startNextWave = useCallback(() => {
+    setCurrentWave((prev) => {
+      const newWave = prev + 1;
+      gameEvents.emit(GameEvent.WAVE_STARTED, { wave: newWave });
+      return newWave;
+    });
+  }, [setCurrentWave]);
+
+  const startFirstWave = useCallback(() => {
+    if (currentWave === 0) {
+      startNextWave();
+    }
+  }, [currentWave, startNextWave]);
+
+  const startNextWaveEarly = useCallback(() => {
+    if (
+      isCountingDownRef.current &&
+      currentWave > 0 &&
+      currentWave < totalWaves
+    ) {
+      isCountingDownRef.current = false;
+      waveEndTimeRef.current = 0;
+      countdownPauseDurationRef.current = 0;
+      lastCountdownPlayingTimeRef.current = 0;
+      timeUntilNextWaveRef.current = null;
+      startNextWave();
+    }
+  }, [currentWave, startNextWave, totalWaves]);
 
   const updateWaveSpawning = useCallback(
     (currentTime: number) => {
@@ -277,31 +312,10 @@ export const useWaveSystem = (gameState: GameState) => {
     ]
   );
 
-  const startFirstWave = useCallback(() => {
-    if (currentWave === 0) {
-      startNextWave();
-    }
-  }, [currentWave, startNextWave]);
-
   const getRemainingEnemiesInWave = useCallback((): number => {
     if (currentWave === 0 || currentWave > totalWaves) return 0;
     return spawnQueueRef.current.length + enemies.length;
   }, [currentWave, enemies.length, totalWaves]);
-
-  const startNextWaveEarly = useCallback(() => {
-    if (
-      isCountingDownRef.current &&
-      currentWave > 0 &&
-      currentWave < totalWaves
-    ) {
-      isCountingDownRef.current = false;
-      waveEndTimeRef.current = 0;
-      countdownPauseDurationRef.current = 0;
-      lastCountdownPlayingTimeRef.current = 0;
-      timeUntilNextWaveRef.current = null;
-      startNextWave();
-    }
-  }, [currentWave, startNextWave, totalWaves]);
 
   return {
     updateWaveSpawning,

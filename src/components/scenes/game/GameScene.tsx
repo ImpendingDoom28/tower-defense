@@ -10,10 +10,10 @@ import type {
   TowerType,
   GameStatus,
   ActiveEffect,
-} from "../../../types/game";
+} from "../../../core/types/game";
 import { WaveLoopSystem } from "../../systems/WaveLoopSystem";
 import { WaveSystem } from "../../../core/hooks/useWaveSystem";
-import { TileData } from "../../../types/utils";
+import { TileData } from "../../../core/types/utils";
 import { EntitiesSystem } from "../../systems/EntitiesSystem";
 import { LevelSystem } from "../../systems/LevelSystem";
 import {

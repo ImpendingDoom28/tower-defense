@@ -15,8 +15,8 @@ import type {
   Projectile as ProjectileInstance,
   TowerType,
   ActiveEffect,
-} from "../../types/game";
-import type { TileData } from "../../types/utils";
+} from "../../core/types/game";
+import type { TileData } from "../../core/types/utils";
 import { Effect } from "../entities/Effect";
 import { useInstancedProjectiles } from "../../core/hooks/useInstancedProjectiles";
 

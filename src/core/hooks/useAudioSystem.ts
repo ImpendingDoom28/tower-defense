@@ -1,12 +1,12 @@
 import { useEffect, useRef, useCallback } from "react";
 import { gameEvents } from "../../utils/eventEmitter";
 import {
-  AudioEvent,
   AudioCategory,
   SOUND_CONFIGS,
   getPlaceholderSoundForEvent,
   AudioEventData,
 } from "../audioConfig";
+import { GameEvent } from "../types/enums/events";
 import { MAX_VOLUME, MIN_VOLUME, useAudioStore } from "../stores/useAudioStore";
 
 type SoundPool = {
@@ -23,7 +23,7 @@ type PlayingSound = {
 
 export const useAudioSystem = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
-  const soundPoolsRef = useRef<Map<AudioEvent, SoundPool>>(new Map());
+  const soundPoolsRef = useRef<Map<GameEvent, SoundPool>>(new Map());
   const playingSoundsRef = useRef<Map<number, PlayingSound>>(new Map());
   const soundIdCounterRef = useRef<number>(0);
   const isActivatedRef = useRef<boolean>(false);
@@ -108,8 +108,8 @@ export const useAudioSystem = () => {
 
   // Create audio buffer for an event
   const createSoundBuffer = useCallback(
-    async <T extends AudioEventData<AudioEvent>>(
-      event: AudioEvent,
+    async <T extends AudioEventData<GameEvent>>(
+      event: GameEvent,
       data?: T
     ): Promise<AudioBuffer | null> => {
       const audioContext = audioContextRef.current;
@@ -150,10 +150,7 @@ export const useAudioSystem = () => {
 
   // Play a sound
   const playSound = useCallback(
-    async <T extends AudioEventData<AudioEvent>>(
-      event: AudioEvent,
-      data?: T
-    ) => {
+    async <T extends AudioEventData<GameEvent>>(event: GameEvent, data?: T) => {
       const audioContext = audioContextRef.current;
       if (!audioContext || !isActivatedRef.current) return;
 
@@ -232,8 +229,8 @@ export const useAudioSystem = () => {
     const unsubscribers: (() => void)[] = [];
 
     // Subscribe to all audio events
-    Object.values(AudioEvent).forEach((event) => {
-      const unsubscribe = gameEvents.on<AudioEventData<AudioEvent>>(
+    Object.values(GameEvent).forEach((event) => {
+      const unsubscribe = gameEvents.on<AudioEventData<GameEvent>>(
         event,
         (data) => {
           playSound(event, data);

@@ -1,22 +1,5 @@
-import { TowerType } from "../types/game";
-
-/**
- * Game audio events that can trigger sounds
- */
-export enum AudioEvent {
-  TOWER_PLACED = "tower_placed",
-  TOWER_SOLD = "tower_sold",
-  TOWER_FIRE = "tower_fire",
-  ENEMY_KILLED = "enemy_killed",
-  ENEMY_REACHED_END = "enemy_reached_end",
-  PROJECTILE_HIT = "projectile_hit",
-  WAVE_STARTED = "wave_started",
-  GAME_OVER = "game_over",
-  GAME_WON = "game_won",
-  GAME_PAUSED = "game_paused",
-  GAME_RESUMED = "game_resumed",
-  UI_CLICK = "ui_click",
-}
+import { GameEvent } from "./types/enums/events";
+import { TowerType } from "./types/game";
 
 /**
  * Audio categories for volume control
@@ -42,16 +25,16 @@ export type SoundConfig = {
 /**
  * Event to sound configuration mapping
  */
-export const SOUND_CONFIGS: Record<AudioEvent, SoundConfig> = {
-  [AudioEvent.TOWER_PLACED]: {
+export const SOUND_CONFIGS: Record<GameEvent, SoundConfig> = {
+  [GameEvent.TOWER_PLACED]: {
     category: AudioCategory.SFX,
     volume: 70,
   },
-  [AudioEvent.TOWER_SOLD]: {
+  [GameEvent.TOWER_SOLD]: {
     category: AudioCategory.SFX,
     volume: 60,
   },
-  [AudioEvent.TOWER_FIRE]: {
+  [GameEvent.TOWER_FIRE]: {
     category: AudioCategory.SFX,
     volume: 50,
     srces: {
@@ -59,88 +42,88 @@ export const SOUND_CONFIGS: Record<AudioEvent, SoundConfig> = {
       basic: "/assets/audio/basic-shot.mp3",
     },
   },
-  [AudioEvent.ENEMY_KILLED]: {
+  [GameEvent.ENEMY_KILLED]: {
     category: AudioCategory.SFX,
     volume: 60,
   },
-  [AudioEvent.ENEMY_REACHED_END]: {
+  [GameEvent.ENEMY_REACHED_END]: {
     category: AudioCategory.SFX,
     volume: 80,
   },
-  [AudioEvent.PROJECTILE_HIT]: {
+  [GameEvent.PROJECTILE_HIT]: {
     category: AudioCategory.SFX,
     volume: 40,
   },
-  [AudioEvent.WAVE_STARTED]: {
+  [GameEvent.WAVE_STARTED]: {
     category: AudioCategory.SFX,
     volume: 90,
   },
-  [AudioEvent.GAME_OVER]: {
+  [GameEvent.GAME_OVER]: {
     category: AudioCategory.SFX,
     volume: 100,
   },
-  [AudioEvent.GAME_WON]: {
+  [GameEvent.GAME_WON]: {
     category: AudioCategory.SFX,
     volume: 100,
   },
-  [AudioEvent.GAME_PAUSED]: {
+  [GameEvent.GAME_PAUSED]: {
     category: AudioCategory.SFX,
     volume: 50,
   },
-  [AudioEvent.GAME_RESUMED]: {
+  [GameEvent.GAME_RESUMED]: {
     category: AudioCategory.SFX,
     volume: 30,
   },
-  [AudioEvent.UI_CLICK]: {
+  [GameEvent.UI_CLICK]: {
     category: AudioCategory.SFX,
     volume: 30,
   },
 };
 
 export type AudioEventDataMap = {
-  [AudioEvent.TOWER_FIRE]: {
+  [GameEvent.TOWER_FIRE]: {
     towerId: number;
     towerType: TowerType;
   };
-  [AudioEvent.ENEMY_KILLED]: {
+  [GameEvent.ENEMY_KILLED]: {
     enemyId: number;
   };
-  [AudioEvent.ENEMY_REACHED_END]: {
+  [GameEvent.ENEMY_REACHED_END]: {
     enemyId: number;
   };
-  [AudioEvent.PROJECTILE_HIT]: {
+  [GameEvent.PROJECTILE_HIT]: {
     projectileId: number;
     enemyId: number;
   };
-  [AudioEvent.WAVE_STARTED]: {
+  [GameEvent.WAVE_STARTED]: {
     waveNumber: number;
   };
-  [AudioEvent.GAME_OVER]: {
+  [GameEvent.GAME_OVER]: {
     gameOverType: "loss" | "win";
   };
-  [AudioEvent.GAME_PAUSED]: {
+  [GameEvent.GAME_PAUSED]: {
     gamePausedType: "pause" | "resume";
   };
-  [AudioEvent.UI_CLICK]: {
+  [GameEvent.UI_CLICK]: {
     uiClickType: "click" | "hover" | "select";
   };
-  [AudioEvent.GAME_RESUMED]: {
+  [GameEvent.GAME_RESUMED]: {
     gameResumedType: "resume";
   };
-  [AudioEvent.GAME_WON]: {
+  [GameEvent.GAME_WON]: {
     gameWonType: "win";
   };
-  [AudioEvent.TOWER_PLACED]: {
+  [GameEvent.TOWER_PLACED]: {
     towerId: number;
     towerType: TowerType;
   };
-  [AudioEvent.TOWER_SOLD]: {
+  [GameEvent.TOWER_SOLD]: {
     towerId: number;
     towerType: TowerType;
   };
 };
 
-export type AudioEventData<T extends AudioEvent> = AudioEventDataMap[T];
+export type AudioEventData<T extends GameEvent> = AudioEventDataMap[T];
 
 /**
  * Generate a placeholder sound using Web Audio API
@@ -201,7 +184,7 @@ export function generatePlaceholderSound(
 
 const soundCache: Record<string, AudioBuffer> = {};
 export async function getAudioBufferByEvent(
-  event: AudioEvent,
+  event: GameEvent,
   audioContext: AudioContext,
   soundName: string
 ): Promise<AudioBuffer | null> {
@@ -221,18 +204,18 @@ export async function getAudioBufferByEvent(
 /**
  * Generate placeholder sounds for different events
  */
-export async function getPlaceholderSoundForEvent<T extends AudioEvent>(
+export async function getPlaceholderSoundForEvent<T extends GameEvent>(
   audioContext: AudioContext,
   event: T,
   eventData?: AudioEventData<T>
 ): Promise<AudioBuffer> {
   switch (event) {
-    case AudioEvent.TOWER_PLACED:
+    case GameEvent.TOWER_PLACED:
       return generatePlaceholderSound(audioContext, "click", 0.15, 600);
-    case AudioEvent.TOWER_SOLD:
+    case GameEvent.TOWER_SOLD:
       return generatePlaceholderSound(audioContext, "click", 0.1, 400);
-    case AudioEvent.TOWER_FIRE: {
-      const data = eventData as AudioEventData<AudioEvent.TOWER_FIRE>;
+    case GameEvent.TOWER_FIRE: {
+      const data = eventData as AudioEventData<GameEvent.TOWER_FIRE>;
 
       const audioBuffer = await getAudioBufferByEvent(
         event,
@@ -244,23 +227,23 @@ export async function getPlaceholderSoundForEvent<T extends AudioEvent>(
 
       return audioBuffer;
     }
-    case AudioEvent.ENEMY_KILLED:
+    case GameEvent.ENEMY_KILLED:
       return generatePlaceholderSound(audioContext, "tone", 0.2, 300);
-    case AudioEvent.ENEMY_REACHED_END:
+    case GameEvent.ENEMY_REACHED_END:
       return generatePlaceholderSound(audioContext, "tone", 0.3, 200);
-    case AudioEvent.PROJECTILE_HIT:
+    case GameEvent.PROJECTILE_HIT:
       return generatePlaceholderSound(audioContext, "click", 0.08, 1000);
-    case AudioEvent.WAVE_STARTED:
+    case GameEvent.WAVE_STARTED:
       return generatePlaceholderSound(audioContext, "whoosh", 0.5, 200);
-    case AudioEvent.GAME_OVER:
+    case GameEvent.GAME_OVER:
       return generatePlaceholderSound(audioContext, "tone", 0.5, 150);
-    case AudioEvent.GAME_WON:
+    case GameEvent.GAME_WON:
       return generatePlaceholderSound(audioContext, "tone", 0.6, 400);
-    case AudioEvent.GAME_PAUSED:
+    case GameEvent.GAME_PAUSED:
       return generatePlaceholderSound(audioContext, "click", 0.1, 500);
-    case AudioEvent.GAME_RESUMED:
+    case GameEvent.GAME_RESUMED:
       return generatePlaceholderSound(audioContext, "click", 0.1, 600);
-    case AudioEvent.UI_CLICK:
+    case GameEvent.UI_CLICK:
       return generatePlaceholderSound(audioContext, "click", 0.05, 1000);
     default:
       return generatePlaceholderSound(audioContext, "tone", 0.1, 440);

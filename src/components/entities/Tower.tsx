@@ -3,9 +3,9 @@ import type { ThreeEvent } from "@react-three/fiber";
 import type { Group } from "three";
 import { CylinderGeometry, MeshStandardMaterial } from "three";
 
-import type { Tower as TowerInstance } from "../../types/game";
+import type { Tower as TowerInstance } from "../../core/types/game";
 import { GUIDebugInfo } from "../gui/GUIDebugInfo";
-import { Vector3D } from "../../types/utils";
+import { Vector3D } from "../../core/types/utils";
 import { useGameStore } from "../../core/stores/useGameStore";
 
 // Shared base material (gray color for all tower bases)
