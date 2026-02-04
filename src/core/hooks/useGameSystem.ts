@@ -28,6 +28,18 @@ export const useGameSystem = () => {
     resetGameState,
     initializeGameState,
   } = useGameStore();
+
+  const getNextEffectId = useNextId();
+
+  const previousGameStatusRef = useRef<GameStatus>(gameStatus);
+
+  const shouldDisableControls =
+    gameStatus === "gameOver" ||
+    gameStatus === "won" ||
+    gameStatus === "gameMenu";
+  const shouldStopMovement = shouldDisableControls || gameStatus === "paused";
+
+  // Load game config
   useEffect(() => {
     if (isInitialized) return;
 
@@ -38,11 +50,6 @@ export const useGameSystem = () => {
 
     loadConfig();
   }, [isInitialized, initializeGameState]);
-
-  const getNextEffectId = useNextId();
-
-  const previousStatusRef = useRef<GameStatus | null>(previousStatus);
-  const previousGameStatusRef = useRef<GameStatus>(gameStatus);
 
   // Emit game over event when health reaches 0
   useEffect(() => {
@@ -55,12 +62,6 @@ export const useGameSystem = () => {
     }
     previousGameStatusRef.current = gameStatus;
   }, [health, gameStatus]);
-
-  const shouldDisableControls =
-    gameStatus === "gameOver" ||
-    gameStatus === "won" ||
-    gameStatus === "gameMenu";
-  const shouldStopMovement = shouldDisableControls || gameStatus === "paused";
 
   const winGame = useCallback(() => {
     setGameStatus("won");
@@ -88,14 +89,13 @@ export const useGameSystem = () => {
   }, [resetGameState, setGameStatus]);
 
   const openGameMenu = useCallback(() => {
-    previousStatusRef.current = gameStatus;
     setPreviousStatus(gameStatus);
     setGameStatus("gameMenu");
   }, [gameStatus, setGameStatus, setPreviousStatus]);
 
   const closeGameMenu = useCallback(() => {
-    if (previousStatusRef.current) setGameStatus(previousStatusRef.current);
-  }, [setGameStatus]);
+    setGameStatus(previousStatus ?? "playing");
+  }, [setGameStatus, previousStatus]);
 
   const toggleDebug = useCallback(() => {
     setDebug(!debug);
