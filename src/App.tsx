@@ -54,7 +54,12 @@ export const App: FC = () => {
     debug,
   } = gameSystem;
 
-  const { placeTower, sellTower, currentWave } = levelSystem;
+  const {
+    placeTower,
+    sellTower,
+    currentWave,
+    resetState: resetLevelState,
+  } = levelSystem;
 
   const { onEnemyReachEnd, onEnemyUpdate } = enemySystem;
 
@@ -100,6 +105,16 @@ export const App: FC = () => {
   const onDeselectTower = useCallback(() => {
     setSelectedTowerType(null);
   }, [setSelectedTowerType]);
+
+  const onRestart = useCallback(() => {
+    startGame();
+    resetLevelState();
+  }, [startGame, resetLevelState]);
+
+  const onGoToMainMenu = useCallback(() => {
+    goToMainMenu();
+    resetLevelState();
+  }, [goToMainMenu, resetLevelState]);
 
   const remainingEnemies = getRemainingEnemiesInWave();
   const isMenu = gameStatus === "menu";
@@ -191,16 +206,16 @@ export const App: FC = () => {
           <HUDGameMenu
             gameStatus={gameStatus}
             onResume={closeGameMenu}
-            onRestart={startGame}
-            onGoToMainMenu={goToMainMenu}
+            onRestart={onRestart}
+            onGoToMainMenu={onGoToMainMenu}
           />
 
           <HUDGameOver
             gameStatus={gameStatus}
             currentWave={currentWave}
             money={money}
-            onRestart={startGame}
-            onGoToMainMenu={goToMainMenu}
+            onRestart={onRestart}
+            onGoToMainMenu={onGoToMainMenu}
           />
         </>
       )}
