@@ -9,7 +9,6 @@ import { GameEvent } from "../types/enums/events";
 
 export const useGameSystem = () => {
   const {
-    money,
     health,
     activeEffects,
     gameStatus,
@@ -135,7 +134,6 @@ export const useGameSystem = () => {
 
   return {
     // State
-    money,
     health,
     gameStatus,
     selectedTowerType,

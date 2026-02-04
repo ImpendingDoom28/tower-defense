@@ -124,6 +124,7 @@
     ]
   ],
   "projectiles": [],
+  "startingMoney": 10000,
   "towers": [
     {
       "gridX": -3,

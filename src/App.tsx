@@ -35,7 +35,6 @@ export const App: FC = () => {
   useAudioSystem();
 
   const {
-    money,
     health,
     shouldDisableControls,
     gameStatus,
@@ -55,6 +54,7 @@ export const App: FC = () => {
   } = gameSystem;
 
   const {
+    money,
     placeTower,
     sellTower,
     currentWave,

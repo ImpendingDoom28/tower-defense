@@ -20,6 +20,7 @@ type LevelStoreState = {
   waveConfigs: WaveConfig[];
   buildings: Building[];
   enemyWeights: Record<EnemyType, number> | null;
+  money: number;
 
   // Calculated in game
   currentWave: number;
@@ -31,6 +32,8 @@ type LevelStoreState = {
 };
 
 type LevelStoreActions = {
+  addMoney: (amount: number) => void;
+  spendMoney: (amount: number) => void;
   setGridSize: (gridSize: number, tileSize: number) => void;
   setPathWaypoints: (pathWaypoints: PathWaypoint[][]) => void;
   setCurrentWave: (wave: number | ((prev: number) => number)) => void;
@@ -50,12 +53,13 @@ type LevelStoreActions = {
 type LevelStore = LevelStoreState & LevelStoreActions;
 
 const DEFAULT_STATE: LevelStoreState = {
+  money: 0,
   currentWave: 0,
   gridOffset: 0,
   gridSize: 0,
+  totalWaves: 0,
   enemyWeights: null,
   pathWaypoints: [],
-  totalWaves: 0,
   waveConfigs: [],
   buildings: [],
   towers: [],
@@ -96,6 +100,7 @@ export const useLevelStore = create<LevelStore>((set) => ({
     }));
 
     set({
+      money: levelData.startingMoney,
       gridSize: levelData.gridSize,
       pathWaypoints: levelData.pathWaypoints,
       totalWaves: levelData.waveConfigs.length,
@@ -107,6 +112,19 @@ export const useLevelStore = create<LevelStore>((set) => ({
       enemyWeights: levelData.enemyWeights as Record<EnemyType, number>,
       gridOffset: gridOffset,
       isInitialized: true,
+    });
+  },
+
+  addMoney: (amount: number) => {
+    set((state) => ({ money: state.money + amount }));
+  },
+
+  spendMoney: (amount: number) => {
+    set((state) => {
+      if (state.money >= amount) {
+        return { money: state.money - amount };
+      }
+      return state;
     });
   },
 

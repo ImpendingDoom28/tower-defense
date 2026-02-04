@@ -53,6 +53,13 @@ const towerSchema = z.object({
   z: z.number(),
 });
 
+const enemyUpgradeIdSchema = z.enum([
+  "armored",
+  "swift",
+  "slowImmune",
+  "regenerating",
+]);
+
 const enemySchema: z.ZodType<Enemy> = z.object({
   id: z.number(),
   type: enemyTypeSchema,
@@ -70,6 +77,7 @@ const enemySchema: z.ZodType<Enemy> = z.object({
   slowMultiplier: z.number(),
   x: z.number(),
   z: z.number(),
+  upgrades: z.array(enemyUpgradeIdSchema),
 });
 
 const projectileSchema: z.ZodType<Projectile> = z.object({
@@ -98,6 +106,7 @@ const projectileSchema: z.ZodType<Projectile> = z.object({
 export type LevelConfigFiles = "level_main" | "level_1" | "level_2";
 
 export const levelConfigSchema = z.object({
+  startingMoney: z.number(),
   gridSize: z.number(),
   pathWaypoints: z.array(z.array(pathWaypointSchema)),
   waveConfigs: z.array(waveConfigSchema),
