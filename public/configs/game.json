@@ -81,7 +81,6 @@
   "pathYOffset": 0.05,
   "projectileSize": 0.1,
   "startingHealth": 20,
-  "startingMoney": 10000,
   "tileSize": 1,
   "towerBaseRadius": 0.3,
   "towerHeight": 1.2,

@@ -6,9 +6,12 @@ import { UITypography } from "../ui/UITypography";
 import { HUDAudioControls } from "./HUDAudioControls";
 import {
   setShowAudioSettingsSelector,
+  showAudioSettingsSelector,
   useGameStore,
 } from "../../core/stores/useGameStore";
 import { HUDWrapper } from "./HUDWrapper";
+import { UICard, UICardContent, UICardHeader, UICardTitle } from "../ui/UICard";
+import { cn } from "../ui/lib/twUtils";
 
 type HUDGameMenuProps = {
   gameStatus: GameStatus;
@@ -24,32 +27,38 @@ export const HUDGameMenu: FC<HUDGameMenuProps> = ({
   onGoToMainMenu,
 }) => {
   const setShowAudioSettings = useGameStore(setShowAudioSettingsSelector);
+  const showAudioSettings = useGameStore(showAudioSettingsSelector);
 
   if (gameStatus !== "gameMenu") return null;
 
   return (
     <HUDWrapper className="items-center justify-center bg-black bg-opacity-75">
-      <div className="w-full max-w-md p-8 mx-4 bg-gray-800 rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-        <UITypography variant="h1" className="mb-8 text-center">
-          Game Menu
-        </UITypography>
-
-        <div className="flex flex-col gap-3">
-          <UIButton onClick={onResume}>Resume</UIButton>
-          <UIButton onClick={onRestart}>Restart</UIButton>
-          <UIButton
-            onClick={() => setShowAudioSettings(true)}
-            variant="outline"
-          >
-            Audio Settings
-          </UIButton>
-          <UIButton onClick={onGoToMainMenu} variant={"secondary"}>
-            Go to Main Menu
-          </UIButton>
-        </div>
-
-        <HUDAudioControls />
-      </div>
+      <UICard className="w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <UICardHeader>
+          <UICardTitle>
+            <UITypography variant="h2">Game Menu</UITypography>
+          </UICardTitle>
+        </UICardHeader>
+        <UICardContent className={cn("gap-3", showAudioSettings ? "p-0" : "")}>
+          {showAudioSettings ? (
+            <HUDAudioControls className="ring-0" />
+          ) : (
+            <>
+              <UIButton onClick={onResume}>Resume</UIButton>
+              <UIButton onClick={onRestart}>Restart</UIButton>
+              <UIButton
+                onClick={() => setShowAudioSettings(true)}
+                variant="outline"
+              >
+                Audio Settings
+              </UIButton>
+              <UIButton onClick={onGoToMainMenu} variant={"secondary"}>
+                Go to Main Menu
+              </UIButton>
+            </>
+          )}
+        </UICardContent>
+      </UICard>
     </HUDWrapper>
   );
 };

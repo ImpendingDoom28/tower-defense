@@ -29,14 +29,14 @@ export const useLevelSystem = () => {
     setProjectiles,
     pathWaypoints,
     currentWave,
+    money,
+    spendMoney,
+    addMoney,
   } = useLevelStore();
   const {
     towerTypes,
     enemyTypes,
-    money,
     tileSize,
-    spendMoney,
-    addMoney,
     loseHealth,
     setSelectedTower,
     setSelectedTowerType,
@@ -354,6 +354,7 @@ export const useLevelSystem = () => {
 
     resetState,
 
+    money,
     currentWave,
     isTileOccupiedByBuilding,
     isTileOccupiedByTower,

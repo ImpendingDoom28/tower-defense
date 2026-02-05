@@ -14,7 +14,6 @@ import type {
 import { GameConfigData } from "../../core/gameConfig";
 
 type GameStoreState = {
-  money: number;
   enemyHealthLoss: number;
   health: number;
   activeEffects: ActiveEffect[];
@@ -43,8 +42,6 @@ type GameStoreState = {
 type GameStoreActions = {
   setShowAudioSettings: (show: boolean) => void;
   initializeGameState: (config: GameConfigData) => void;
-  addMoney: (amount: number) => void;
-  spendMoney: (amount: number) => void;
   loseHealth: (amount: number) => void;
   setActiveEffects: (
     effects: ActiveEffect[] | ((prev: ActiveEffect[]) => ActiveEffect[])
@@ -66,7 +63,6 @@ const DEFAULT_STATE: GameStoreState = {
   activeEffects: [],
   selectedTowerType: null,
   selectedTower: null,
-  money: 0,
   health: 0,
 
   isInitialized: false,
@@ -90,7 +86,6 @@ export const useGameStore = create<GameStore>((set) => ({
 
   initializeGameState: (config: GameConfigData) => {
     const {
-      startingMoney,
       startingHealth,
       tileSize,
       enemyHealthLoss,
@@ -107,7 +102,6 @@ export const useGameStore = create<GameStore>((set) => ({
     } = config;
 
     set({
-      money: startingMoney,
       health: startingHealth,
       tileSize,
       towerBaseRadius,
@@ -130,19 +124,6 @@ export const useGameStore = create<GameStore>((set) => ({
 
   setShowAudioSettings: (show: boolean) => {
     set({ showAudioSettings: show });
-  },
-
-  addMoney: (amount: number) => {
-    set((state) => ({ money: state.money + amount }));
-  },
-
-  spendMoney: (amount: number) => {
-    set((state) => {
-      if (state.money >= amount) {
-        return { money: state.money - amount };
-      }
-      return state;
-    });
   },
 
   loseHealth: (amount: number) => {
