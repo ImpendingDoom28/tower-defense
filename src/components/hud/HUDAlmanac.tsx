@@ -5,11 +5,11 @@ import { UIButton } from "../ui/UIButton";
 import { UITypography } from "../ui/UITypography";
 import {
   UICard,
+  UICardAction,
   UICardContent,
+  UICardDescription,
   UICardHeader,
   UICardTitle,
-  UICardDescription,
-  UICardAction,
 } from "../ui/UICard";
 import {
   useAlmanacStore,
@@ -154,59 +154,59 @@ export const HUDAlmanac: FC<HUDAlmanacProps> = ({ onBack }) => {
   const totalCount = enemyEntries.length;
 
   return (
-    <div className="absolute inset-0 z-50 flex">
-      <UICard className="relative z-10 flex flex-col w-full h-full max-w-2xl p-8 ml-auto overflow-y-auto shadow-2xl bg-card">
-        <UICardHeader>
-          <UICardTitle>
-            <UIButton onClick={onBack} variant="ghost" size="icon">
-              <ArrowLeft />
-            </UIButton>
-            <UITypography variant="h2">Enemy Almanac</UITypography>
-          </UICardTitle>
-          <UICardDescription>
-            <UITypography variant="small" className="text-muted-foreground">
-              Discover enemies by encountering them in battle
-            </UITypography>
-          </UICardDescription>
-        </UICardHeader>
-        <UICardContent className="gap-4">
-          {/* Progress bar */}
-          <div>
-            <div className="h-2 overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full transition-all duration-500 bg-primary"
-                style={{
-                  width: `${totalCount > 0 ? (discoveryCount / totalCount) * 100 : 0}%`,
-                }}
-              />
-            </div>
-            <UITypography variant="small" className="w-full py-1 text-end">
-              {discoveryCount} / {totalCount} discovered
+    <UICard className="flex flex-col w-full h-full overflow-y-auto bg-card">
+      <UICardHeader>
+        <UICardTitle>
+          <UIButton onClick={onBack} variant="ghost" size="icon">
+            <ArrowLeft />
+          </UIButton>
+          <UITypography variant="h2">Enemy Almanac</UITypography>
+        </UICardTitle>
+        <UICardDescription>
+          <UITypography variant="small" className="text-muted-foreground">
+            Discover enemies by encountering them in battle
+          </UITypography>
+        </UICardDescription>
+      </UICardHeader>
+      <UICardContent className="gap-4">
+        {/* Progress bar */}
+        <div>
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full transition-all duration-500 bg-primary"
+              style={{
+                width: `${
+                  totalCount > 0 ? (discoveryCount / totalCount) * 100 : 0
+                }%`,
+              }}
+            />
+          </div>
+          <UITypography variant="small" className="w-full py-1 text-end">
+            {discoveryCount} / {totalCount} discovered
+          </UITypography>
+        </div>
+
+        {/* Enemy Grid */}
+        <div className="grid grid-cols-1 gap-4">
+          {enemyEntries.map(([type, config]) => (
+            <AlmanacEnemyCard
+              key={type}
+              enemyConfig={config}
+              isDiscovered={discoveredEnemies.includes(type)}
+            />
+          ))}
+        </div>
+
+        {/* Empty state */}
+        {enemyEntries.length === 0 && (
+          <div className="flex flex-col items-center justify-center flex-1 py-12 text-center">
+            <UITypography variant="body" className="text-muted-foreground">
+              No enemy data available. Start a game to load enemy
+              configurations.
             </UITypography>
           </div>
-
-          {/* Enemy Grid */}
-          <div className="grid grid-cols-1 gap-4">
-            {enemyEntries.map(([type, config]) => (
-              <AlmanacEnemyCard
-                key={type}
-                enemyConfig={config}
-                isDiscovered={discoveredEnemies.includes(type)}
-              />
-            ))}
-          </div>
-
-          {/* Empty state */}
-          {enemyEntries.length === 0 && (
-            <div className="flex flex-col items-center justify-center flex-1 py-12 text-center">
-              <UITypography variant="body" className="text-muted-foreground">
-                No enemy data available. Start a game to load enemy
-                configurations.
-              </UITypography>
-            </div>
-          )}
-        </UICardContent>
-      </UICard>
-    </div>
+        )}
+      </UICardContent>
+    </UICard>
   );
 };

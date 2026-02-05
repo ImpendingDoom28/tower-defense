@@ -1,6 +1,9 @@
-import React, { useMemo, FC } from "react";
-import { cn } from "./lib/twUtils";
+import type { FC, ReactNode } from "react";
+
+import React, { useMemo } from "react";
 import { cva } from "class-variance-authority";
+
+import { cn } from "./lib/twUtils";
 
 const typographyVariants = cva(
   "focus-visible:ring-1 aria-invalid:ring-1 transition-all disabled:pointer-events-none disabled:opacity-50 shrink-0 outline-none group/typography",
@@ -32,22 +35,25 @@ const typographyVariants = cva(
   }
 );
 
+type UITypographyVariant =
+  | "h1"
+  | "h2"
+  | "h3"
+  | "h4"
+  | "subHeadline"
+  | "body"
+  | "medium"
+  | "small"
+  | "verySmall"
+  | "buttons1"
+  | "buttons2"
+  | "buttons3";
+
 export type UITypographyProps = {
-  children: React.ReactNode;
-  variant:
-    | "h1"
-    | "h2"
-    | "h3"
-    | "h4"
-    | "subHeadline"
-    | "body"
-    | "medium"
-    | "small"
-    | "verySmall"
-    | "buttons1"
-    | "buttons2"
-    | "buttons3";
+  children: ReactNode;
+  variant?: UITypographyVariant;
   className?: string;
+  whiteSpace?: "nowrap" | "normal";
   /**
    * Use this property if you want to render
    * a specific element of html
@@ -66,12 +72,13 @@ export type UITypographyProps = {
 
 export const UITypography: FC<UITypographyProps> = ({
   children,
-  variant,
+  variant = "body",
   as,
   className,
+  whiteSpace = "normal",
   ...props
 }) => {
-  const classNames = cn(typographyVariants({ variant, className }));
+  const classNames = cn(typographyVariants({ variant, whiteSpace }), className);
 
   const renderVariant = useMemo(() => {
     if (as) return as;

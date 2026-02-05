@@ -148,3 +148,12 @@ fireProjectile({
 ```
 
 Enjoy the game!
+
+## UI & HUD Architecture
+
+- **UI primitives**: Reusable components under `src/components/ui` (`UIButton`, `UICard`, `UISlider`, `UITypography`, `UIMoney`) provide a consistent design system (variants, sizes, spacing) and are used across all HUD screens for buttons, cards, text, sliders, and money display.
+- **HUD layout**: HUD screens use structured wrappers in `src/components/hud`:
+  - `HUDWrapper` as the root HUD overlay container on top of the 3D canvas.
+  - `HUDOverlay` for centered modal-style overlays (game menu, game over).
+  - `HUDSidePanel` for right-side panels (main menu, enemy almanac) with responsive widths and scrollable content.
+- **Best practices**: Prefer these primitives and layout components when adding new HUD elements to keep visuals consistent, responsive, and easy to extend.

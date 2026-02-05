@@ -2,6 +2,7 @@ import { FC } from "react";
 
 import type { GameStatus } from "../../core/types/game";
 import { UIButton } from "../ui/UIButton";
+import { UICard, UICardContent, UICardHeader, UICardTitle } from "../ui/UICard";
 import { UITypography } from "../ui/UITypography";
 import { HUDAudioControls } from "./HUDAudioControls";
 import {
@@ -9,8 +10,7 @@ import {
   showAudioSettingsSelector,
   useGameStore,
 } from "../../core/stores/useGameStore";
-import { HUDWrapper } from "./HUDWrapper";
-import { UICard, UICardContent, UICardHeader, UICardTitle } from "../ui/UICard";
+import { HUDOverlay } from "./HUDOverlay";
 import { cn } from "../ui/lib/twUtils";
 
 type HUDGameMenuProps = {
@@ -32,11 +32,13 @@ export const HUDGameMenu: FC<HUDGameMenuProps> = ({
   if (gameStatus !== "gameMenu") return null;
 
   return (
-    <HUDWrapper className="items-center justify-center bg-black bg-opacity-75">
-      <UICard className="w-full max-w-md max-h-[90vh] overflow-y-auto">
+    <HUDOverlay>
+      <UICard className="max-h-[90vh] overflow-y-auto">
         <UICardHeader>
-          <UICardTitle>
-            <UITypography variant="h2">Game Menu</UITypography>
+          <UICardTitle className="justify-center">
+            <UITypography variant="h2" className="text-center">
+              Game Menu
+            </UITypography>
           </UICardTitle>
         </UICardHeader>
         <UICardContent className={cn("gap-3", showAudioSettings ? "p-0" : "")}>
@@ -59,6 +61,6 @@ export const HUDGameMenu: FC<HUDGameMenuProps> = ({
           )}
         </UICardContent>
       </UICard>
-    </HUDWrapper>
+    </HUDOverlay>
   );
 };

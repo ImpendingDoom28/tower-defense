@@ -1,20 +1,36 @@
+import type { FC } from "react";
+
 import { DollarSign } from "lucide-react";
-import { UITypography, UITypographyProps } from "./UITypography";
-import { FC } from "react";
+
+import { UITypography, type UITypographyProps } from "./UITypography";
+import { cn } from "./lib/twUtils";
 
 type UIMoneyProps = {
-  variant: UITypographyProps["variant"];
   money: number;
-  size: number;
+  variant?: UITypographyProps["variant"];
+  /**
+   * @deprecated Use iconSize instead.
+   */
+  size?: number;
+  iconSize?: number;
+  className?: string;
 };
 
-export const UIMoney: FC<UIMoneyProps> = ({ money, size, variant }) => {
+export const UIMoney: FC<UIMoneyProps> = ({
+  money,
+  variant = "medium",
+  size,
+  iconSize,
+  className,
+}) => {
+  const resolvedIconSize = iconSize ?? size ?? 16;
+
   return (
     <UITypography
       variant={variant}
-      className="flex items-center text-green-400"
+      className={cn("flex items-center text-green-400", className)}
     >
-      <DollarSign size={size} /> {money}
+      <DollarSign size={resolvedIconSize} className="mr-1" /> {money}
     </UITypography>
   );
 };

@@ -1,6 +1,7 @@
-import { ComponentProps, FC } from "react";
+import type { ComponentProps, FC, MouseEvent } from "react";
+
 import { cva, type VariantProps } from "class-variance-authority";
-import { Slot } from "radix-ui";
+import { Slot } from "@radix-ui/react-slot";
 
 import { cn } from "./lib/twUtils";
 import { gameEvents } from "../../utils/eventEmitter";
@@ -54,11 +55,11 @@ export const UIButton: FC<UIButtonProps> = ({
   onClick,
   ...props
 }) => {
-  const Comp = asChild ? Slot.Root : "button";
+  const Comp = asChild ? Slot : "button";
 
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const onButtonClick = (event: MouseEvent<HTMLButtonElement>) => {
     gameEvents.emit(GameEvent.UI_CLICK);
-    onClick?.(e);
+    onClick?.(event);
   };
 
   return (
@@ -67,7 +68,7 @@ export const UIButton: FC<UIButtonProps> = ({
       data-variant={variant}
       data-size={size}
       className={cn(buttonVariants({ variant, size, className }))}
-      onClick={handleClick}
+      onClick={onButtonClick}
       {...props}
     />
   );
