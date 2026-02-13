@@ -15,7 +15,7 @@ export const LevelSystem: FC<{ levelName?: LevelConfigFiles }> = ({
     useLevelStore();
 
   useEffect(() => {
-    if (!levelName || isInitialized) return;
+    if (!levelName || isInitialized || tileSize <= 0) return;
 
     const loadLevelData = async () => {
       const levelData = await loadLevelConfigFile(levelName);

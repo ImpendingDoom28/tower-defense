@@ -32,7 +32,7 @@ type GameStoreState = {
   enemyUpgrades: Record<EnemyUpgradeId, EnemyUpgradeConfig> | null;
   projectileSize: number;
 
-  isInitialized: boolean;
+  isGameConfigLoaded: boolean;
   gameStatus: GameStatus;
   previousStatus: GameStatus | null;
   debug: boolean;
@@ -65,7 +65,7 @@ const DEFAULT_STATE: GameStoreState = {
   selectedTower: null,
   health: 0,
 
-  isInitialized: false,
+  isGameConfigLoaded: false,
   previousStatus: null,
   gameStatus: "menu",
   debug: false,
@@ -118,7 +118,7 @@ export const useGameStore = create<GameStore>((set) => ({
       pathWidth,
       pathYOffset,
       projectileSize,
-      isInitialized: true,
+      isGameConfigLoaded: true,
     });
   },
 

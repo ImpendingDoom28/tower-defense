@@ -10,6 +10,7 @@ import { HUDGameOver } from "./components/hud/HUDGameOver";
 import { HUDMainMenu } from "./components/hud/HUDMainMenu";
 import { HUDGameMenu } from "./components/hud/HUDGameMenu";
 import { HUDUpgradePanel } from "./components/hud/HUDUpgradePanel";
+import { HUDLoading } from "./components/hud/HUDLoading";
 import { KeyboardHandlingSystem } from "./components/systems/KeyboardHandlingSystem";
 import { useGameSystem } from "./core/hooks/useGameSystem";
 import { useEnemySystem } from "./core/hooks/useEnemySystem";
@@ -51,6 +52,7 @@ export const App: FC = () => {
     onEffectComplete,
     shouldStopMovement,
     debug,
+    isGameConfigLoaded,
   } = gameSystem;
 
   const {
@@ -59,6 +61,7 @@ export const App: FC = () => {
     sellTower,
     currentWave,
     resetState: resetLevelState,
+    isLevelConfigLoaded,
   } = levelSystem;
 
   const { onEnemyReachEnd, onEnemyUpdate } = enemySystem;
@@ -119,16 +122,20 @@ export const App: FC = () => {
   const remainingEnemies = getRemainingEnemiesInWave();
   const isMenu = gameStatus === "menu";
 
+  const isGameReady = isGameConfigLoaded && (isMenu || isLevelConfigLoaded);
+
   return (
     <div className="relative w-screen h-screen bg-gray-900">
+      {!isGameReady && (
+        <HUDLoading
+          message={!isGameConfigLoaded ? "Loading game..." : "Loading level..."}
+        />
+      )}
+
       <Canvas style={canvasStyle} gl={canvasGl}>
-        <Suspense
-          fallback={
-            <div className="absolute inset-0 bg-gray-900">Loading...</div>
-          }
-        >
-          {isMenu && <MainMenuScene />}
-          {!isMenu && (
+        <Suspense fallback={null}>
+          {isMenu && isGameConfigLoaded && <MainMenuScene />}
+          {!isMenu && isGameConfigLoaded && (
             <GameScene
               onSpawnEffect={onSpawnEffect}
               onEndEffect={onEndEffect}
@@ -170,9 +177,9 @@ export const App: FC = () => {
         </Suspense>
       </Canvas>
 
-      {isMenu && <HUDMainMenu onPlay={startGame} />}
+      {isGameReady && isMenu && <HUDMainMenu onPlay={startGame} />}
 
-      {!isMenu && (
+      {isGameReady && !isMenu && (
         <>
           {!shouldDisableControls && (
             <>

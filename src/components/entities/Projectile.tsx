@@ -142,8 +142,10 @@ export const Projectile: FC<ProjectileProps> = ({
       debugGroupRef.current.position.set(newX, newY, newZ);
     }
 
-    // Check collision with target enemy
-    const targetEnemy = enemies.find((e) => e.id === projectile.targetId);
+    // Check collision with target enemy (use ref to avoid stale closure)
+    const targetEnemy = enemiesRef.current.find(
+      (e) => e.id === projectile.targetId
+    );
 
     if (!targetEnemy || targetEnemy.health <= 0) {
       onRemove(projectile.id);

@@ -29,6 +29,7 @@ A 3D tower defense game built with React, Tailwind CSS, and React Three Fiber.
 - **Wave controls** - Start waves early or wait for automatic wave progression
 - **3D graphics** - Built with React Three Fiber for immersive gameplay
 - **JSON-based configuration** - Game settings, tower stats, and level data stored in JSON files
+- **Explicit loading flow** - Full-screen loading HUD while game and level configs load; `isGameConfigLoaded` and `isLevelConfigLoaded` exposed from core hooks for UI coordination
 
 ## Getting Started
 

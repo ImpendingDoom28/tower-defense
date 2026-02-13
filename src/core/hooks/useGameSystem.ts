@@ -16,7 +16,7 @@ export const useGameSystem = () => {
     selectedTowerType,
     selectedTower,
     debug,
-    isInitialized,
+    isGameConfigLoaded,
 
     setActiveEffects,
     setGameStatus,
@@ -40,7 +40,7 @@ export const useGameSystem = () => {
 
   // Load game config
   useEffect(() => {
-    if (isInitialized) return;
+    if (isGameConfigLoaded) return;
 
     const loadConfig = async () => {
       const config = await loadGameConfig();
@@ -48,7 +48,7 @@ export const useGameSystem = () => {
     };
 
     loadConfig();
-  }, [isInitialized, initializeGameState]);
+  }, [isGameConfigLoaded, initializeGameState]);
 
   // Emit game over event when health reaches 0
   useEffect(() => {
@@ -142,6 +142,7 @@ export const useGameSystem = () => {
     shouldDisableControls,
     shouldStopMovement,
     debug,
+    isGameConfigLoaded,
 
     // Actions
     winGame,

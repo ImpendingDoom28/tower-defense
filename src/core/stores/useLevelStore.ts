@@ -28,7 +28,7 @@ type LevelStoreState = {
   towers: Tower[];
   enemies: Enemy[];
   projectiles: Projectile[];
-  isInitialized: boolean;
+  isLevelConfigLoaded: boolean;
 };
 
 type LevelStoreActions = {
@@ -65,7 +65,7 @@ const DEFAULT_STATE: LevelStoreState = {
   towers: [],
   enemies: [],
   projectiles: [],
-  isInitialized: false,
+  isLevelConfigLoaded: false,
 };
 
 export const useLevelStore = create<LevelStore>((set) => ({
@@ -111,7 +111,7 @@ export const useLevelStore = create<LevelStore>((set) => ({
       projectiles: levelData.projectiles,
       enemyWeights: levelData.enemyWeights as Record<EnemyType, number>,
       gridOffset: gridOffset,
-      isInitialized: true,
+      isLevelConfigLoaded: true,
     });
   },
 

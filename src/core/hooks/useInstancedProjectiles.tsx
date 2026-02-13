@@ -99,6 +99,8 @@ export const useInstancedProjectiles = (
   const projectilesRef = useRef<Map<number, PooledProjectile>>(new Map());
   const isInitializedRef = useRef(false);
   const enemiesRef = useRef<Enemy[]>(enemies);
+  // Reusable array to avoid GC pressure in updateProjectilesFrame
+  const toRemoveRef = useRef<number[]>([]);
 
   const getNextProjectileId = useNextId();
 
@@ -249,7 +251,8 @@ export const useInstancedProjectiles = (
     (currentTime: number, delta: number): void => {
       if (isPaused) return;
 
-      const toRemove: number[] = [];
+      const toRemove = toRemoveRef.current;
+      toRemove.length = 0;
 
       projectilesRef.current.forEach((projectile) => {
         if (projectile.isBeam) {
@@ -321,7 +324,9 @@ export const useInstancedProjectiles = (
         }
       });
 
-      toRemove.forEach(removeProjectile);
+      for (const id of toRemove) {
+        removeProjectile(id);
+      }
     },
     [isPaused, beamDuration, hitThreshold, onHit, removeProjectile]
   );

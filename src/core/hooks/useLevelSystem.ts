@@ -32,6 +32,7 @@ export const useLevelSystem = () => {
     money,
     spendMoney,
     addMoney,
+    isLevelConfigLoaded,
   } = useLevelStore();
   const {
     towerTypes,
@@ -356,6 +357,7 @@ export const useLevelSystem = () => {
 
     money,
     currentWave,
+    isLevelConfigLoaded,
     isTileOccupiedByBuilding,
     isTileOccupiedByTower,
   };
