@@ -98,14 +98,19 @@ export const useInstancedProjectiles = (
   const beamPoolRef = useRef<InstancedPoolRef | null>(null);
   const projectilesRef = useRef<Map<number, PooledProjectile>>(new Map());
   const isInitializedRef = useRef(false);
-  const enemiesRef = useRef<Enemy[]>(enemies);
+  const enemiesByIdRef = useRef<Map<number, Enemy>>(new Map());
   // Reusable array to avoid GC pressure in updateProjectilesFrame
   const toRemoveRef = useRef<number[]>([]);
 
   const getNextProjectileId = useNextId();
 
   useEffect(() => {
-    enemiesRef.current = enemies;
+    const nextEnemiesById = new Map<number, Enemy>();
+    for (const enemy of enemies) {
+      nextEnemiesById.set(enemy.id, enemy);
+    }
+
+    enemiesByIdRef.current = nextEnemiesById;
   }, [enemies]);
 
   const initializePools = useCallback(() => {
@@ -264,11 +269,11 @@ export const useInstancedProjectiles = (
             projectile.beamProcessed = true;
 
             projectile.pierceEnemyIds.forEach((enemyId) => {
-              const enemy = enemiesRef.current.find(
-                (e) => e.id === enemyId && e.health > 0
-              );
+              const enemy = enemiesByIdRef.current.get(enemyId);
               if (enemy) {
-                onHit(projectile, enemy, currentTime);
+                if (enemy.health > 0) {
+                  onHit(projectile, enemy, currentTime);
+                }
               }
             });
           }
@@ -289,9 +294,7 @@ export const useInstancedProjectiles = (
             projectile.currentZ
           );
 
-          const targetEnemy = enemiesRef.current.find(
-            (e) => e.id === projectile.targetId
-          );
+          const targetEnemy = enemiesByIdRef.current.get(projectile.targetId);
 
           if (!targetEnemy || targetEnemy.health <= 0) {
             toRemove.push(projectile.id);

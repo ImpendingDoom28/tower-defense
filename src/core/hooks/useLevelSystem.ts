@@ -258,26 +258,57 @@ export const useLevelSystem = () => {
 
   const updateEnemy = useCallback(
     (enemyId: number, updates: Partial<Enemy>) => {
-      // TODO: Refactor to create less iterations
-      setEnemies((prev) => {
-        const updated = prev.map((enemy) =>
-          enemy.id === enemyId ? { ...enemy, ...updates } : enemy
-        );
+      const updateKeys = Object.keys(updates) as Array<keyof Enemy>;
+      if (updateKeys.length === 0) return;
 
-        // Check if any enemy's health reached 0 and remove it
-        const enemyToCheck = updated.find((e) => e.id === enemyId);
-        if (enemyToCheck && enemyToCheck.health <= 0) {
-          // Enemy health reached 0, remove it and add reward
-          const filtered = updated.filter((e) => e.id !== enemyId);
-          addMoney(enemyToCheck.reward);
-          gameEvents.emit(GameEvent.ENEMY_KILLED, {
-            enemyId,
-            enemyType: enemyToCheck.type,
-          });
-          return filtered;
+      setEnemies((prev) => {
+        let foundEnemy: Enemy | null = null;
+        let updatedEnemy: Enemy | null = null;
+        let hasChanges = false;
+        const nextEnemies: Enemy[] = [];
+
+        for (const enemy of prev) {
+          if (enemy.id !== enemyId) {
+            nextEnemies.push(enemy);
+            continue;
+          }
+
+          foundEnemy = enemy;
+
+          const shouldUpdate = updateKeys.some(
+            (key) => enemy[key] !== updates[key]
+          );
+
+          if (!shouldUpdate) {
+            nextEnemies.push(enemy);
+            continue;
+          }
+
+          hasChanges = true;
+          updatedEnemy = {
+            ...enemy,
+            ...updates,
+          };
+
+          if (updatedEnemy.health > 0) {
+            nextEnemies.push(updatedEnemy);
+          }
         }
 
-        return updated;
+        if (!foundEnemy || !hasChanges || !updatedEnemy) {
+          return prev;
+        }
+
+        if (updatedEnemy.health <= 0) {
+          addMoney(updatedEnemy.reward);
+          gameEvents.emit(GameEvent.ENEMY_KILLED, {
+            enemyId,
+            enemyType: updatedEnemy.type,
+          });
+          return nextEnemies;
+        }
+
+        return nextEnemies;
       });
     },
     [setEnemies, addMoney]

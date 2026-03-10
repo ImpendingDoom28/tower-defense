@@ -40,14 +40,19 @@ export const Projectile: FC<ProjectileProps> = ({
   const velocityRef = useRef<Velocity | null>(null);
   const beamProcessedRef = useRef<number | null>(null);
   const beamElapsedTimeRef = useRef<number>(0);
-  const enemiesRef = useRef<Enemy[]>(enemies);
+  const enemiesByIdRef = useRef<Map<number, Enemy>>(new Map());
   const debug = useGameStore(debugSelector);
   const beamDuration = 0.15;
   const isBeam = projectile.projectileType === "beam";
 
-  // Keep enemies ref updated
+  // Keep the current enemy index updated without re-running frame logic
   useEffect(() => {
-    enemiesRef.current = enemies;
+    const nextEnemiesById = new Map<number, Enemy>();
+    for (const enemy of enemies) {
+      nextEnemiesById.set(enemy.id, enemy);
+    }
+
+    enemiesByIdRef.current = nextEnemiesById;
   }, [enemies]);
 
   // Handle beam instant hit - only process once per projectile ID
@@ -60,14 +65,13 @@ export const Projectile: FC<ProjectileProps> = ({
     ) {
       beamProcessedRef.current = projectile.id;
 
-      // Use pierceEnemyIds to find all enemies that should be hit
-      // Use ref to get current enemies without causing re-runs
+      // Use the indexed ref so the one-time beam pass does not resubscribe
       projectile.pierceEnemyIds.forEach((enemyId) => {
-        const enemy = enemiesRef.current.find(
-          (e) => e.id === enemyId && e.health > 0
-        );
+        const enemy = enemiesByIdRef.current.get(enemyId);
         if (enemy) {
-          onHit(projectile, enemy, 0);
+          if (enemy.health > 0) {
+            onHit(projectile, enemy, 0);
+          }
         }
       });
     }
@@ -143,9 +147,7 @@ export const Projectile: FC<ProjectileProps> = ({
     }
 
     // Check collision with target enemy (use ref to avoid stale closure)
-    const targetEnemy = enemiesRef.current.find(
-      (e) => e.id === projectile.targetId
-    );
+    const targetEnemy = enemiesByIdRef.current.get(projectile.targetId);
 
     if (!targetEnemy || targetEnemy.health <= 0) {
       onRemove(projectile.id);

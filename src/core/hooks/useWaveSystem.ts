@@ -79,7 +79,7 @@ export const useWaveSystem = (gameState: GameState) => {
   const clearUpgrades = useUpgradeStore((state) => state.clearUpgrades);
 
   const spawnQueueRef = useRef<SpawnQueueItem[]>([]);
-  const waveUpgradesRef = useRef<EnemyUpgradeId[]>([]);
+  const spawnQueueIndexRef = useRef<number>(0);
   const lastSpawnTimeRef = useRef<number>(0);
   const waveStartedRef = useRef<boolean>(false);
   const lastInitializedWaveRef = useRef<number>(0);
@@ -108,6 +108,7 @@ export const useWaveSystem = (gameState: GameState) => {
     lastInitializedWaveRef.current = currentWave;
     waveStartedRef.current = false;
     spawnQueueRef.current = [];
+    spawnQueueIndexRef.current = 0;
     lastSpawnTimeRef.current = 0;
     isCountingDownRef.current = false;
     waveEndTimeRef.current = 0;
@@ -115,44 +116,52 @@ export const useWaveSystem = (gameState: GameState) => {
     lastCountdownPlayingTimeRef.current = 0;
     timeUntilNextWaveRef.current = null;
 
-    waveUpgradesRef.current = [...selectedUpgrades];
+    const waveUpgrades = [...selectedUpgrades];
     clearUpgrades();
 
     const currentWaveIndex = currentWave - 1;
     const waveConfig = waveConfigs[currentWaveIndex];
     if (!waveConfig) return;
 
-    let availableEnemyTypes: WaveEnemyGroup[] = waveConfig.enemies.map(
+    const availableEnemyTypes: WaveEnemyGroup[] = waveConfig.enemies.map(
       (enemy) => ({
         ...enemy,
         count: enemy.count,
       })
     );
-
+    const spawnQueue: SpawnQueueItem[] = [];
+    let remainingEnemyCount = 0;
     let cumulativeDelay = 0;
 
-    for (let i = 0; i < waveConfig.totalEnemies; i++) {
-      availableEnemyTypes = availableEnemyTypes.filter(
-        (enemy) => enemy.count > 0
-      );
+    for (const enemy of availableEnemyTypes) {
+      remainingEnemyCount += enemy.count;
+    }
 
-      if (availableEnemyTypes.length === 0) break;
+    const totalEnemiesToQueue = Math.min(
+      waveConfig.totalEnemies,
+      remainingEnemyCount
+    );
 
+    for (
+      let i = 0;
+      i < totalEnemiesToQueue && remainingEnemyCount > 0;
+      i++
+    ) {
       const chosenEnemy = selectWeightedEnemy(availableEnemyTypes);
       if (!chosenEnemy) break;
 
-      spawnQueueRef.current.push({
+      spawnQueue.push({
         type: chosenEnemy.type,
         delay: cumulativeDelay,
-        upgrades: waveUpgradesRef.current,
+        upgrades: waveUpgrades,
       });
 
       cumulativeDelay += chosenEnemy.spawnInterval * 1000;
-
       chosenEnemy.count -= 1;
+      remainingEnemyCount -= 1;
     }
 
-    spawnQueueRef.current.sort((a, b) => a.delay - b.delay);
+    spawnQueueRef.current = spawnQueue;
     totalPauseDurationRef.current = 0;
   }, [currentWave, totalWaves, waveConfigs, selectedUpgrades, clearUpgrades]);
 
@@ -268,7 +277,7 @@ export const useWaveSystem = (gameState: GameState) => {
 
       if (currentWave === 0 || currentWave > totalWaves) return;
 
-      if (spawnQueueRef.current.length === 0) {
+      if (spawnQueueIndexRef.current >= spawnQueueRef.current.length) {
         if (waveStartedRef.current && enemies.length === 0) {
           waveStartedRef.current = false;
           if (currentTime - lastSpawnTimeRef.current > 300) {
@@ -291,13 +300,13 @@ export const useWaveSystem = (gameState: GameState) => {
         totalPauseDurationRef.current = 0;
       }
 
-      const nextSpawn = spawnQueueRef.current[0];
+      const nextSpawn = spawnQueueRef.current[spawnQueueIndexRef.current];
       const timeSinceWaveStart =
         currentTime - lastSpawnTimeRef.current - totalPauseDurationRef.current;
 
-      if (timeSinceWaveStart >= nextSpawn.delay) {
+      if (nextSpawn && timeSinceWaveStart >= nextSpawn.delay) {
         addEnemy(nextSpawn.type, nextSpawn.upgrades);
-        spawnQueueRef.current.shift();
+        spawnQueueIndexRef.current += 1;
       }
     },
     [
@@ -314,7 +323,9 @@ export const useWaveSystem = (gameState: GameState) => {
 
   const getRemainingEnemiesInWave = useCallback((): number => {
     if (currentWave === 0 || currentWave > totalWaves) return 0;
-    return spawnQueueRef.current.length + enemies.length;
+    return (
+      spawnQueueRef.current.length - spawnQueueIndexRef.current + enemies.length
+    );
   }, [currentWave, enemies.length, totalWaves]);
 
   return {

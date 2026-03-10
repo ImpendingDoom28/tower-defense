@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 import type { Enemy } from "../types/game";
 import type { LevelSystem } from "./useLevelSystem";
@@ -7,6 +7,9 @@ import { enemiesSelector, useLevelStore } from "../stores/useLevelStore";
 export const useEnemySystem = (levelSystem: LevelSystem) => {
   const { removeEnemy, updateEnemy } = levelSystem;
   const enemies = useLevelStore(enemiesSelector);
+  const enemyById = useMemo(() => {
+    return new Map(enemies.map((enemy) => [enemy.id, enemy]));
+  }, [enemies]);
 
   const onEnemyReachEnd = useCallback(
     (enemyId: number) => {
@@ -24,7 +27,7 @@ export const useEnemySystem = (levelSystem: LevelSystem) => {
 
   const damageEnemy = useCallback(
     (enemyId: number, damage: number): boolean => {
-      const enemy = enemies.find((e) => e.id === enemyId);
+      const enemy = enemyById.get(enemyId);
       if (!enemy) return false;
 
       const newHealth = Math.max(0, enemy.health - damage);
@@ -37,7 +40,7 @@ export const useEnemySystem = (levelSystem: LevelSystem) => {
         return false; // Enemy survived
       }
     },
-    [enemies, updateEnemy, removeEnemy]
+    [enemyById, updateEnemy, removeEnemy]
   );
 
   // Apply slow debuff to enemy
@@ -50,7 +53,7 @@ export const useEnemySystem = (levelSystem: LevelSystem) => {
       duration: number,
       currentTime: number
     ) => {
-      const enemy = enemies.find((e) => e.id === enemyId);
+      const enemy = enemyById.get(enemyId);
       if (!enemy) return;
 
       // Check for slow resistance (1 = fully immune)
@@ -67,7 +70,7 @@ export const useEnemySystem = (levelSystem: LevelSystem) => {
         slowUntil: slowUntil,
       });
     },
-    [enemies, updateEnemy]
+    [enemyById, updateEnemy]
   );
 
   // Apply regeneration to all enemies that have it
