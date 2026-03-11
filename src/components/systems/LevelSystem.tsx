@@ -11,11 +11,11 @@ export const LevelSystem: FC<{ levelName?: LevelConfigFiles }> = ({
   levelName,
 }) => {
   const tileSize = useGameStore(tileSizeSelector);
-  const { initializeLevelState, isInitialized, resetLevelState } =
+  const { initializeLevelState, isLevelConfigLoaded, resetLevelState } =
     useLevelStore();
 
   useEffect(() => {
-    if (!levelName || isInitialized || tileSize <= 0) return;
+    if (!levelName || isLevelConfigLoaded || tileSize <= 0) return;
 
     const loadLevelData = async () => {
       const levelData = await loadLevelConfigFile(levelName);
@@ -23,7 +23,7 @@ export const LevelSystem: FC<{ levelName?: LevelConfigFiles }> = ({
     };
 
     loadLevelData();
-  }, [isInitialized, initializeLevelState, levelName, tileSize]);
+  }, [isLevelConfigLoaded, initializeLevelState, levelName, tileSize]);
 
   useEffect(() => {
     if (levelName) {
