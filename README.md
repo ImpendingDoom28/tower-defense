@@ -31,6 +31,7 @@ A 3D tower defense game built with React, Tailwind CSS, and React Three Fiber.
 - **3D graphics** - Built with React Three Fiber for immersive gameplay
 - **JSON-based configuration** - Game settings, tower stats, and level data stored in JSON files
 - **Explicit loading flow** - Full-screen loading HUD while game and level configs load; `isGameConfigLoaded` and `isLevelConfigLoaded` exposed from core hooks for UI coordination
+- **Playwright smoke coverage** - Canvas-aware E2E tests cover menu-to-game flow, first-tower placement, first-wave start, and editor route loading
 
 ## Getting Started
 
@@ -47,6 +48,14 @@ npm run dev
 ```
 
 The game will be available at `http://localhost:5173`
+
+### Playwright E2E
+
+```bash
+npm run test:e2e
+```
+
+The Playwright config targets `http://localhost:5173`, reuses an existing local dev server when one is already running, and otherwise starts `npm run dev` automatically. Canvas interactions use a fixed `1280x720` viewport with shared coordinate fixtures from `tests/e2e/fixtures/canvasPoints.ts`.
 
 ### Build
 

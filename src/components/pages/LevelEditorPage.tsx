@@ -25,7 +25,7 @@ export const LevelEditorPage = ({ onBackToGame }: LevelEditorPageProps) => {
     <PageWrapper>
       {isGameConfigLoaded ? null : <HUDLoading message="Loading editor..." />}
 
-      <Canvas style={canvasStyle} gl={canvasGl}>
+      <Canvas data-testid="editor-canvas" style={canvasStyle} gl={canvasGl}>
         <Suspense fallback={null}>
           {isGameConfigLoaded ? <LevelEditorScene /> : null}
         </Suspense>

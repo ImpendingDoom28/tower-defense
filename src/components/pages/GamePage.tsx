@@ -16,7 +16,6 @@ import { useGameSystem } from "../../core/hooks/useGameSystem";
 import { useEnemySystem } from "../../core/hooks/useEnemySystem";
 import { useProjectileSystem } from "../../core/hooks/useProjectileSystem";
 import { useWaveSystem } from "../../core/hooks/useWaveSystem";
-import { useAudioSystem } from "../../core/hooks/useAudioSystem";
 import { useLevelSystem } from "../../core/hooks/useLevelSystem";
 import { useUpgradesSystem } from "../../core/hooks/useUpgradesSystem";
 import type { Tower } from "../../core/types/game";
@@ -133,7 +132,7 @@ export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
         />
       )}
 
-      <Canvas style={canvasStyle} gl={canvasGl}>
+      <Canvas data-testid="game-canvas" style={canvasStyle} gl={canvasGl}>
         <Suspense fallback={null}>
           {isGameConfigLoaded && isMenu && <MainMenuScene />}
           {isGameConfigLoaded && !isMenu && (
