@@ -55,7 +55,11 @@ export const HUDTowerShop: FC<HUDTowerShopProps> = ({
                 <div
                   className={`${canAfford ? "text-green-400" : "text-red-400"} absolute top-2 right-2`}
                 >
-                  <UIMoney money={tower.cost} variant={"medium"} size={16} />
+                  <UIMoney
+                    money={tower.cost}
+                    variant={"medium"}
+                    iconSize={16}
+                  />
                 </div>
                 <UIButton
                   onClick={onTowerClick}

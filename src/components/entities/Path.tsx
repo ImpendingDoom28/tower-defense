@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, memo } from "react";
 
 import { getCssColorValue } from "../ui/lib/cssUtils";
 import { GUINextWavePreview } from "../gui/GUINextWavePreview";
@@ -21,7 +21,7 @@ type PathProps = {
   pathIndex: number;
 };
 
-export const Path: FC<PathProps> = ({ timeUntilNextWave, pathIndex }) => {
+export const Path: FC<PathProps> = memo(({ timeUntilNextWave, pathIndex }) => {
   const pathWaypoints = useLevelStore(pathWaypointsSelector);
   const tileSize = useGameStore(tileSizeSelector);
   const pathYOffset = useGameStore(pathYOffsetSelector);
@@ -55,7 +55,9 @@ export const Path: FC<PathProps> = ({ timeUntilNextWave, pathIndex }) => {
               rotation={[0, segment.yaw, 0]}
             >
               <boxGeometry args={[segment.length, 0.02, pathWidth]} />
-              <meshStandardMaterial color={getCssColorValue("scene-gray-500")} />
+              <meshStandardMaterial
+                color={getCssColorValue("scene-gray-500")}
+              />
             </mesh>
 
             <mesh
@@ -67,7 +69,9 @@ export const Path: FC<PathProps> = ({ timeUntilNextWave, pathIndex }) => {
               rotation={[0, segment.yaw, 0]}
             >
               <boxGeometry args={[segment.length, 0.01, pathWidth + 0.05]} />
-              <meshStandardMaterial color={getCssColorValue("scene-gray-600")} />
+              <meshStandardMaterial
+                color={getCssColorValue("scene-gray-600")}
+              />
             </mesh>
           </group>
         );
@@ -105,4 +109,6 @@ export const Path: FC<PathProps> = ({ timeUntilNextWave, pathIndex }) => {
       />
     </group>
   );
-};
+});
+
+Path.displayName = "Path";

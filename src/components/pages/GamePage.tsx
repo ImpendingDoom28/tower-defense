@@ -58,6 +58,7 @@ export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
 
   const {
     money,
+    enemiesKilled,
     placeTower,
     sellTower,
     currentWave,
@@ -222,6 +223,7 @@ export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
             gameStatus={gameStatus}
             currentWave={currentWave}
             money={money}
+            enemiesKilled={enemiesKilled}
             onRestart={onRestart}
             onGoToMainMenu={onGoToMainMenu}
           />

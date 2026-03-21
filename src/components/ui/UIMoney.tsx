@@ -8,10 +8,6 @@ import { cn } from "./lib/twUtils";
 type UIMoneyProps = {
   money: number;
   variant?: UITypographyProps["variant"];
-  /**
-   * @deprecated Use iconSize instead.
-   */
-  size?: number;
   iconSize?: number;
   className?: string;
 };
@@ -19,11 +15,10 @@ type UIMoneyProps = {
 export const UIMoney: FC<UIMoneyProps> = ({
   money,
   variant = "medium",
-  size,
   iconSize,
   className,
 }) => {
-  const resolvedIconSize = iconSize ?? size ?? 16;
+  const resolvedIconSize = iconSize ?? 16;
 
   return (
     <UITypography

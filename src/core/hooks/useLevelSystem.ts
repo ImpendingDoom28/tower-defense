@@ -10,9 +10,7 @@ import {
   Tower,
   TowerType,
 } from "../types/game";
-import {
-  getPositionAlongMultiplePaths,
-} from "../../utils/pathUtils";
+import { getPositionAlongMultiplePaths } from "../../utils/pathUtils";
 import { getTilePlacementState as getSharedTilePlacementState } from "../../utils/tilePlacement";
 import { useNextId } from "./utils/useNextId";
 import { gameEvents } from "../../utils/eventEmitter";
@@ -30,9 +28,11 @@ export const useLevelSystem = () => {
     pathWaypoints,
     currentWave,
     money,
+    enemiesKilled,
     spendMoney,
     addMoney,
     isLevelConfigLoaded,
+    incrementEnemiesKilled,
   } = useLevelStore();
   const {
     towerTypes,
@@ -285,6 +285,9 @@ export const useLevelSystem = () => {
 
         if (updatedEnemy.health <= 0) {
           addMoney(updatedEnemy.reward);
+          if (gameStatus !== "menu") {
+            incrementEnemiesKilled();
+          }
           gameEvents.emit(GameEvent.ENEMY_KILLED, {
             enemyId,
             enemyType: updatedEnemy.type,
@@ -295,7 +298,7 @@ export const useLevelSystem = () => {
         return nextEnemies;
       });
     },
-    [setEnemies, addMoney]
+    [setEnemies, addMoney, incrementEnemiesKilled, gameStatus]
   );
 
   const removeEnemy = useCallback(
@@ -312,8 +315,10 @@ export const useLevelSystem = () => {
             enemyType: enemy.type,
           });
         } else {
-          // Enemy was killed, add reward
           addMoney(enemy.reward);
+          if (gameStatus !== "menu") {
+            incrementEnemiesKilled();
+          }
           gameEvents.emit(GameEvent.ENEMY_KILLED, {
             enemyId,
             enemyType: enemy.type,
@@ -323,7 +328,7 @@ export const useLevelSystem = () => {
         return prev.filter((e) => e.id !== enemyId);
       });
     },
-    [setEnemies, loseHealth, addMoney]
+    [setEnemies, loseHealth, addMoney, incrementEnemiesKilled, gameStatus]
   );
 
   // Projectiles
@@ -371,6 +376,7 @@ export const useLevelSystem = () => {
     resetState,
 
     money,
+    enemiesKilled,
     currentWave,
     isLevelConfigLoaded,
     getTilePlacementState,

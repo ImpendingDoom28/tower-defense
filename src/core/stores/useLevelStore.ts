@@ -23,6 +23,7 @@ type LevelStoreState = {
   money: number;
 
   // Calculated in game
+  enemiesKilled: number;
   currentWave: number;
   gridOffset: number;
   towers: Tower[];
@@ -34,6 +35,7 @@ type LevelStoreState = {
 type LevelStoreActions = {
   addMoney: (amount: number) => void;
   spendMoney: (amount: number) => void;
+  incrementEnemiesKilled: () => void;
   setGridSize: (gridSize: number, tileSize: number) => void;
   setPathWaypoints: (pathWaypoints: PathWaypoint[][]) => void;
   setCurrentWave: (wave: number | ((prev: number) => number)) => void;
@@ -54,6 +56,7 @@ type LevelStore = LevelStoreState & LevelStoreActions;
 
 const DEFAULT_STATE: LevelStoreState = {
   money: 0,
+  enemiesKilled: 0,
   currentWave: 0,
   gridOffset: 0,
   gridSize: 0,
@@ -101,6 +104,7 @@ export const useLevelStore = create<LevelStore>((set) => ({
 
     set({
       money: levelData.startingMoney,
+      enemiesKilled: 0,
       gridSize: levelData.gridSize,
       pathWaypoints: levelData.pathWaypoints,
       totalWaves: levelData.waveConfigs.length,
@@ -117,6 +121,10 @@ export const useLevelStore = create<LevelStore>((set) => ({
 
   addMoney: (amount: number) => {
     set((state) => ({ money: state.money + amount }));
+  },
+
+  incrementEnemiesKilled: () => {
+    set((state) => ({ enemiesKilled: state.enemiesKilled + 1 }));
   },
 
   spendMoney: (amount: number) => {

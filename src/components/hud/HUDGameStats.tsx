@@ -47,7 +47,7 @@ export const HUDGameStats: FC<HUDGameStatsProps> = ({
         <UICardContent>
           <div className="flex flex-col items-center">
             <div className="flex items-center justify-between flex-1 w-full gap-1">
-              <UIMoney money={money} variant="h4" size={20} />
+              <UIMoney money={money} variant="h4" iconSize={20} />
               {gameStatus === "paused" && (
                 <UIButton
                   variant="default"

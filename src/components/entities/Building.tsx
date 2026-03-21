@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, memo } from "react";
 
 import type { Building as BuildingInstance } from "../../core/types/game";
 import { GUIDebugInfo } from "../gui/GUIDebugInfo";
@@ -7,7 +7,7 @@ type BuildingProps = {
   building: BuildingInstance;
 };
 
-export const Building: FC<BuildingProps> = ({ building }) => {
+export const Building: FC<BuildingProps> = memo(({ building }) => {
   const yPosition = building.height / 2;
 
   return (
@@ -30,4 +30,6 @@ export const Building: FC<BuildingProps> = ({ building }) => {
       <GUIDebugInfo entity={building} offsetY={building.height + 0.3} />
     </group>
   );
-};
+});
+
+Building.displayName = "Building";
