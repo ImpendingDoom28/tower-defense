@@ -10,9 +10,10 @@ import { HUDWrapper } from "./HUDWrapper";
 import { HUDSidePanel } from "./HUDSidePanel";
 import { useMenuState } from "./useMenuState";
 import type { MenuActions } from "../../core/types/menu";
+import { GitHubMarkIcon } from "../ui/GitHubMarkIcon";
 import { UIBadge } from "../ui/UIBadge";
 import { cn } from "../ui/lib/twUtils";
-import { GAME_NAME } from "../../constants/game";
+import { GAME_NAME, REPOSITORY_URL } from "../../constants/game";
 
 type HUDMainMenuProps = MenuActions;
 
@@ -27,6 +28,25 @@ export const HUDMainMenu: FC<HUDMainMenuProps> = ({
     setShowAudioSettings,
     setShowLevelPicker,
   } = useMenuState();
+
+  const repositoryLink =
+    REPOSITORY_URL !== "" ? (
+      <UIButton
+        asChild
+        variant="ghost"
+        size="icon-lg"
+        className="pointer-events-auto fixed top-6 right-6 z-[100] border border-transparent text-muted-foreground hover:border-primary/30 hover:text-primary md:right-8"
+      >
+        <a
+          href={REPOSITORY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="View source on GitHub"
+        >
+          <GitHubMarkIcon />
+        </a>
+      </UIButton>
+    ) : null;
 
   const actions: Partial<UIButtonProps>[] = [
     {
@@ -44,111 +64,123 @@ export const HUDMainMenu: FC<HUDMainMenuProps> = ({
 
   if (activeView === "audio") {
     return (
-      <HUDSidePanel side="left">
-        <div
-          className={`w-full transition-all duration-700 ${hasInteracted ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12"}`}
-        >
-          <HUDAudioControls />
-        </div>
-      </HUDSidePanel>
+      <>
+        {repositoryLink}
+        <HUDSidePanel side="left">
+          <div
+            className={`w-full transition-all duration-700 ${hasInteracted ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12"}`}
+          >
+            <HUDAudioControls />
+          </div>
+        </HUDSidePanel>
+      </>
     );
   }
 
   if (activeView === "almanac") {
     return (
-      <HUDSidePanel side="left">
-        <div
-          className={`w-full transition-all duration-700 ${hasInteracted ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12"}`}
-        >
-          <HUDAlmanac onBack={() => setShowAlmanac(false)} />
-        </div>
-      </HUDSidePanel>
+      <>
+        {repositoryLink}
+        <HUDSidePanel side="left">
+          <div
+            className={`w-full transition-all duration-700 ${hasInteracted ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12"}`}
+          >
+            <HUDAlmanac onBack={() => setShowAlmanac(false)} />
+          </div>
+        </HUDSidePanel>
+      </>
     );
   }
 
   if (activeView === "levelPicker") {
     return (
-      <HUDSidePanel side="left">
-        <div
-          className={`w-full transition-all duration-700 ${hasInteracted ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12"}`}
-        >
-          <HUDLevelPicker
-            onBack={() => setShowLevelPicker(false)}
-            onSelectLevel={async (level) => {
-              setShowLevelPicker(false);
-              await onStartGameWithLevel(level);
-            }}
-          />
-        </div>
-      </HUDSidePanel>
+      <>
+        {repositoryLink}
+        <HUDSidePanel side="left">
+          <div
+            className={`w-full transition-all duration-700 ${hasInteracted ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12"}`}
+          >
+            <HUDLevelPicker
+              onBack={() => setShowLevelPicker(false)}
+              onSelectLevel={async (level) => {
+                setShowLevelPicker(false);
+                await onStartGameWithLevel(level);
+              }}
+            />
+          </div>
+        </HUDSidePanel>
+      </>
     );
   }
 
   const title = GAME_NAME.split(" ");
 
   return (
-    <HUDWrapper className="pointer-events-none">
-      <div
-        className={`pointer-events-auto flex h-full w-full transition-all duration-1000 ease-out ${
-          hasInteracted
-            ? "opacity-100 translate-x-0"
-            : "opacity-0 -translate-x-16"
-        }`}
-      >
-        <div className="flex h-full w-[45%] max-w-xl flex-col justify-between bg-gradient-to-r from-black/80 via-black/60 to-transparent p-8 md:p-12">
-          <UIBadge text="Systems Online" />
+    <>
+      {repositoryLink}
+      <HUDWrapper className="pointer-events-none">
+        <div
+          className={`relative pointer-events-auto flex h-full w-full transition-all duration-1000 ease-out ${
+            hasInteracted
+              ? "opacity-100 translate-x-0"
+              : "opacity-0 -translate-x-16"
+          }`}
+        >
+          <div className="flex h-full w-[45%] max-w-xl flex-col justify-between bg-gradient-to-r from-black/80 via-black/60 to-transparent p-8 md:p-12">
+            <UIBadge text="Systems Online" />
 
-          <div className="flex flex-col gap-6">
-            <div>
+            <div className="flex flex-col gap-6">
+              <div className="min-w-0">
+                <UITypography
+                  variant="h1"
+                  className="tracking-widest font-extralight"
+                >
+                  {title[0]}
+                </UITypography>
+                <UITypography
+                  variant="h1"
+                  className="tracking-widest font-extralight text-primary"
+                >
+                  {title[1] ?? ""}
+                </UITypography>
+              </div>
+
               <UITypography
-                variant="h1"
-                className="tracking-widest font-extralight md:text-7xl"
+                variant="body"
+                className="max-w-xs leading-relaxed tracking-widest text-muted-foreground"
               >
-                {title[0]}
-              </UITypography>
-              <UITypography
-                variant="h1"
-                className="tracking-widest font-extralight md:text-7xl text-primary"
-              >
-                {title[1]}
+                you’re not winning a war; — you’re holding a boundary.
               </UITypography>
             </div>
 
-            <UITypography
-              variant="body"
-              className="max-w-xs leading-relaxed tracking-widest text-muted-foreground"
-            >
-              you’re not winning a war; — you’re holding a boundary.
-            </UITypography>
+            <nav className="flex flex-col gap-1">
+              {actions.map(({ children, onClick, variant }) => {
+                const isDefault = variant === "default";
+
+                return (
+                  <UIButton
+                    key={children as string}
+                    onClick={onClick}
+                    variant={variant ?? "ghost"}
+                    className="justify-between text-sm text-left group text-foreground hover:border-primary/30"
+                  >
+                    <span className="transition-transform group-hover:translate-x-1">
+                      {children}
+                    </span>
+                    <ArrowRight
+                      className={cn(
+                        "transition-transform size-4  group-hover:translate-x-1",
+                        !isDefault &&
+                          "text-muted-foreground group-hover:text-primary"
+                      )}
+                    />
+                  </UIButton>
+                );
+              })}
+            </nav>
           </div>
-
-          <nav className="flex flex-col gap-1">
-            {actions.map(({ children, onClick, variant }) => {
-              const isDefault = variant === "default";
-
-              return (
-                <UIButton
-                  key={children as string}
-                  onClick={onClick}
-                  variant={variant ?? "ghost"}
-                  className="justify-between text-sm text-left group text-foreground hover:border-primary/30"
-                >
-                  <span className="transition-transform group-hover:translate-x-1">
-                    {children}
-                  </span>
-                  <ArrowRight
-                    className={cn(
-                      "transition-transform size-4  group-hover:translate-x-1",
-                      !isDefault &&
-                        "text-muted-foreground group-hover:text-primary"
-                    )}
-                  />
-                </UIButton>
-              );
-            })}
-          </nav>
         </div>
-      </div>
-    </HUDWrapper>
+      </HUDWrapper>
+    </>
   );
 };
