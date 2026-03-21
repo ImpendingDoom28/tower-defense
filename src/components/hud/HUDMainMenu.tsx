@@ -11,6 +11,7 @@ import { useMenuState } from "./useMenuState";
 import type { MenuActions } from "../../core/types/menu";
 import { UIBadge } from "../ui/UIBadge";
 import { cn } from "../ui/lib/twUtils";
+import { GAME_NAME } from "../../constants/game";
 
 type HUDMainMenuProps = MenuActions;
 
@@ -55,6 +56,8 @@ export const HUDMainMenu: FC<HUDMainMenuProps> = ({
     );
   }
 
+  const title = GAME_NAME.split(" ");
+
   return (
     <HUDWrapper className="pointer-events-none">
       <div
@@ -71,24 +74,23 @@ export const HUDMainMenu: FC<HUDMainMenuProps> = ({
             <div>
               <UITypography
                 variant="h1"
-                className="text-5xl font-black md:text-7xl"
+                className="tracking-widest font-extralight md:text-7xl"
               >
-                Tower
+                {title[0]}
               </UITypography>
               <UITypography
                 variant="h1"
-                className="text-5xl md:text-7xl font-extralight text-primary"
+                className="tracking-widest font-extralight md:text-7xl text-primary"
               >
-                Defense
+                {title[1]}
               </UITypography>
             </div>
 
             <UITypography
               variant="body"
-              className="max-w-xs leading-relaxed text-muted-foreground"
+              className="max-w-xs leading-relaxed tracking-widest text-muted-foreground"
             >
-              Defend your base against waves of enemies. Build towers
-              strategically to survive.
+              you’re not winning a war; — you’re holding a boundary.
             </UITypography>
           </div>
 

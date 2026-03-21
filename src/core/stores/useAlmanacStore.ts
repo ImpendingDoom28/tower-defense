@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 
 import type { EnemyType } from "../types/game";
 
-const STORAGE_KEY = "tower-defense-almanac";
+import { GAME_NAME_ID } from "../../constants/game";
 
 type AlmanacStoreState = {
   discoveredEnemies: EnemyType[];
@@ -42,7 +42,7 @@ export const useAlmanacStore = create<AlmanacStore>()(
       },
     }),
     {
-      name: STORAGE_KEY,
+      name: `${GAME_NAME_ID}-almanac`,
     }
   )
 );

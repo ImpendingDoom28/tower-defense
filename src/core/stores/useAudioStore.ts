@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { GAME_NAME_ID } from "../../constants/game";
 
 type AudioStore = {
   masterVolume: number;
@@ -16,9 +17,9 @@ type AudioStore = {
 };
 
 const DEFAULT_VOLUMES = {
-  masterVolume: 70,
-  sfxVolume: 80,
-  musicVolume: 60,
+  masterVolume: 40,
+  sfxVolume: 50,
+  musicVolume: 50,
   ambientVolume: 50,
 };
 export const MAX_VOLUME = 100;
@@ -61,7 +62,7 @@ export const useAudioStore = create<AudioStore>()(
       },
     }),
     {
-      name: "tower-defense-audio-settings",
+      name: `${GAME_NAME_ID}-audio-settings`,
     }
   )
 );
