@@ -7,7 +7,7 @@ import { MainMenuScene } from "../scenes/mainMenu/MainMenuScene";
 import { HUDTowerShop } from "../hud/HUDTowerShop";
 import { HUDGameStats } from "../hud/HUDGameStats";
 import { HUDGameOver } from "../hud/HUDGameOver";
-import { HUDMainMenu } from "../hud/HUDMainMenu";
+import { HUDMainMenu } from "../hud/main/HUDMainMenu";
 import { HUDGameMenu } from "../hud/HUDGameMenu";
 import { HUDUpgradePanel } from "../hud/HUDUpgradePanel";
 import { HUDLoading } from "../hud/HUDLoading";
