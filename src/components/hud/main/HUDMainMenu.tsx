@@ -10,11 +10,11 @@ import { HUDWrapper } from "../HUDWrapper";
 import { HUDSidePanel } from "../HUDSidePanel";
 import { useMenuState } from "../useMenuState";
 import type { MenuActions } from "../../../core/types/menu";
-import { GitHubMarkIcon } from "../../ui/GitHubMarkIcon";
 import { UIBadge } from "../../ui/UIBadge";
 import { cn } from "../../ui/lib/twUtils";
-import { GAME_NAME, REPOSITORY_URL } from "../../../constants/game";
+import { GAME_NAME } from "../../../constants/game";
 import { BlurBackdrop } from "./BlurBackdrop";
+import { GithubButton } from "./GithubButton";
 
 type HUDMainMenuProps = MenuActions;
 
@@ -58,59 +58,23 @@ export const HUDMainMenu: FC<HUDMainMenuProps> = memo(
     });
 
     const renderedPart = () => {
-      if (activeView === "audio") {
+      if (!isMenu) {
         return (
           <HUDSidePanel side="left">
-            <div
-              className={cn(
-                `w-full transition-all duration-700`,
-                hasInteracted
-                  ? "opacity-100 translate-x-0"
-                  : "opacity-0 -translate-x-12"
-              )}
-            >
-              <HUDAudioControls />
-            </div>
-          </HUDSidePanel>
-        );
-      }
-
-      if (activeView === "almanac") {
-        return (
-          <HUDSidePanel side="left">
-            <div
-              className={cn(
-                `w-full transition-all duration-700`,
-                hasInteracted
-                  ? "opacity-100 translate-x-0"
-                  : "opacity-0 -translate-x-12"
-              )}
-            >
+            {activeView === "audio" && <HUDAudioControls />}
+            {activeView === "almanac" && (
               <HUDAlmanac onBack={() => setShowAlmanac(false)} />
-            </div>
-          </HUDSidePanel>
-        );
-      }
-
-      if (activeView === "levelPicker") {
-        return (
-          <HUDSidePanel side="left">
-            <div
-              className={cn(
-                `w-full transition-all duration-700`,
-                hasInteracted
-                  ? "opacity-100 translate-x-0"
-                  : "opacity-0 -translate-x-12"
-              )}
-            >
+            )}
+            {activeView === "levelPicker" && (
               <HUDLevelPicker
+                className="bg-transparent"
                 onBack={() => setShowLevelPicker(false)}
                 onSelectLevel={async (level) => {
                   setShowLevelPicker(false);
                   await onStartGameWithLevel(level);
                 }}
               />
-            </div>
+            )}
           </HUDSidePanel>
         );
       }
@@ -191,23 +155,7 @@ export const HUDMainMenu: FC<HUDMainMenuProps> = memo(
 
     return (
       <>
-        {REPOSITORY_URL !== "" && (
-          <UIButton
-            asChild
-            variant="ghost"
-            size="icon-lg"
-            className="pointer-events-auto fixed top-6 right-6 z-[100] border border-transparent text-muted-foreground hover:border-primary/30 hover:text-primary md:right-8"
-          >
-            <a
-              href={REPOSITORY_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="View source on GitHub"
-            >
-              <GitHubMarkIcon />
-            </a>
-          </UIButton>
-        )}
+        <GithubButton hasInteracted={hasInteracted} />
         <BlurBackdrop
           hasInteracted={hasInteracted}
           isMenu={isMenu}

@@ -18,6 +18,7 @@ import {
 import { UISlider } from "../ui/UISlider";
 import { UITypography } from "../ui/UITypography";
 import { formatVolume } from "../../utils/formatters";
+import { cn } from "../ui/lib/twUtils";
 
 type HUDAudioControlsProps = {
   className?: string;
@@ -91,7 +92,7 @@ export const HUDAudioControls: FC<HUDAudioControlsProps> = ({
   if (!showAudioSettings) return null;
 
   return (
-    <UICard className={className}>
+    <UICard className={cn("w-full", className)}>
       <UICardHeader>
         <UICardTitle>
           <UIButton

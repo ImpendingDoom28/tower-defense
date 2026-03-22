@@ -33,11 +33,13 @@ type LevelPickerEntry = {
 type HUDLevelPickerProps = {
   onBack: () => void;
   onSelectLevel: (level: PlayableLevelId) => void;
+  className?: string;
 };
 
 export const HUDLevelPicker: FC<HUDLevelPickerProps> = ({
   onBack,
   onSelectLevel,
+  className,
 }) => {
   const tileSize = useGameStore(tileSizeSelector);
   const [entries, setEntries] = useState<LevelPickerEntry[] | null>(null);
@@ -75,18 +77,16 @@ export const HUDLevelPicker: FC<HUDLevelPickerProps> = ({
   }, []);
 
   return (
-    <UICard className="flex flex-col w-full h-full overflow-y-auto bg-card">
+    <UICard className={cn("w-full", className)}>
       <UICardHeader>
         <UICardTitle>
           <UIButton onClick={onBack} variant="ghost" size="icon">
             <ArrowLeft />
           </UIButton>
-          <UITypography variant="h2">Deploy</UITypography>
+          <UITypography variant="h4">Deploy</UITypography>
         </UICardTitle>
         <UICardDescription>
-          <UITypography variant="small" className="text-muted-foreground">
-            Select a theater of operations. Tap a sector to begin.
-          </UITypography>
+          Select a theater of operations. Tap a sector to begin.
         </UICardDescription>
       </UICardHeader>
       <UICardContent className="flex flex-col gap-4">

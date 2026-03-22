@@ -32,7 +32,7 @@ const AlmanacEnemyCard: FC<AlmanacEnemyCardProps> = ({
 }) => {
   return (
     <UICard
-      className={`relative overflow-hidden transition-all duration-300 ${
+      className={`relative ${
         isDiscovered
           ? "ring-1 ring-primary/30"
           : "ring-1 ring-muted-foreground/20 italic"
@@ -154,18 +154,16 @@ export const HUDAlmanac: FC<HUDAlmanacProps> = ({ onBack }) => {
   const totalCount = enemyEntries.length;
 
   return (
-    <UICard className="flex flex-col w-full h-full overflow-y-auto bg-card">
+    <UICard className="w-full">
       <UICardHeader>
         <UICardTitle>
           <UIButton onClick={onBack} variant="ghost" size="icon">
             <ArrowLeft />
           </UIButton>
-          <UITypography variant="h2">Enemy Almanac</UITypography>
+          <UITypography variant="h4">Enemy Almanac</UITypography>
         </UICardTitle>
         <UICardDescription>
-          <UITypography variant="small" className="text-muted-foreground">
-            Discover enemies by encountering them in battle
-          </UITypography>
+          {"Discover enemies by encountering them in battle"}
         </UICardDescription>
       </UICardHeader>
       <UICardContent className="gap-4">

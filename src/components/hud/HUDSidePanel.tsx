@@ -15,7 +15,7 @@ export const HUDSidePanel: FC<HUDSidePanelProps> = ({
   side = "right",
 }) => {
   return (
-    <HUDWrapper className={cn("px-4 py-4 md:py-6", className)}>
+    <HUDWrapper className={cn("px-4", className)}>
       <div
         className={cn(
           "pointer-events-none relative z-10 flex h-full w-full",

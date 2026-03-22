@@ -1,6 +1,7 @@
 import { ComponentProps } from "react";
 
 import { cn } from "./lib/twUtils";
+import { UITypography } from "./UITypography";
 
 function UICard({
   className,
@@ -43,13 +44,21 @@ function UICardTitle({ className, ...props }: ComponentProps<"div">) {
   );
 }
 
-function UICardDescription({ className, ...props }: ComponentProps<"div">) {
+function UICardDescription({
+  className,
+  children,
+  ...props
+}: ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
       className={cn("text-muted-foreground text-xs/relaxed", className)}
       {...props}
-    />
+    >
+      <UITypography variant="small" className="text-muted-foreground">
+        {children}
+      </UITypography>
+    </div>
   );
 }
 

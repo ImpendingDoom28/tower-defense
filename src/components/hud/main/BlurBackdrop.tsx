@@ -26,6 +26,7 @@ export const BlurBackdrop: FC<BlurBackdropProps> = ({
       if (menuRef.current) {
         const h = menuRef.current.clientHeight;
         const w = menuRef.current.clientWidth;
+
         setBlurTranslateReferenceWidthPx(h);
         setBlurDimensions({
           width: `${h}px`,
