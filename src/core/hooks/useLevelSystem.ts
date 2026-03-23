@@ -11,6 +11,7 @@ import {
   TowerType,
 } from "../types/game";
 import { getPositionAlongMultiplePaths } from "../../utils/pathUtils";
+import { tileToWorldCoordinate } from "../../utils/levelEditor";
 import { getTilePlacementState as getSharedTilePlacementState } from "../../utils/tilePlacement";
 import { useNextId } from "./utils/useNextId";
 import { gameEvents } from "../../utils/eventEmitter";
@@ -20,6 +21,7 @@ export const useLevelSystem = () => {
   const {
     buildings,
     gridOffset,
+    gridSize,
     setTowers,
     resetLevelState,
     towers,
@@ -83,9 +85,8 @@ export const useLevelSystem = () => {
       const placementState = getTilePlacementState(gridX, gridZ);
       if (placementState.isBlocked) return false;
 
-      // Calculate world position
-      const worldX = gridOffset + gridX + tileSize / 2;
-      const worldZ = gridOffset + gridZ + tileSize / 2;
+      const worldX = tileToWorldCoordinate(gridX, gridSize, tileSize);
+      const worldZ = tileToWorldCoordinate(gridZ, gridSize, tileSize);
 
       const newTower: Tower = {
         ...towerConfig,
@@ -113,7 +114,7 @@ export const useLevelSystem = () => {
       towerTypes,
       money,
       getTilePlacementState,
-      gridOffset,
+      gridSize,
       tileSize,
       getNextTowerId,
       setTowers,

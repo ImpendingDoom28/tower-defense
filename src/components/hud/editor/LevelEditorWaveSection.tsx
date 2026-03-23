@@ -1,24 +1,23 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 
+import { useEnemyTypeOptions } from "../../../core/hooks/useEnemyTypeOptions";
+import { useLevelEditorStore } from "../../../core/stores/useLevelEditorStore";
+import type { EnemyType } from "../../../core/types/game";
+import { parseNumberInputOr } from "../../../utils/parseNumberInput";
 import { UIAccordionContent, UIAccordionItem, UIAccordionTrigger } from "../../ui/UIAccordion";
 import { UIButton } from "../../ui/UIButton";
 import { UIInput } from "../../ui/UIInput";
 import { UISelect } from "../../ui/UISelect";
 import { UITypography } from "../../ui/UITypography";
-import { enemyTypesSelector, useGameStore } from "../../../core/stores/useGameStore";
-import { useLevelEditorStore } from "../../../core/stores/useLevelEditorStore";
-import type { EnemyType } from "../../../core/types/game";
 
 import { EditorField } from "./EditorField";
 import { EditorSection } from "./EditorSection";
 import { EditorEmptyState } from "./EditorEmptyState";
 
-const FALLBACK_ENEMY_TYPES: EnemyType[] = ["basic", "fast", "tank"];
-
 export const LevelEditorWaveSection = () => {
-  const enemyTypes = useGameStore(enemyTypesSelector);
+  const enemyTypeOptions = useEnemyTypeOptions();
   const {
     draftLevel,
     addWave,
@@ -29,11 +28,6 @@ export const LevelEditorWaveSection = () => {
   } = useLevelEditorStore();
 
   const [collapsedWaves, setCollapsedWaves] = useState<Set<number>>(new Set());
-
-  const enemyTypeOptions = useMemo<EnemyType[]>(() => {
-    if (!enemyTypes) return FALLBACK_ENEMY_TYPES;
-    return Object.keys(enemyTypes) as EnemyType[];
-  }, [enemyTypes]);
 
   const onToggleWave = (waveIndex: number) => {
     setCollapsedWaves((prev) => {
@@ -148,7 +142,7 @@ export const LevelEditorWaveSection = () => {
                             value={enemyGroup.count}
                             onChange={(event) =>
                               updateWaveEnemyGroup(waveIndex, enemyGroupIndex, {
-                                count: Number(event.target.value) || 0,
+                                count: parseNumberInputOr(event, 0),
                               })
                             }
                           />
@@ -161,7 +155,7 @@ export const LevelEditorWaveSection = () => {
                             value={enemyGroup.spawnInterval}
                             onChange={(event) =>
                               updateWaveEnemyGroup(waveIndex, enemyGroupIndex, {
-                                spawnInterval: Number(event.target.value) || 0.1,
+                                spawnInterval: parseNumberInputOr(event, 0.1),
                               })
                             }
                           />

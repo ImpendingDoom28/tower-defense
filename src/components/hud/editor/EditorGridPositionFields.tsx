@@ -1,3 +1,4 @@
+import { parseNumberInputOr } from "../../../utils/parseNumberInput";
 import { UIInput } from "../../ui/UIInput";
 
 import { EditorField } from "./EditorField";
@@ -21,14 +22,14 @@ export const EditorGridPositionFields = ({
         <UIInput
           type="number"
           value={gridX}
-          onChange={(event) => onChangeGridX(Number(event.target.value) || 0)}
+          onChange={(event) => onChangeGridX(parseNumberInputOr(event, 0))}
         />
       </EditorField>
       <EditorField label="Grid Z">
         <UIInput
           type="number"
           value={gridZ}
-          onChange={(event) => onChangeGridZ(Number(event.target.value) || 0)}
+          onChange={(event) => onChangeGridZ(parseNumberInputOr(event, 0))}
         />
       </EditorField>
     </div>

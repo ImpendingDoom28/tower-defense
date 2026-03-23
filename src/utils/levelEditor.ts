@@ -40,27 +40,35 @@ export const tileToWaypoint = (
   };
 };
 
-export const waypointToTile = (
+export const waypointToTileUnclamped = (
   waypoint: PathWaypoint,
   gridSize: number,
   tileSize: number
 ): TileData => {
   const gridOffset = getLevelGridOffset(gridSize, tileSize);
-  const gridX = clampToGrid(
-    (waypoint.x - gridOffset - tileSize / 2) / tileSize,
-    gridSize
-  );
-  const gridZ = clampToGrid(
-    (waypoint.z - gridOffset - tileSize / 2) / tileSize,
-    gridSize
-  );
-
   return {
-    gridX,
-    gridZ,
+    gridX: Math.round((waypoint.x - gridOffset - tileSize / 2) / tileSize),
+    gridZ: Math.round((waypoint.z - gridOffset - tileSize / 2) / tileSize),
   };
 };
 
+export const waypointToTile = (
+  waypoint: PathWaypoint,
+  gridSize: number,
+  tileSize: number
+): TileData => {
+  const { gridX, gridZ } = waypointToTileUnclamped(
+    waypoint,
+    gridSize,
+    tileSize
+  );
+  return {
+    gridX: clampToGrid(gridX, gridSize),
+    gridZ: clampToGrid(gridZ, gridSize),
+  };
+};
+
+// Convert building grid coordinates to world coordinates
 export const withRecalculatedBuildingCoordinates = (
   building: Building,
   gridSize: number,
@@ -91,7 +99,10 @@ export const createEmptyLevelConfig = (
 };
 
 export const computeWaveTotalEnemies = (wave: WaveConfig) => {
-  return wave.enemies.reduce((total, enemyGroup) => total + enemyGroup.count, 0);
+  return wave.enemies.reduce(
+    (total, enemyGroup) => total + enemyGroup.count,
+    0
+  );
 };
 
 export const withRecomputedWaveTotals = (

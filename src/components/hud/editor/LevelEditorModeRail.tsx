@@ -1,8 +1,10 @@
 import { Box, MousePointer2, Route, Eraser, ChevronLeft } from "lucide-react";
 
-import { UIButton } from "../../ui/UIButton";
 import { useLevelEditorStore } from "../../../core/stores/useLevelEditorStore";
 import type { LevelEditorMode, LevelEditorTool } from "../../../core/types/editor";
+import { UIButton } from "../../ui/UIButton";
+
+import { EDITOR_PATH_MODE_ACCENT_BG_CLASS } from "./editorModeAccents";
 
 type ModeEntry = {
   mode: LevelEditorMode;
@@ -14,7 +16,13 @@ type ModeEntry = {
 
 const MODES: ModeEntry[] = [
   { mode: "select", defaultTool: "select", icon: MousePointer2, label: "Select", accentClass: "bg-zinc-600" },
-  { mode: "path", defaultTool: "drawPath", icon: Route, label: "Path", accentClass: "bg-violet-600" },
+  {
+    mode: "path",
+    defaultTool: "drawPath",
+    icon: Route,
+    label: "Path",
+    accentClass: EDITOR_PATH_MODE_ACCENT_BG_CLASS,
+  },
   { mode: "building", defaultTool: "placeBuilding", icon: Box, label: "Building", accentClass: "bg-blue-600" },
   { mode: "erase", defaultTool: "erase", icon: Eraser, label: "Erase", accentClass: "bg-red-600" },
 ];

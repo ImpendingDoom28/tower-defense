@@ -10,6 +10,10 @@ import type {
   WaveConfig,
 } from "../types/game";
 import type { LevelConfigData } from "../../core/levelConfig";
+import {
+  getLevelGridOffset,
+  withRecalculatedBuildingCoordinates,
+} from "../../utils/levelEditor";
 import { useGameStore } from "./useGameStore";
 
 type LevelStoreState = {
@@ -78,8 +82,7 @@ export const useLevelStore = create<LevelStore>((set) => ({
     const towerTypes = useGameStore.getState().towerTypes;
     const enemyTypes = useGameStore.getState().enemyTypes;
 
-    // Calculate grid offset first (needed for coordinate conversion)
-    const gridOffset = -(levelData.gridSize * tileSize) / 2;
+    const gridOffset = getLevelGridOffset(levelData.gridSize, tileSize);
 
     // Only used if we have defined enemies in the level config
     const enemies = levelData.enemies.map((enemy) => ({
@@ -95,12 +98,13 @@ export const useLevelStore = create<LevelStore>((set) => ({
       ...tower,
     }));
 
-    // Convert building grid coordinates to world coordinates
-    const buildings = levelData.buildings.map((building) => ({
-      ...building,
-      x: gridOffset + building.gridX + tileSize / 2,
-      z: gridOffset + building.gridZ + tileSize / 2,
-    }));
+    const buildings = levelData.buildings.map((building) =>
+      withRecalculatedBuildingCoordinates(
+        building,
+        levelData.gridSize,
+        tileSize
+      )
+    );
 
     set({
       money: levelData.startingMoney,
@@ -137,7 +141,10 @@ export const useLevelStore = create<LevelStore>((set) => ({
   },
 
   setGridSize: (gridSize, tileSize) => {
-    set({ gridSize, gridOffset: -(gridSize * tileSize) / 2 });
+    set({
+      gridSize,
+      gridOffset: getLevelGridOffset(gridSize, tileSize),
+    });
   },
 
   setPathWaypoints: (pathWaypoints) => {

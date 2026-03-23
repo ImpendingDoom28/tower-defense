@@ -1,0 +1,4 @@
+export const EDITOR_PATH_MODE_ACCENT_BG_CLASS = "bg-violet-600";
+
+export const EDITOR_PATH_SUBTOOL_ACTIVE_CLASS =
+  `${EDITOR_PATH_MODE_ACCENT_BG_CLASS} hover:bg-violet-700`;

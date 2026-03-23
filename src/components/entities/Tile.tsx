@@ -8,9 +8,10 @@ import {
   useGameStore,
 } from "../../core/stores/useGameStore";
 import {
-  gridOffsetSelector,
+  gridSizeSelector,
   useLevelStore,
 } from "../../core/stores/useLevelStore";
+import { tileToWorldCoordinate } from "../../utils/levelEditor";
 
 type TileProps = {
   gridX: number;
@@ -25,7 +26,7 @@ type TileProps = {
 export const Tile: FC<TileProps> = memo(
   ({ gridX, gridZ, isHovered, canPlace, onClick, onHover, onHoverEnd }) => {
     const tileSize = useGameStore(tileSizeSelector);
-    const gridOffset = useLevelStore(gridOffsetSelector);
+    const gridSize = useLevelStore(gridSizeSelector);
     const pathYOffset = useGameStore(pathYOffsetSelector);
 
     const TILE_POSITION:
@@ -40,11 +41,11 @@ export const Tile: FC<TileProps> = memo(
       | undefined = [tileSize, pathYOffset, tileSize];
     const position = useMemo<[number, number, number]>(
       () => [
-        gridOffset + gridX + tileSize / 2,
+        tileToWorldCoordinate(gridX, gridSize, tileSize),
         0,
-        gridOffset + gridZ + tileSize / 2,
+        tileToWorldCoordinate(gridZ, gridSize, tileSize),
       ],
-      [gridX, gridZ, gridOffset, tileSize]
+      [gridX, gridZ, gridSize, tileSize]
     );
 
     const getColor = (): string => {

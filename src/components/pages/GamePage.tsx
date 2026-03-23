@@ -12,6 +12,7 @@ import { HUDGameMenu } from "../hud/HUDGameMenu";
 import { HUDUpgradePanel } from "../hud/HUDUpgradePanel";
 import { HUDLoading } from "../hud/HUDLoading";
 import { KeyboardHandlingSystem } from "../systems/KeyboardHandlingSystem";
+import { GAME_CANVAS_GL, GAME_CANVAS_STYLE } from "../../constants/canvas";
 import {
   PLAYABLE_LEVEL_IDS,
   type PlayableLevelId,
@@ -27,9 +28,6 @@ import type { Tower } from "../../core/types/game";
 type GamePageProps = {
   onOpenLevelEditor: () => void;
 };
-
-const canvasStyle = { width: "100%", height: "100%" };
-const canvasGl = { antialias: true };
 
 export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
   const [activePlayableLevel, setActivePlayableLevel] =
@@ -148,7 +146,11 @@ export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
         />
       )}
 
-      <Canvas data-testid="game-canvas" style={canvasStyle} gl={canvasGl}>
+      <Canvas
+        data-testid="game-canvas"
+        style={GAME_CANVAS_STYLE}
+        gl={GAME_CANVAS_GL}
+      >
         <Suspense fallback={null}>
           {isGameConfigLoaded && isMenu && <MainMenuScene />}
           {isGameConfigLoaded && !isMenu && (

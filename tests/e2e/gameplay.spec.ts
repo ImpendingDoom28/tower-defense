@@ -1,14 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { gamePlacementPoints } from "./fixtures/canvasPoints";
-
-const onOpenGame = async (page: Page) => {
-  await page.goto("/");
-  await page.getByRole("button", { name: "Play" }).click();
-  await expect(page.getByRole("heading", { name: "Deploy" })).toBeVisible();
-  await page.getByTestId("level-picker-level_1").click();
-  await expect(page.getByRole("heading", { name: "Tower Shop" })).toBeVisible();
-};
+import { onOpenGame } from "./fixtures/navigation";
 
 const onPlaceBasicTower = async (page: Page): Promise<void> => {
   await page.getByRole("button", { name: /Basic Tower/i }).click();
@@ -37,7 +30,7 @@ const onPlaceBasicTower = async (page: Page): Promise<void> => {
 };
 
 test("places a basic tower and starts the first wave", async ({ page }) => {
-  await onOpenGame(page);
+  await onOpenGame(page, { waitForTowerShop: true });
   await onPlaceBasicTower(page);
 
   await expect(page.getByRole("heading", { name: "9950" })).toBeVisible();

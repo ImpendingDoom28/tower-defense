@@ -4,15 +4,13 @@ import { Canvas } from "@react-three/fiber";
 import { HUDLoading } from "../hud/HUDLoading";
 import { HUDLevelEditor } from "../hud/HUDLevelEditor";
 import { LevelEditorScene } from "../scenes/editor/LevelEditorScene";
+import { GAME_CANVAS_GL, GAME_CANVAS_STYLE } from "../../constants/canvas";
 import { useGameSystem } from "../../core/hooks/useGameSystem";
 import { PageWrapper } from "./PageWrapper";
 
 type LevelEditorPageProps = {
   onBackToGame: () => void;
 };
-
-const canvasStyle = { width: "100%", height: "100%" };
-const canvasGl = { antialias: true };
 
 export const LevelEditorPage = ({ onBackToGame }: LevelEditorPageProps) => {
   const { isGameConfigLoaded } = useGameSystem();
@@ -25,7 +23,11 @@ export const LevelEditorPage = ({ onBackToGame }: LevelEditorPageProps) => {
     <PageWrapper>
       {isGameConfigLoaded ? null : <HUDLoading message="Loading editor..." />}
 
-      <Canvas data-testid="editor-canvas" style={canvasStyle} gl={canvasGl}>
+      <Canvas
+        data-testid="editor-canvas"
+        style={GAME_CANVAS_STYLE}
+        gl={GAME_CANVAS_GL}
+      >
         <Suspense fallback={null}>
           {isGameConfigLoaded ? <LevelEditorScene /> : null}
         </Suspense>

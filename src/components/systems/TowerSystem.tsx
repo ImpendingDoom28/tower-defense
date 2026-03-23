@@ -20,10 +20,11 @@ import { TileData } from "../../core/types/utils";
 import { useGameStore } from "../../core/stores/useGameStore";
 import {
   enemiesSelector,
+  gridSizeSelector,
   towersSelector,
-  gridOffsetSelector,
   useLevelStore,
 } from "../../core/stores/useLevelStore";
+import { tileToWorldCoordinate } from "../../utils/levelEditor";
 import { GameEvent } from "../../core/types/enums/events";
 import type { TilePlacementState } from "../../utils/tilePlacement";
 
@@ -52,7 +53,7 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
     hoveredTilePlacementState,
   }) => {
     const { towerTypes, tileSize, towerHeight, gameStatus } = useGameStore();
-    const gridOffset = useLevelStore(gridOffsetSelector);
+    const gridSize = useLevelStore(gridSizeSelector);
     const towers = useLevelStore(towersSelector);
     const enemies = useLevelStore(enemiesSelector);
 
@@ -68,8 +69,8 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
       )
         return null;
 
-      const worldX = gridOffset + hoveredTile.gridX + tileSize / 2;
-      const worldZ = gridOffset + hoveredTile.gridZ + tileSize / 2;
+      const worldX = tileToWorldCoordinate(hoveredTile.gridX, gridSize, tileSize);
+      const worldZ = tileToWorldCoordinate(hoveredTile.gridZ, gridSize, tileSize);
 
       const preview: TowerInstance = {
         ...towerConfig,
@@ -88,7 +89,7 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
       hoveredTile,
       towerTypes,
       hoveredTilePlacementState,
-      gridOffset,
+      gridSize,
       tileSize,
     ]);
 

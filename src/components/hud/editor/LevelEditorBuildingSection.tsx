@@ -6,6 +6,7 @@ import { UIInput } from "../../ui/UIInput";
 import { UISelect } from "../../ui/UISelect";
 import { tileSizeSelector, useGameStore } from "../../../core/stores/useGameStore";
 import { useLevelEditorStore } from "../../../core/stores/useLevelEditorStore";
+import { parseNumberInputOr } from "../../../utils/parseNumberInput";
 
 import { EditorField } from "./EditorField";
 import { EditorGridPositionFields } from "./EditorGridPositionFields";
@@ -57,7 +58,10 @@ export const LevelEditorBuildingSection = () => {
                   step="0.1"
                   value={selectedBuilding.width}
                   onChange={(event) =>
-                    updateSelectedBuilding({ width: Number(event.target.value) || 0.1 }, tileSize)
+                    updateSelectedBuilding(
+                      { width: parseNumberInputOr(event, 0.1) },
+                      tileSize
+                    )
                   }
                 />
               </EditorField>
@@ -67,7 +71,10 @@ export const LevelEditorBuildingSection = () => {
                   step="0.1"
                   value={selectedBuilding.depth}
                   onChange={(event) =>
-                    updateSelectedBuilding({ depth: Number(event.target.value) || 0.1 }, tileSize)
+                    updateSelectedBuilding(
+                      { depth: parseNumberInputOr(event, 0.1) },
+                      tileSize
+                    )
                   }
                 />
               </EditorField>
@@ -77,7 +84,10 @@ export const LevelEditorBuildingSection = () => {
                   step="0.1"
                   value={selectedBuilding.height}
                   onChange={(event) =>
-                    updateSelectedBuilding({ height: Number(event.target.value) || 0.1 }, tileSize)
+                    updateSelectedBuilding(
+                      { height: parseNumberInputOr(event, 0.1) },
+                      tileSize
+                    )
                   }
                 />
               </EditorField>

@@ -14,7 +14,7 @@ import {
 import { useLevelEditorStore } from "../../../core/stores/useLevelEditorStore";
 import { getPathRenderSegments } from "../../../utils/pathUtils";
 import { getTilePlacementState } from "../../../utils/tilePlacement";
-import { getLevelGridOffset } from "../../../utils/levelEditor";
+import { getLevelGridOffset, tileToWorldCoordinate } from "../../../utils/levelEditor";
 import { getCssColorValue, type ColorToken } from "../../ui/lib/cssUtils";
 import type { LevelEditorTool } from "../../../core/types/editor";
 import { LevelEditorCamera } from "./LevelEditorCamera";
@@ -145,9 +145,9 @@ export const LevelEditorScene = () => {
             <mesh
               key={`${gridX}-${gridZ}`}
               position={[
-                gridOffset + gridX + tileSize / 2,
+                tileToWorldCoordinate(gridX, draftLevel.gridSize, tileSize),
                 0,
-                gridOffset + gridZ + tileSize / 2,
+                tileToWorldCoordinate(gridZ, draftLevel.gridSize, tileSize),
               ]}
               onClick={() => onTileClick(gridX, gridZ)}
               onPointerOver={(event) => {

@@ -1,27 +1,23 @@
-import { useMemo } from "react";
-
+import { useEnemyTypeOptions } from "../../../core/hooks/useEnemyTypeOptions";
+import { tileSizeSelector, useGameStore } from "../../../core/stores/useGameStore";
+import { useLevelEditorStore } from "../../../core/stores/useLevelEditorStore";
+import {
+  parseFiniteNumberFromEvent,
+  parseNumberInputOr,
+} from "../../../utils/parseNumberInput";
 import {
   UIAccordionContent,
   UIAccordionItem,
   UIAccordionTrigger,
 } from "../../ui/UIAccordion";
 import { UIInput } from "../../ui/UIInput";
-import {
-  enemyTypesSelector,
-  tileSizeSelector,
-  useGameStore,
-} from "../../../core/stores/useGameStore";
-import { useLevelEditorStore } from "../../../core/stores/useLevelEditorStore";
-import { getCssColorValue } from "../../ui/lib/cssUtils";
-import type { EnemyType } from "../../../core/types/game";
 
+import { EditorColorField } from "./EditorColorField";
 import { EditorField } from "./EditorField";
-
-const FALLBACK_ENEMY_TYPES: EnemyType[] = ["basic", "fast", "tank"];
 
 export const LevelEditorLevelSection = () => {
   const tileSize = useGameStore(tileSizeSelector);
-  const enemyTypes = useGameStore(enemyTypesSelector);
+  const enemyTypeOptions = useEnemyTypeOptions();
   const {
     draftLevel,
     setLevelName,
@@ -31,11 +27,6 @@ export const LevelEditorLevelSection = () => {
     setTileColor,
     setGroundColor,
   } = useLevelEditorStore();
-
-  const enemyTypeOptions = useMemo<EnemyType[]>(() => {
-    if (!enemyTypes) return FALLBACK_ENEMY_TYPES;
-    return Object.keys(enemyTypes) as EnemyType[];
-  }, [enemyTypes]);
 
   return (
     <UIAccordionItem value="level">
@@ -54,7 +45,7 @@ export const LevelEditorLevelSection = () => {
             type="number"
             value={draftLevel.startingMoney}
             onChange={(event) =>
-              setStartingMoney(Number(event.target.value) || 0)
+              setStartingMoney(parseNumberInputOr(event, 0))
             }
           />
         </EditorField>
@@ -66,7 +57,7 @@ export const LevelEditorLevelSection = () => {
             value={draftLevel.gridSize}
             onChange={(event) =>
               setGridSize(
-                Number(event.target.value) || draftLevel.gridSize,
+                parseNumberInputOr(event, draftLevel.gridSize),
                 tileSize
               )
             }
@@ -75,32 +66,18 @@ export const LevelEditorLevelSection = () => {
 
         <div className="grid grid-cols-2 gap-2">
           <EditorField label="Tile Color">
-            <div className="flex gap-1.5">
-              <input
-                type="color"
-                value={draftLevel.tileColor ?? getCssColorValue("editor-default-tile")}
-                onChange={(event) => setTileColor(event.target.value)}
-                className="h-8 w-8 shrink-0 cursor-pointer border border-input bg-transparent p-0.5"
-              />
-              <UIInput
-                value={draftLevel.tileColor ?? getCssColorValue("editor-default-tile")}
-                onChange={(event) => setTileColor(event.target.value)}
-              />
-            </div>
+            <EditorColorField
+              value={draftLevel.tileColor}
+              defaultToken="editor-default-tile"
+              onChange={setTileColor}
+            />
           </EditorField>
           <EditorField label="Ground Color">
-            <div className="flex gap-1.5">
-              <input
-                type="color"
-                value={draftLevel.groundColor ?? getCssColorValue("editor-default-ground")}
-                onChange={(event) => setGroundColor(event.target.value)}
-                className="h-8 w-8 shrink-0 cursor-pointer border border-input bg-transparent p-0.5"
-              />
-              <UIInput
-                value={draftLevel.groundColor ?? getCssColorValue("editor-default-ground")}
-                onChange={(event) => setGroundColor(event.target.value)}
-              />
-            </div>
+            <EditorColorField
+              value={draftLevel.groundColor}
+              defaultToken="editor-default-ground"
+              onChange={setGroundColor}
+            />
           </EditorField>
         </div>
 
@@ -114,9 +91,7 @@ export const LevelEditorLevelSection = () => {
                 onChange={(event) =>
                   setEnemyWeight(
                     enemyType,
-                    Number.isNaN(Number(event.target.value))
-                      ? 0
-                      : Number(event.target.value)
+                    parseFiniteNumberFromEvent(event, 0)
                   )
                 }
               />
