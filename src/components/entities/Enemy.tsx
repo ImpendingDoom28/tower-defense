@@ -14,8 +14,9 @@ import {
   pathWaypointsSelector,
   useLevelStore,
 } from "../../core/stores/useLevelStore";
-import { UpgradeEffect } from "./effects/UpgradeEffect";
+import { MedicHealBurstEffect } from "./effects/MedicHealBurstEffect";
 import { SlowEffect } from "./effects/SlowEffect";
+import { UpgradeEffect } from "./effects/UpgradeEffect";
 
 type EnemyProps = {
   enemy: EnemyInstance;
@@ -238,6 +239,15 @@ export const Enemy: FC<EnemyProps> = memo(
           <SlowEffect
             enemySize={enemy.size}
             shouldStopMovement={shouldStopMovement}
+          />
+        )}
+
+        {enemy.healPulse && (
+          <MedicHealBurstEffect
+            enemyId={enemy.id}
+            healPulse={enemy.healPulse}
+            shouldStopMovement={shouldStopMovement}
+            color={enemy.color}
           />
         )}
 

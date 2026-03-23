@@ -14,7 +14,13 @@ export type TowerType = "basic" | "slow" | "aoe" | "laser";
 export type TowerTargeting = "nearest" | "furthest";
 
 // Enemy types
-export type EnemyType = "basic" | "fast" | "tank";
+export type EnemyType = "basic" | "fast" | "tank" | "medic";
+
+export type HealPulseConfig = {
+  radius: number;
+  intervalSeconds: number;
+  healAmount: number;
+};
 
 // Enemy upgrade types
 export type EnemyUpgradeId = "armored" | "swift" | "slowImmune" | "regenerating";
@@ -92,6 +98,7 @@ export type EnemyConfig = {
   size: number;
   healthLoss: number;
   description?: string;
+  healPulse?: HealPulseConfig;
 };
 
 // Enemy instance
@@ -108,6 +115,7 @@ export type Enemy = Omit<EnemyConfig, "id"> & {
   upgrades: EnemyUpgradeId[];
   regeneration?: number;
   slowResistance?: number;
+  nextHealPulseAt?: number;
 };
 
 // Projectile instance

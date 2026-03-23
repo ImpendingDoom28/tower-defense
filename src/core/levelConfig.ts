@@ -10,7 +10,13 @@ import type {
 } from "./types/game";
 
 const towerTypeSchema = z.enum(["basic", "slow", "aoe", "laser"]);
-const enemyTypeSchema = z.enum(["basic", "fast", "tank"]);
+const enemyTypeSchema = z.enum(["basic", "fast", "tank", "medic"]);
+
+const healPulseConfigSchema = z.object({
+  radius: z.number(),
+  intervalSeconds: z.number(),
+  healAmount: z.number(),
+});
 const projectileTypeSchema = z.enum(["aoe", "single", "beam"]);
 const buildingShapeSchema = z.enum(["box", "cylinder"]);
 
@@ -78,6 +84,10 @@ const enemySchema: z.ZodType<Enemy> = z.object({
   x: z.number(),
   z: z.number(),
   upgrades: z.array(enemyUpgradeIdSchema),
+  regeneration: z.number().optional(),
+  slowResistance: z.number().optional(),
+  healPulse: healPulseConfigSchema.optional(),
+  nextHealPulseAt: z.number().optional(),
 });
 
 const projectileSchema: z.ZodType<Projectile> = z.object({

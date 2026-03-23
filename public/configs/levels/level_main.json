@@ -11,6 +11,7 @@
   "enemyWeights": {
     "basic": 10,
     "fast": 5,
+    "medic": 1,
     "tank": 2
   },
   "gridSize": 20,

@@ -10,10 +10,11 @@ A 3D tower defense game built with React, Tailwind CSS, and React Three Fiber.
   - Slow Tower: Slows enemies on hit with debuff effects
   - AOE Tower: Area of effect damage that hits multiple enemies
   - Laser Tower: Piercing beam that hits multiple enemies in a line (targets furthest enemy)
-- **Three enemy types**:
+- **Four enemy types**:
   - Troop: Standard enemy with balanced stats
   - Fastero: Fast-moving enemy with lower health
   - Tankee: Slow but heavily armored enemy that causes more health loss
+  - Medic: Periodically heals nearby allies (not itself); pulse timing respects game pause; a short ring burst plays when the area heal fires
 - **Enemy wave system** - 7 waves of increasing difficulty with configurable enemy compositions
 - **Level creator** - Dedicated `/editor` route with a mode rail, contextual inspector, and unified publish flow for placing buildings, drawing paths, configuring waves, and exporting schema-compatible level JSON files
 - **Enemy upgrade system** - Optional risk/reward mechanic to empower waves for bonus gold:

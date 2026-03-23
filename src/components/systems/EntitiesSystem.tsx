@@ -20,6 +20,7 @@ import type { TileData } from "../../core/types/utils";
 import type { TilePlacementState } from "../../utils/tilePlacement";
 import { Effect } from "../entities/effects/Effect";
 import { useInstancedProjectiles } from "../../core/hooks/useInstancedProjectiles";
+import { MedicHealPulseSystem } from "./MedicHealPulseSystem";
 
 type EntitiesSystemProps = {
   activeEffects: ActiveEffect[];
@@ -87,6 +88,11 @@ export const EntitiesSystem: FC<EntitiesSystemProps> = ({
 
   return (
     <>
+      <MedicHealPulseSystem
+        shouldStopMovement={shouldStopMovement}
+        onEnemyUpdate={onEnemyUpdate}
+      />
+
       {buildings.map((building) => (
         <Building key={building.id} building={building} />
       ))}

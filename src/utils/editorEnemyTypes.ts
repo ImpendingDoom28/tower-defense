@@ -1,6 +1,11 @@
 import type { EnemyConfig, EnemyType } from "../core/types/game";
 
-export const FALLBACK_ENEMY_TYPES: EnemyType[] = ["basic", "fast", "tank"];
+export const FALLBACK_ENEMY_TYPES: EnemyType[] = [
+  "basic",
+  "fast",
+  "tank",
+  "medic",
+];
 
 export const getEnemyTypeOptions = (
   enemyTypes: Record<EnemyType, EnemyConfig> | null,

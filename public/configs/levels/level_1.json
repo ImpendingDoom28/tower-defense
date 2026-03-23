@@ -1,5 +1,4 @@
 {
-  "name": "1",
   "buildings": [
     {
       "color": "#8b7355",
@@ -101,6 +100,7 @@
   "enemies": [],
   "enemyWeights": null,
   "gridSize": 20,
+  "name": "1",
   "pathWaypoints": [
     [
       {
@@ -170,9 +170,14 @@
           "count": 3,
           "spawnInterval": 1.2,
           "type": "fast"
+        },
+        {
+          "count": 1,
+          "spawnInterval": 1,
+          "type": "medic"
         }
       ],
-      "totalEnemies": 13
+      "totalEnemies": 14
     },
     {
       "enemies": [
