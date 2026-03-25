@@ -39,7 +39,7 @@ describe("Effect", () => {
         (instance) => instance.type === "Mesh"
       );
 
-      expect(effectGroup.props.position).toEqual([1, 2, 3]);
+      expect(effectGroup.props["position"]).toEqual([1, 2, 3]);
       expect(ringMeshes).toHaveLength(2);
     } finally {
       renderer.unmount();

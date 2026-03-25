@@ -1,1 +1,2 @@
 - `game.json` is loading twice at the start of the app
+- Refactor Github icon to be an `.svg` format which is loaded through <img> tag instead of react component (Saves browser rendering performance a lot)

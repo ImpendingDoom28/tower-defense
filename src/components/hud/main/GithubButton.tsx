@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { REPOSITORY_URL } from "../../../constants/game";
-import { GitHubMarkIcon } from "../../ui/GitHubMarkIcon";
+import { GithubIcon } from "../../ui/assets/GithubIcon";
 import { cn } from "../../ui/lib/twUtils";
 import { UIButton } from "../../ui/UIButton";
 
@@ -26,7 +26,7 @@ export const GithubButton: FC<GithubButtonProps> = ({ hasInteracted }) => {
         rel="noopener noreferrer"
         aria-label="View source on GitHub"
       >
-        <GitHubMarkIcon />
+        <GithubIcon />
       </a>
     </UIButton>
   );
