@@ -5,7 +5,10 @@ import { MeshStandardMaterial } from "three";
 
 import { EmissiveParticleSphere } from "./primitives/EmissiveParticleSphere";
 import { EmissiveTorus } from "./primitives/EmissiveTorus";
-import { EFFECT_DUAL_RING_BURST_SPEC, applyDualRingBurst } from "./utils/dualRingBurst";
+import {
+  EFFECT_DUAL_RING_BURST_SPEC,
+  applyDualRingBurst,
+} from "./utils/dualRingBurst";
 
 type EffectProps = {
   position: [number, number, number];

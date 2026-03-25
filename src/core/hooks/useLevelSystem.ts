@@ -225,10 +225,7 @@ export const useLevelSystem = () => {
           regeneration = (regeneration ?? 0) + effect.regeneration;
         }
         if (effect.slowResistance !== undefined) {
-          slowResistance = Math.max(
-            slowResistance ?? 0,
-            effect.slowResistance
-          );
+          slowResistance = Math.max(slowResistance ?? 0, effect.slowResistance);
         }
       }
 
