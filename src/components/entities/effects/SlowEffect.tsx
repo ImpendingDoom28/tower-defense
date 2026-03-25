@@ -4,9 +4,12 @@ import { Mesh } from "three";
 
 import { getCssColorValue } from "../../ui/lib/cssUtils";
 
-type SlowEffectProps = {
+import { EmissiveParticleSphere } from "./primitives/EmissiveParticleSphere";
+import { EmissiveTorus } from "./primitives/EmissiveTorus";
+import type { EnemyAttachedEffectProps } from "./types";
+
+type SlowEffectProps = EnemyAttachedEffectProps & {
   enemySize: number;
-  shouldStopMovement: boolean;
 };
 
 export const SlowEffect: FC<SlowEffectProps> = memo(
@@ -19,14 +22,12 @@ export const SlowEffect: FC<SlowEffectProps> = memo(
 
       const time = state.clock.elapsedTime;
 
-      // Animate rotating ring
       if (ringRef.current) {
         ringRef.current.rotation.y = time * 2;
         const pulse = Math.sin(time * 3) * 0.1 + 1;
         ringRef.current.scale.set(pulse, pulse, pulse);
       }
 
-      // Animate floating particles
       particlesRef.current.forEach((particle, index) => {
         if (!particle) return;
         const angle =
@@ -46,35 +47,24 @@ export const SlowEffect: FC<SlowEffectProps> = memo(
 
     return (
       <group position={[0, enemySize / 2, 0]}>
-        {/* Rotating ring around enemy */}
-        <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[enemySize * 1.25, 0.03, 8, 32]} />
-          <meshStandardMaterial
-            color={slowColor}
-            emissive={slowColor}
-            emissiveIntensity={0.3}
-            transparent
-            opacity={0.5}
-          />
-        </mesh>
-
-        {/* Floating particles */}
+        <EmissiveTorus
+          ref={ringRef}
+          torusArgs={[enemySize * 1.25, 0.03, 8, 32]}
+          color={slowColor}
+          emissiveIntensity={0.3}
+          opacity={0.5}
+        />
         {particlesRef.current.map((_, index) => (
-          <mesh
+          <EmissiveParticleSphere
             key={`slow-particle-${_?.id ?? index}`}
             ref={(el) => {
               if (el) particlesRef.current[index] = el;
             }}
-          >
-            <sphereGeometry args={[0.04, 8, 8]} />
-            <meshStandardMaterial
-              color={slowColor}
-              emissive={slowColor}
-              emissiveIntensity={1}
-              transparent
-              opacity={0.5}
-            />
-          </mesh>
+            radius={0.04}
+            color={slowColor}
+            emissiveIntensity={1}
+            opacity={0.5}
+          />
         ))}
       </group>
     );
