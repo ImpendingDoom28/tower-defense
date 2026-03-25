@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import type { EnemyUpgradeId } from "../types/game";
+import { countUpgradePicks } from "../../utils/enemyUpgradeTierEffects";
 import { pickRandomDistinct } from "../../utils/pickRandomDistinct";
 
 const CHOICE_COUNT = 3;
@@ -12,7 +13,7 @@ type UpgradeStoreState = {
 };
 
 type UpgradeStoreActions = {
-  openEnemyUpgradeGate: (allUpgradeIds: EnemyUpgradeId[]) => void;
+  openEnemyUpgradeGate: (allUpgradeIds: EnemyUpgradeId[]) => boolean;
   confirmEnemyUpgradePick: (id: EnemyUpgradeId) => void;
   resetLevelEnemyUpgrades: () => void;
 };
@@ -29,16 +30,23 @@ export const useUpgradeStore = create<UpgradeStore>((set, get) => ({
   ...DEFAULT_STATE,
 
   openEnemyUpgradeGate: (allUpgradeIds) => {
-    if (allUpgradeIds.length === 0) return;
+    if (allUpgradeIds.length === 0) return false;
+    const { levelEnemyUpgradeStack } = get();
+    const available = allUpgradeIds.filter(
+      (uid) => countUpgradePicks(levelEnemyUpgradeStack, uid) < 3
+    );
+    if (available.length === 0) return false;
     const upgradeChoiceOptions = pickRandomDistinct(
-      allUpgradeIds,
-      Math.min(CHOICE_COUNT, allUpgradeIds.length)
+      available,
+      Math.min(CHOICE_COUNT, available.length)
     );
     set({ pendingEnemyUpgradeGate: true, upgradeChoiceOptions });
+    return true;
   },
 
   confirmEnemyUpgradePick: (id) => {
     const { levelEnemyUpgradeStack } = get();
+    if (countUpgradePicks(levelEnemyUpgradeStack, id) >= 3) return;
     set({
       levelEnemyUpgradeStack: [...levelEnemyUpgradeStack, id],
       pendingEnemyUpgradeGate: false,

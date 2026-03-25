@@ -19,6 +19,12 @@ import {
   upgradeChoiceOptionsSelector,
   useUpgradeStore,
 } from "../../core/stores/useUpgradeStore";
+import {
+  formatTieredUpgradeSummary,
+  getPickTierForUpgrade,
+  getTieredUpgradeEffect,
+  getTotalRewardMultiplierFromStack,
+} from "../../utils/enemyUpgradeTierEffects";
 import { cn } from "../ui/lib/twUtils";
 
 type UpgradeIconProps = {
@@ -78,11 +84,10 @@ export const HUDUpgradePanel: FC<HUDUpgradePanelProps> = ({
   const upgradeChoiceOptions = useUpgradeStore(upgradeChoiceOptionsSelector);
 
   const totalRewardMultiplier = useMemo(() => {
-    if (!enemyUpgrades) return 1;
-    return levelEnemyUpgradeStack.reduce((acc, upgradeId) => {
-      const upgrade = enemyUpgrades[upgradeId];
-      return acc * (upgrade?.rewardMultiplier ?? 1);
-    }, 1);
+    return getTotalRewardMultiplierFromStack(
+      levelEnemyUpgradeStack,
+      enemyUpgrades
+    );
   }, [levelEnemyUpgradeStack, enemyUpgrades]);
 
   const bonusPercentage = useMemo(() => {
@@ -128,6 +133,19 @@ export const HUDUpgradePanel: FC<HUDUpgradePanelProps> = ({
               const upgrade = enemyUpgrades[upgradeId];
               if (!upgrade) return null;
 
+              const nextStackTier = getPickTierForUpgrade(
+                levelEnemyUpgradeStack,
+                upgradeId
+              );
+              const tierSummary = formatTieredUpgradeSummary(
+                upgrade,
+                nextStackTier
+              );
+              const nextPickEffect = getTieredUpgradeEffect(
+                upgrade,
+                nextStackTier
+              );
+
               return (
                 <UIButton
                   key={upgradeId}
@@ -148,10 +166,10 @@ export const HUDUpgradePanel: FC<HUDUpgradePanelProps> = ({
                       {upgrade.name}
                     </UITypography>
                     <UITypography
-                      className={`font-bold shrink-0 ${getTierColor(upgrade.tier)}`}
+                      className={`font-bold shrink-0 ${getTierColor(nextStackTier)}`}
                       variant="medium"
                     >
-                      {getTierLabel(upgrade.tier)}
+                      {getTierLabel(nextStackTier)}
                     </UITypography>
                   </div>
 
@@ -159,14 +177,16 @@ export const HUDUpgradePanel: FC<HUDUpgradePanelProps> = ({
                     className="text-muted-foreground text-left"
                     variant="small"
                   >
-                    {upgrade.description}
+                    {tierSummary}
                   </UITypography>
                   <UITypography
                     className="mt-auto"
                     style={{ color: upgrade.indicatorColor }}
                     variant="small"
                   >
-                    +{Math.round((upgrade.rewardMultiplier - 1) * 100)}% gold
+                    +
+                    {Math.round((nextPickEffect.rewardMultiplier - 1) * 100)}%
+                    gold this pick
                   </UITypography>
                 </UIButton>
               );

@@ -62,7 +62,7 @@ const enemyUpgradeConfigSchema: z.ZodType<EnemyUpgradeConfig> = z.object({
   id: enemyUpgradeIdSchema,
   name: z.string(),
   description: z.string(),
-  tier: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  displayRank: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   rewardMultiplier: z.number(),
   healthMultiplier: z.number().optional(),
   speedMultiplier: z.number().optional(),

@@ -9,7 +9,7 @@ const sampleUpgrades: Record<EnemyUpgradeId, EnemyUpgradeConfig> = {
     id: "armored",
     name: "a",
     description: "",
-    tier: 1,
+    displayRank: 1,
     rewardMultiplier: 1,
     indicatorColor: "#ff0000",
   },
@@ -17,7 +17,7 @@ const sampleUpgrades: Record<EnemyUpgradeId, EnemyUpgradeConfig> = {
     id: "swift",
     name: "s",
     description: "",
-    tier: 1,
+    displayRank: 1,
     rewardMultiplier: 1,
     indicatorColor: "#00ff00",
   },
@@ -25,7 +25,7 @@ const sampleUpgrades: Record<EnemyUpgradeId, EnemyUpgradeConfig> = {
     id: "slowImmune",
     name: "si",
     description: "",
-    tier: 2,
+    displayRank: 2,
     rewardMultiplier: 1,
     indicatorColor: "#0000ff",
   },
@@ -33,22 +33,30 @@ const sampleUpgrades: Record<EnemyUpgradeId, EnemyUpgradeConfig> = {
     id: "regenerating",
     name: "r",
     description: "",
-    tier: 2,
+    displayRank: 2,
     rewardMultiplier: 1,
     indicatorColor: "#ffff00",
   },
 };
 
 describe("getUpgradeIndicatorColors", () => {
-  it("maps ids to indicator colors from config", () => {
+  it("maps stack order with one color per stack tier per upgrade", () => {
     expect(
       getUpgradeIndicatorColors(["armored", "swift"], sampleUpgrades, "#fff")
     ).toEqual(["#ff0000", "#00ff00"]);
   });
 
+  it("repeats a color once per stack tier for the same upgrade", () => {
+    expect(
+      getUpgradeIndicatorColors(
+        ["armored", "armored", "swift"],
+        sampleUpgrades,
+        "#fff"
+      )
+    ).toEqual(["#ff0000", "#ff0000", "#00ff00"]);
+  });
+
   it("uses fallback when config missing or id unknown", () => {
-    expect(getUpgradeIndicatorColors(["armored"], null, "#abc")).toEqual([
-      "#abc",
-    ]);
+    expect(getUpgradeIndicatorColors(["armored"], null, "#abc")).toEqual([]);
   });
 });

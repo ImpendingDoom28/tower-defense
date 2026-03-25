@@ -14,6 +14,11 @@ import {
 import { getPositionAlongMultiplePaths } from "../../utils/pathUtils";
 import { getCssColorValue } from "../../components/ui/lib/cssUtils";
 import { getUpgradeIndicatorColors } from "../../utils/enemyUpgradeVisuals";
+import {
+  getStackTierForEnemy,
+  getTieredUpgradeEffect,
+  getUniqueUpgradeIdsInStackOrder,
+} from "../../utils/enemyUpgradeTierEffects";
 import { tileToWorldCoordinate } from "../../utils/levelEditor";
 import { getTilePlacementState as getSharedTilePlacementState } from "../../utils/tilePlacement";
 import { useNextId } from "./utils/useNextId";
@@ -200,25 +205,29 @@ export const useLevelSystem = () => {
       let regeneration: number | undefined;
       let slowResistance: number | undefined;
 
-      for (const upgradeId of applyUpgrades) {
+      const uniqueUpgradeIds = getUniqueUpgradeIdsInStackOrder(applyUpgrades);
+      for (const upgradeId of uniqueUpgradeIds) {
         const upgrade = enemyUpgrades?.[upgradeId];
         if (!upgrade) continue;
 
-        if (upgrade.healthMultiplier) {
-          health = Math.round(health * upgrade.healthMultiplier);
-        }
-        if (upgrade.speedMultiplier) {
-          speed = speed * upgrade.speedMultiplier;
-        }
-        reward = Math.round(reward * upgrade.rewardMultiplier);
+        const stackTier = getStackTierForEnemy(upgradeId, applyUpgrades);
+        const effect = getTieredUpgradeEffect(upgrade, stackTier);
 
-        if (upgrade.abilities?.regeneration) {
-          regeneration = (regeneration ?? 0) + upgrade.abilities.regeneration;
+        if (effect.healthMultiplier) {
+          health = Math.round(health * effect.healthMultiplier);
         }
-        if (upgrade.resistances?.slow) {
+        if (effect.speedMultiplier) {
+          speed = speed * effect.speedMultiplier;
+        }
+        reward = Math.round(reward * effect.rewardMultiplier);
+
+        if (effect.regeneration) {
+          regeneration = (regeneration ?? 0) + effect.regeneration;
+        }
+        if (effect.slowResistance !== undefined) {
           slowResistance = Math.max(
             slowResistance ?? 0,
-            upgrade.resistances.slow
+            effect.slowResistance
           );
         }
       }
@@ -243,7 +252,7 @@ export const useLevelSystem = () => {
         slowMultiplier: 1,
         x: startPosition.x,
         z: startPosition.z,
-        upgrades: applyUpgrades,
+        upgrades: uniqueUpgradeIds,
         upgradeIndicatorColors,
         regeneration,
         slowResistance,

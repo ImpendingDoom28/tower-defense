@@ -297,7 +297,15 @@ export const useWaveSystem = (gameState: GameState) => {
               const enemyUpgrades = useGameStore.getState().enemyUpgrades;
               if (enemyUpgrades && Object.keys(enemyUpgrades).length > 0) {
                 const ids = Object.keys(enemyUpgrades) as EnemyUpgradeId[];
-                useUpgradeStore.getState().openEnemyUpgradeGate(ids);
+                const opened = useUpgradeStore
+                  .getState()
+                  .openEnemyUpgradeGate(ids);
+                if (!opened) {
+                  isCountingDownRef.current = true;
+                  waveEndTimeRef.current = currentTime;
+                  countdownPauseDurationRef.current = 0;
+                  lastCountdownPlayingTimeRef.current = currentTime;
+                }
               } else {
                 isCountingDownRef.current = true;
                 waveEndTimeRef.current = currentTime;

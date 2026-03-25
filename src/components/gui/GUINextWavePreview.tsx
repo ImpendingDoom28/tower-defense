@@ -19,11 +19,26 @@ import {
   levelEnemyUpgradeStackSelector,
   useUpgradeStore,
 } from "../../core/stores/useUpgradeStore";
-import { EnemyConfig } from "../../core/types/game";
+import { EnemyConfig, EnemyUpgradeStackTier } from "../../core/types/game";
+import {
+  getPickTierForStackEntryIndex,
+  getTotalRewardMultiplierFromStack,
+} from "../../utils/enemyUpgradeTierEffects";
 
 type EnemyPreviewModelProps = {
   enemyConfig: EnemyConfig;
   count: number;
+};
+
+const getStackTierRoman = (tier: EnemyUpgradeStackTier): string => {
+  switch (tier) {
+    case 1:
+      return "I";
+    case 2:
+      return "II";
+    case 3:
+      return "III";
+  }
 };
 
 const EnemyPreviewModel: FC<EnemyPreviewModelProps> = ({
@@ -38,12 +53,12 @@ const EnemyPreviewModel: FC<EnemyPreviewModelProps> = ({
       >
         x{count}
       </UITypography>
-      <div className="flex min-w-0 items-center gap-2">
+      <div className="flex items-center min-w-0 gap-2">
         <span
           className="h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-white/15"
           style={{ backgroundColor: enemyConfig.color }}
         />
-        <UITypography variant="small" className="truncate font-medium">
+        <UITypography variant="small" className="font-medium truncate">
           {enemyConfig.name}
         </UITypography>
       </div>
@@ -76,11 +91,10 @@ export const GUINextWavePreview: FC<GUINextWavePreviewProps> = ({
   );
 
   const totalRewardMultiplier = useMemo(() => {
-    if (!enemyUpgrades || levelEnemyUpgradeStack.length === 0) return 1;
-    return levelEnemyUpgradeStack.reduce((acc, upgradeId) => {
-      const upgrade = enemyUpgrades[upgradeId];
-      return acc * (upgrade?.rewardMultiplier ?? 1);
-    }, 1);
+    return getTotalRewardMultiplierFromStack(
+      levelEnemyUpgradeStack,
+      enemyUpgrades
+    );
   }, [levelEnemyUpgradeStack, enemyUpgrades]);
 
   const bonusPercentage = useMemo(() => {
@@ -132,7 +146,7 @@ export const GUINextWavePreview: FC<GUINextWavePreviewProps> = ({
       <GUIWrapper position={[0, 0.45, 0]} distanceFactor={12}>
         <UICard
           size="sm"
-          className="w-52 border border-border/80 bg-card/95 shadow-panel backdrop-blur-sm"
+          className="border w-52 border-border/80 bg-card/95 shadow-panel backdrop-blur-sm"
         >
           <UICardHeader className="gap-1 border-b border-border/70">
             <UITypography
@@ -149,7 +163,7 @@ export const GUINextWavePreview: FC<GUINextWavePreviewProps> = ({
                 variant="verySmall"
                 className="shrink-0 text-muted-foreground uppercase tracking-[0.16em]"
               >
-                {Math.ceil(timeUntilNextWave / 1000)}s
+                {Math.ceil(timeUntilNextWave ?? 0 / 1000)}s
               </UITypography>
             </div>
           </UICardHeader>
@@ -170,7 +184,7 @@ export const GUINextWavePreview: FC<GUINextWavePreviewProps> = ({
             </div>
 
             {levelEnemyUpgradeStack.length > 0 && enemyUpgrades && (
-              <div className="border-t border-border/70 pt-2">
+              <div className="pt-2 border-t border-border/70">
                 <div className="flex items-center justify-between gap-2">
                   <UITypography
                     variant="verySmall"
@@ -188,19 +202,23 @@ export const GUINextWavePreview: FC<GUINextWavePreviewProps> = ({
                   )}
                 </div>
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  {levelEnemyUpgradeStack.map((upgradeId) => {
+                  {levelEnemyUpgradeStack.map((upgradeId, index) => {
                     const upgrade = enemyUpgrades[upgradeId];
                     if (!upgrade) return null;
+                    const pickTier = getPickTierForStackEntryIndex(
+                      levelEnemyUpgradeStack,
+                      index
+                    );
                     return (
                       <UITypography
-                        key={upgradeId}
+                        key={`${upgradeId}-${index}`}
                         variant="verySmall"
                         className="px-1.5 py-1 font-medium uppercase tracking-[0.14em] text-black"
                         style={{
                           backgroundColor: upgrade.indicatorColor,
                         }}
                       >
-                        {upgrade.name}
+                        {upgrade.name} {getStackTierRoman(pickTier)}
                       </UITypography>
                     );
                   })}

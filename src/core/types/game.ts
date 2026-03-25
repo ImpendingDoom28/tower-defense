@@ -25,11 +25,13 @@ export type HealPulseConfig = {
 // Enemy upgrade types
 export type EnemyUpgradeId = "armored" | "swift" | "slowImmune" | "regenerating";
 
+export type EnemyUpgradeStackTier = 1 | 2 | 3;
+
 export type EnemyUpgradeConfig = {
   id: EnemyUpgradeId;
   name: string;
   description: string;
-  tier: 1 | 2 | 3;
+  displayRank: 1 | 2 | 3;
   rewardMultiplier: number;
   healthMultiplier?: number;
   speedMultiplier?: number;
