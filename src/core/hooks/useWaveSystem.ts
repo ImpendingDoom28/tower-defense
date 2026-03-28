@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef, useEffect, useLayoutEffect } from "react";
 
 import { useWaveStore } from "../stores/useWaveStore";
 import type {
@@ -17,7 +17,11 @@ import {
   currentWaveSelector,
   pathWaypointsSelector,
 } from "../stores/useLevelStore";
-import { useGameStore, waveDelaySelector } from "../stores/useGameStore";
+import {
+  useGameStore,
+  waveDelaySelector,
+  isPageVisibleSelector,
+} from "../stores/useGameStore";
 import { useLevelSystem } from "./useLevelSystem";
 import { useUpgradeStore } from "../stores/useUpgradeStore";
 import { GameEvent } from "../types/enums/events";
@@ -63,6 +67,7 @@ const selectWeightedEnemy = (
 
 export const useWaveSystem = (gameState: GameState) => {
   const { winGame, gameStatus } = gameState;
+  const isPageVisible = useGameStore(isPageVisibleSelector);
   const waveDelay = useGameStore(waveDelaySelector);
 
   const totalWaves = useLevelStore(totalWavesSelector);
@@ -89,6 +94,15 @@ export const useWaveSystem = (gameState: GameState) => {
   const isCountingDownRef = useRef<boolean>(false);
   const timeUntilNextWaveRef = useRef<number | null>(null);
   const pendingCountdownStartAfterUpgradeRef = useRef<boolean>(false);
+  const previousIsPageVisibleRef = useRef(isPageVisible);
+  const prevIsPageVisibleForLayoutRef = useRef(isPageVisible);
+
+  useLayoutEffect(() => {
+    if (isPageVisible && !prevIsPageVisibleForLayoutRef.current) {
+      previousIsPageVisibleRef.current = false;
+    }
+    prevIsPageVisibleForLayoutRef.current = isPageVisible;
+  }, [isPageVisible]);
 
   useEffect(() => {
     if (currentWave === 0) {
@@ -208,17 +222,21 @@ export const useWaveSystem = (gameState: GameState) => {
 
   const updateWaveSpawning = useCallback(
     (currentTime: number) => {
-      const wasPaused =
-        previousGameStatusRef.current === "paused" ||
-        previousGameStatusRef.current === "gameMenu";
-      const isPlaying = gameStatus === "playing";
+      const wasSimulationActive =
+        previousGameStatusRef.current === "playing" &&
+        previousIsPageVisibleRef.current;
+      const isSimulationActive = gameStatus === "playing" && isPageVisible;
 
-      if (wasPaused && isPlaying && lastPlayingTimeRef.current > 0) {
+      if (
+        !wasSimulationActive &&
+        isSimulationActive &&
+        lastPlayingTimeRef.current > 0
+      ) {
         const pauseDuration = currentTime - lastPlayingTimeRef.current;
         totalPauseDurationRef.current += pauseDuration;
       }
 
-      if (pendingCountdownStartAfterUpgradeRef.current && isPlaying) {
+      if (pendingCountdownStartAfterUpgradeRef.current && isSimulationActive) {
         pendingCountdownStartAfterUpgradeRef.current = false;
         isCountingDownRef.current = true;
         waveEndTimeRef.current = currentTime;
@@ -229,11 +247,12 @@ export const useWaveSystem = (gameState: GameState) => {
       if (isCountingDownRef.current) {
         const wasCountdownPaused =
           previousGameStatusRef.current === "paused" ||
-          previousGameStatusRef.current === "gameMenu";
+          previousGameStatusRef.current === "gameMenu" ||
+          !previousIsPageVisibleRef.current;
 
         if (
           wasCountdownPaused &&
-          isPlaying &&
+          isSimulationActive &&
           lastCountdownPlayingTimeRef.current > 0
         ) {
           const pauseDuration =
@@ -241,12 +260,12 @@ export const useWaveSystem = (gameState: GameState) => {
           countdownPauseDurationRef.current += pauseDuration;
         }
 
-        if (isPlaying) {
+        if (isSimulationActive) {
           lastCountdownPlayingTimeRef.current = currentTime;
         }
 
         if (currentWave > 0 && currentWave < totalWaves) {
-          if (isPlaying) {
+          if (isSimulationActive) {
             const elapsedSinceWaveEnd =
               currentTime -
               waveEndTimeRef.current -
@@ -280,8 +299,9 @@ export const useWaveSystem = (gameState: GameState) => {
       }
 
       previousGameStatusRef.current = gameStatus;
+      previousIsPageVisibleRef.current = isPageVisible;
 
-      if (gameStatus !== "playing") {
+      if (gameStatus !== "playing" || !isPageVisible) {
         return;
       }
 
@@ -337,6 +357,7 @@ export const useWaveSystem = (gameState: GameState) => {
     },
     [
       gameStatus,
+      isPageVisible,
       currentWave,
       totalWaves,
       waveDelay,

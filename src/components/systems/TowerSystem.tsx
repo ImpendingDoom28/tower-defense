@@ -39,6 +39,7 @@ type TowerSystemProps = {
   hoveredTile: TileData | null;
   hoveredTilePlacementState: TilePlacementState | null;
   selectedTowerType: TowerType | null;
+  shouldStopMovement: boolean;
 };
 
 export const TowerSystem: FC<TowerSystemProps> = memo(
@@ -51,6 +52,7 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
     hoveredTile,
     selectedTowerType,
     hoveredTilePlacementState,
+    shouldStopMovement,
   }) => {
     const { towerTypes, tileSize, towerHeight, gameStatus } = useGameStore();
     const gridSize = useLevelStore(gridSizeSelector);
@@ -92,6 +94,7 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
     ]);
 
     useFrame((state) => {
+      if (shouldStopMovement) return;
       if (gameStatus !== "playing" && gameStatus !== "menu") return;
 
       const currentTime = state.clock.elapsedTime;

@@ -12,6 +12,7 @@ import type {
   Tower,
 } from "../types/game";
 import { GameConfigData } from "../../core/gameConfig";
+import { getIsDocumentVisible } from "../../utils/isDocumentVisible";
 
 type GameStoreState = {
   enemyHealthLoss: number;
@@ -38,6 +39,7 @@ type GameStoreState = {
   debug: boolean;
   showAudioSettings: boolean;
   denyPulse: Partial<Record<TowerType, number>>;
+  isPageVisible: boolean;
 };
 
 type GameStoreActions = {
@@ -54,6 +56,7 @@ type GameStoreActions = {
   setDebug: (debug: boolean) => void;
   resetGameState: () => void;
   incrementDenyPulse: (towerType: TowerType) => void;
+  setIsPageVisible: (visible: boolean) => void;
 };
 
 type GameStore = GameStoreState & GameStoreActions;
@@ -82,10 +85,12 @@ const DEFAULT_STATE: GameStoreState = {
   pathWidth: 0,
   pathYOffset: 0,
   projectileSize: 0,
+  isPageVisible: true,
 };
 
 export const useGameStore = create<GameStore>((set) => ({
   ...DEFAULT_STATE,
+  isPageVisible: getIsDocumentVisible(),
 
   initializeGameState: (config: GameConfigData) => {
     const {
@@ -178,7 +183,12 @@ export const useGameStore = create<GameStore>((set) => ({
   resetGameState: () => {
     set({
       ...DEFAULT_STATE,
+      isPageVisible: getIsDocumentVisible(),
     });
+  },
+
+  setIsPageVisible: (visible: boolean) => {
+    set({ isPageVisible: visible });
   },
 }));
 
@@ -201,3 +211,4 @@ export const initializeGameStateSelector = (state: GameStore) =>
 export const denyPulseSelector = (state: GameStore) => state.denyPulse;
 export const incrementDenyPulseSelector = (state: GameStore) =>
   state.incrementDenyPulse;
+export const isPageVisibleSelector = (state: GameStore) => state.isPageVisible;

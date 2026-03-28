@@ -26,17 +26,28 @@ export const useGameSystem = () => {
     setDebug,
     resetGameState,
     initializeGameState,
+    isPageVisible,
+    setIsPageVisible,
   } = useGameStore();
 
   const { getNextEffectId } = useEntityIds();
 
   const previousGameStatusRef = useRef<GameStatus>(gameStatus);
 
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      setIsPageVisible(document.visibilityState === "visible");
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [setIsPageVisible]);
+
   const shouldDisableControls =
     gameStatus === "gameOver" ||
     gameStatus === "won" ||
     gameStatus === "gameMenu";
-  const shouldStopMovement = shouldDisableControls || gameStatus === "paused";
+  const shouldStopMovement =
+    shouldDisableControls || gameStatus === "paused" || !isPageVisible;
 
   // Load game config
   useEffect(() => {

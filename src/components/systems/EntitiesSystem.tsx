@@ -127,6 +127,7 @@ export const EntitiesSystem: FC<EntitiesSystemProps> = ({
         selectedTower={selectedTower}
         selectedTowerType={selectedTowerType}
         hoveredTilePlacementState={hoveredTilePlacementState}
+        shouldStopMovement={shouldStopMovement}
       />
 
       {activeEffects.map((effect) => (
