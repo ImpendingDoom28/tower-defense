@@ -12,6 +12,7 @@ import type { EnemyType, PathWaypoint, WaveConfig } from "../types/game";
 import type { TileData } from "../types/utils";
 import { getTilePlacementState } from "../../utils/tilePlacement";
 import {
+  clampWaterToGrid,
   computeWaveTotalEnemies,
   createEmptyLevelConfig,
   filterWatersToGrid,
@@ -21,7 +22,6 @@ import {
   tileToWaypoint,
   waypointToTile,
   withRecalculatedBuildingCoordinates,
-  withRecalculatedWaterCoordinates,
 } from "../../utils/levelEditor";
 
 type LevelEditorStoreState = {
@@ -240,26 +240,14 @@ const createBuildingDefaults = (
 const createWaterDefaults = (
   gridX: number,
   gridZ: number,
-  level: LevelConfigData,
-  tileSize: number
-) => {
-  return withRecalculatedWaterCoordinates(
-    {
-      id: getNextWaterId(level),
-      gridX,
-      gridZ,
-      x: gridX,
-      z: gridZ,
-      shape: "box",
-      width: tileSize * 0.96,
-      depth: tileSize * 0.96,
-      height: 0.06,
-      color: getCssColorValue("scene-water"),
-    },
-    level.gridSize,
-    tileSize
-  );
-};
+  level: LevelConfigData
+) => ({
+  id: getNextWaterId(level),
+  gridX,
+  gridZ,
+  shape: "box" as const,
+  color: getCssColorValue("scene-water"),
+});
 
 export const useLevelEditorStore = create<LevelEditorStore>((set, get) => ({
   ...DEFAULT_STATE,
@@ -329,15 +317,7 @@ export const useLevelEditorStore = create<LevelEditorStore>((set, get) => ({
           ),
           waters: filterWatersToGrid(
             state.draftLevel.waters.map((w) =>
-              withRecalculatedWaterCoordinates(
-                {
-                  ...w,
-                  gridX: Math.max(0, Math.min(nextGridSize - 1, w.gridX)),
-                  gridZ: Math.max(0, Math.min(nextGridSize - 1, w.gridZ)),
-                },
-                nextGridSize,
-                tileSize
-              )
+              clampWaterToGrid(w, nextGridSize)
             ),
             nextGridSize
           ),
@@ -781,7 +761,7 @@ export const useLevelEditorStore = create<LevelEditorStore>((set, get) => ({
             )
           : [
               ...draftLevel.waters,
-              createWaterDefaults(tile.gridX, tile.gridZ, draftLevel, tileSize),
+              createWaterDefaults(tile.gridX, tile.gridZ, draftLevel),
             ];
 
         return {

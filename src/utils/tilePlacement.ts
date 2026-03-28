@@ -2,7 +2,7 @@ import type {
   Building,
   PathWaypoint,
   Tower,
-  WaterBody,
+  WaterBodyConfig,
 } from "../core/types/game";
 
 import { isGridTileOnPath } from "./pathUtils";
@@ -20,7 +20,7 @@ type GetTilePlacementStateParams = {
   gridZ: number;
   towers: Tower[];
   buildings: Building[];
-  waters: WaterBody[];
+  waters: WaterBodyConfig[];
   gridOffset: number;
   tileSize: number;
   pathWaypoints: PathWaypoint[][];

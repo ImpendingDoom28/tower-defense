@@ -33,7 +33,7 @@
       "id": 3,
       "shape": "box",
       "width": 0.9,
-      "x": 12,
+      "x": 24,
       "z": 6
     },
     {
@@ -100,44 +100,6 @@
   "enemies": [],
   "enemyWeights": null,
   "gridSize": 20,
-  "waters": [
-    {
-      "id": 1,
-      "gridX": 0,
-      "gridZ": 0,
-      "x": -9.5,
-      "z": -9.5,
-      "shape": "box",
-      "width": 0.96,
-      "depth": 0.96,
-      "height": 0.06,
-      "color": "#0e7490"
-    },
-    {
-      "id": 2,
-      "gridX": 19,
-      "gridZ": 0,
-      "x": 9.5,
-      "z": -9.5,
-      "shape": "box",
-      "width": 0.96,
-      "depth": 0.96,
-      "height": 0.06,
-      "color": "#0e7490"
-    },
-    {
-      "id": 3,
-      "gridX": 0,
-      "gridZ": 19,
-      "x": -9.5,
-      "z": 9.5,
-      "shape": "box",
-      "width": 0.96,
-      "depth": 0.96,
-      "height": 0.06,
-      "color": "#0e7490"
-    }
-  ],
   "name": "1",
   "pathWaypoints": [
     [
@@ -186,6 +148,57 @@
   "projectiles": [],
   "startingMoney": 150,
   "towers": [],
+  "waters": [
+    {
+      "color": "#0e7490",
+      "gridX": 16,
+      "gridZ": 13,
+      "id": 1,
+      "shape": "box"
+    },
+    {
+      "color": "#0e7490",
+      "gridX": 15,
+      "gridZ": 13,
+      "id": 2,
+      "shape": "box"
+    },
+    {
+      "color": "#0e7490",
+      "gridX": 14,
+      "gridZ": 13,
+      "id": 3,
+      "shape": "box"
+    },
+    {
+      "color": "#0e7490",
+      "gridX": 16,
+      "gridZ": 14,
+      "id": 4,
+      "shape": "box"
+    },
+    {
+      "color": "#0e7490",
+      "gridX": 15,
+      "gridZ": 14,
+      "id": 5,
+      "shape": "box"
+    },
+    {
+      "color": "#0e7490",
+      "gridX": 16,
+      "gridZ": 12,
+      "id": 6,
+      "shape": "box"
+    },
+    {
+      "color": "#0e7490",
+      "gridX": 15,
+      "gridZ": 12,
+      "id": 7,
+      "shape": "box"
+    }
+  ],
   "waveConfigs": [
     {
       "enemies": [

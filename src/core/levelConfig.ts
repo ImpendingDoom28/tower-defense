@@ -7,6 +7,7 @@ import type {
   PathWaypoint,
   Projectile,
   WaterBody,
+  WaterBodyConfig,
   WaveConfig,
 } from "./types/game";
 
@@ -27,17 +28,31 @@ const pathWaypointSchema: z.ZodType<PathWaypoint> = z.object({
   z: z.number(),
 });
 
-const waterBodySchema: z.ZodType<WaterBody> = z.object({
+const waterBodyConfigFields = z.object({
   id: z.number(),
   gridX: z.number(),
   gridZ: z.number(),
-  x: z.number(),
-  z: z.number(),
   shape: buildingShapeSchema,
+  color: z.string(),
+  width: z.number().optional(),
+  depth: z.number().optional(),
+});
+
+export const waterBodyConfigSchema: z.ZodType<WaterBodyConfig> =
+  waterBodyConfigFields;
+
+/** Resolved water instance (e.g. after {@link withRecalculatedWaterCoordinates}). */
+export const waterBodySchema: z.ZodType<WaterBody> = z.object({
+  id: z.number(),
+  gridX: z.number(),
+  gridZ: z.number(),
+  shape: buildingShapeSchema,
+  color: z.string(),
   width: z.number(),
   depth: z.number(),
   height: z.number(),
-  color: z.string(),
+  x: z.number(),
+  z: z.number(),
 });
 
 const waveEnemyGroupSchema = z.object({
@@ -136,7 +151,7 @@ export const levelConfigSchema = z.object({
   gridSize: z.number(),
   tileColor: z.string().optional(),
   groundColor: z.string().optional(),
-  waters: z.array(waterBodySchema).default([]),
+  waters: z.array(waterBodyConfigSchema).default([]),
   pathWaypoints: z.array(z.array(pathWaypointSchema)),
   waveConfigs: z.array(waveConfigSchema),
   buildings: z.array(buildingSchema),

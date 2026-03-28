@@ -109,7 +109,7 @@ export const Tile: FC<TileProps> = memo(
           roughness: 0.75,
         };
       }
-      const land = getCssColorValue("scene-gray-800");
+      const land = getCssColorValue("scene-gray-700");
       return {
         color: land,
         emissive: getCssColorValue("scene-black"),

@@ -182,16 +182,31 @@ export type Building = {
   color: string;
 };
 
-/** Level-placed water pool; same layout fields as {@link Building}, rendered as water. */
+export const DEFAULT_WATER_BODY_WIDTH = 1;
+export const DEFAULT_WATER_BODY_DEPTH = 1;
+export const DEFAULT_WATER_BODY_HEIGHT = 0.03;
+
+/** Water pool in level JSON (grid layout; optional footprint — defaults applied in-game). */
+export type WaterBodyConfig = {
+  id: number;
+  gridX: number;
+  gridZ: number;
+  shape: "box" | "cylinder";
+  color: string;
+  width?: number;
+  depth?: number;
+};
+
+/** Runtime water with resolved footprint, height, and world-space center. */
 export type WaterBody = {
   id: number;
   gridX: number;
   gridZ: number;
-  x: number;
-  z: number;
   shape: "box" | "cylinder";
+  color: string;
   width: number;
   depth: number;
   height: number;
-  color: string;
+  x: number;
+  z: number;
 };

@@ -1,10 +1,14 @@
 import type { LevelConfigData } from "../core/levelConfig";
-import type {
-  Building,
-  EnemyType,
-  PathWaypoint,
-  WaterBody,
-  WaveConfig,
+import {
+  DEFAULT_WATER_BODY_DEPTH,
+  DEFAULT_WATER_BODY_HEIGHT,
+  DEFAULT_WATER_BODY_WIDTH,
+  type Building,
+  type EnemyType,
+  type PathWaypoint,
+  type WaterBody,
+  type WaterBodyConfig,
+  type WaveConfig,
 } from "../core/types/game";
 import type { TileData } from "../core/types/utils";
 
@@ -83,30 +87,50 @@ export const withRecalculatedBuildingCoordinates = (
 };
 
 export const withRecalculatedWaterCoordinates = (
-  water: WaterBody,
+  water: WaterBodyConfig,
   gridSize: number,
   tileSize: number
 ): WaterBody => {
+  const width = water.width ?? DEFAULT_WATER_BODY_WIDTH;
+  const depth = water.depth ?? DEFAULT_WATER_BODY_DEPTH;
+  const height = DEFAULT_WATER_BODY_HEIGHT;
   return {
-    ...water,
+    id: water.id,
+    gridX: water.gridX,
+    gridZ: water.gridZ,
+    shape: water.shape,
+    color: water.color,
+    width,
+    depth,
+    height,
     x: tileToWorldCoordinate(water.gridX, gridSize, tileSize),
     z: tileToWorldCoordinate(water.gridZ, gridSize, tileSize),
   };
 };
 
-export const filterWatersToGrid = (
-  waters: WaterBody[],
+export const clampWaterToGrid = (
+  water: WaterBodyConfig | WaterBody,
   gridSize: number
-): WaterBody[] => {
+): WaterBodyConfig => ({
+  id: water.id,
+  gridX: Math.max(0, Math.min(gridSize - 1, water.gridX)),
+  gridZ: Math.max(0, Math.min(gridSize - 1, water.gridZ)),
+  shape: water.shape,
+  color: water.color,
+  ...(water.width !== undefined ? { width: water.width } : {}),
+  ...(water.depth !== undefined ? { depth: water.depth } : {}),
+});
+
+export const filterWatersToGrid = (
+  waters: WaterBodyConfig[],
+  gridSize: number
+): WaterBodyConfig[] => {
   const filtered = waters.filter(
     (w) =>
-      w.gridX >= 0 &&
-      w.gridX < gridSize &&
-      w.gridZ >= 0 &&
-      w.gridZ < gridSize
+      w.gridX >= 0 && w.gridX < gridSize && w.gridZ >= 0 && w.gridZ < gridSize
   );
   const seen = new Set<string>();
-  const out: WaterBody[] = [];
+  const out: WaterBodyConfig[] = [];
   for (const w of filtered) {
     const key = `${w.gridX},${w.gridZ}`;
     if (seen.has(key)) continue;
@@ -173,9 +197,7 @@ export const normalizeImportedLevel = (
   return {
     ...level,
     name: level.name?.trim() || DEFAULT_LEVEL_NAME,
-    waters: watersFiltered.map((w) =>
-      withRecalculatedWaterCoordinates(w, level.gridSize, tileSize)
-    ),
+    waters: watersFiltered,
     waveConfigs: withRecomputedWaveTotals(level.waveConfigs),
     buildings: level.buildings.map((building) =>
       withRecalculatedBuildingCoordinates(building, level.gridSize, tileSize)
@@ -191,9 +213,7 @@ export const createExportableLevel = (
   return {
     ...level,
     name: level.name.trim(),
-    waters: watersFiltered.map((w) =>
-      withRecalculatedWaterCoordinates(w, level.gridSize, tileSize)
-    ),
+    waters: watersFiltered,
     waveConfigs: withRecomputedWaveTotals(level.waveConfigs),
     buildings: level.buildings.map((building) =>
       withRecalculatedBuildingCoordinates(building, level.gridSize, tileSize)

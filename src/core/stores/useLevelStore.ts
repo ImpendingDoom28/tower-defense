@@ -122,8 +122,8 @@ export const useLevelStore = create<LevelStore>((set) => ({
       )
     );
 
-    const waters = levelData.waters.map((w) =>
-      withRecalculatedWaterCoordinates(w, levelData.gridSize, tileSize)
+    const waters = levelData.waters.map((water) =>
+      withRecalculatedWaterCoordinates(water, levelData.gridSize, tileSize)
     );
 
     set({

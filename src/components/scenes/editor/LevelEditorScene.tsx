@@ -18,7 +18,11 @@ import {
   getPathSegmentYaw,
 } from "../../../utils/pathUtils";
 import { getTilePlacementState } from "../../../utils/tilePlacement";
-import { getLevelGridOffset, tileToWorldCoordinate } from "../../../utils/levelEditor";
+import {
+  getLevelGridOffset,
+  tileToWorldCoordinate,
+  withRecalculatedWaterCoordinates,
+} from "../../../utils/levelEditor";
 import { getCssColorValue, type ColorToken } from "../../ui/lib/cssUtils";
 import type { LevelEditorTool } from "../../../core/types/editor";
 import { LevelEditorCamera } from "./LevelEditorCamera";
@@ -293,7 +297,14 @@ export const LevelEditorScene = () => {
 
       <group>
         {draftLevel.waters.map((water) => (
-          <Water key={water.id} water={water} />
+          <Water
+            key={water.id}
+            water={withRecalculatedWaterCoordinates(
+              water,
+              draftLevel.gridSize,
+              tileSize
+            )}
+          />
         ))}
       </group>
 

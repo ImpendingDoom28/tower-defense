@@ -62,9 +62,10 @@ export const HUDLevelPicker: FC<HUDLevelPickerProps> = ({
         }
       } catch (e) {
         if (!cancelled) {
-          setErrorMessage(
-            e instanceof Error ? e.message : "Failed to load levels"
-          );
+          const errorMessage =
+            e instanceof Error ? e.message : "Failed to load levels";
+          console.error(errorMessage);
+          setErrorMessage(errorMessage);
           setEntries(null);
         }
       }

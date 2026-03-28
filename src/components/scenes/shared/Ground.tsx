@@ -19,9 +19,7 @@ export const Ground: FC = memo(() => {
   const pathYOffset = useGameStore(pathYOffsetSelector);
   const groundSize = gridSize * tileSize;
   const groundY =
-    pathYOffset > 0
-      ? -pathYOffset / 2 - GROUND_BELOW_TILE_BOTTOM
-      : -0.1;
+    pathYOffset > 0 ? -pathYOffset / 2 - GROUND_BELOW_TILE_BOTTOM : -0.1;
 
   return (
     <mesh
@@ -30,7 +28,7 @@ export const Ground: FC = memo(() => {
       receiveShadow
     >
       <planeGeometry args={[groundSize, groundSize]} />
-      <meshStandardMaterial color={getCssColorValue("scene-gray-600")} />
+      <meshStandardMaterial color={getCssColorValue("scene-gray-700")} />
     </mesh>
   );
 });
