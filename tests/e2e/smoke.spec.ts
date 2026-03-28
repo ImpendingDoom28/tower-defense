@@ -21,7 +21,7 @@ test("shows the in-game HUD after starting a run", async ({ page }) => {
   await expect(
     page.getByRole("button", { name: "Start next wave" })
   ).toBeVisible();
-  await expect(page.getByText("Health")).toBeVisible();
+  await expect(page.getByText("Wave:")).toBeVisible();
   await expect(
     page.getByRole("heading", { name: /Empower Next Wave/i })
   ).not.toBeVisible();
