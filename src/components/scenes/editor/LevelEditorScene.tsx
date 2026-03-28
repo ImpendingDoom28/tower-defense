@@ -4,6 +4,7 @@ import type { ThreeEvent } from "@react-three/fiber";
 
 import { EndBuilding } from "../../entities/EndBuilding";
 import { Portal } from "../../entities/Portal";
+import { Water } from "../../entities/Water";
 import { Light } from "../shared/Light";
 import { Skybox } from "../shared/Skybox";
 import {
@@ -32,6 +33,7 @@ const toolTokenMap: Record<LevelEditorTool, ColorToken> = {
   setSpawn: "editor-tool-set-spawn",
   setBase: "editor-tool-set-base",
   erase: "editor-tool-erase",
+  water: "editor-tool-water",
 };
 
 const getToolPreviewColor = (tool: LevelEditorTool): string =>
@@ -125,6 +127,7 @@ export const LevelEditorScene = () => {
             gridZ,
             towers: [],
             buildings: draftLevel.buildings,
+            waters: draftLevel.waters,
             gridOffset,
             tileSize,
             pathWaypoints: draftLevel.pathWaypoints,
@@ -134,14 +137,21 @@ export const LevelEditorScene = () => {
             hoveredTile?.gridX === gridX && hoveredTile?.gridZ === gridZ;
           const canPlaceBuilding =
             activeTool === "placeBuilding" && !placementState.isBlocked;
+          const canPaintWater =
+            activeTool === "water" && !placementState.isOnPath;
+          const canHighlightEditorAction =
+            canPlaceBuilding ||
+            (activeTool === "water" && canPaintWater);
           const baseTileColor = draftLevel.tileColor ?? getCssColorValue("editor-default-tile");
           const color = isHovered
-            ? canPlaceBuilding
+            ? canHighlightEditorAction
               ? getCssColorValue("editor-can-place")
               : getToolPreviewColor(activeTool)
             : placementState.isOnPath
               ? getCssColorValue("scene-gray-800")
-              : baseTileColor;
+              : placementState.isWater
+                ? getCssColorValue("scene-water")
+                : baseTileColor;
           const emissive = isHovered ? color : getCssColorValue("scene-black");
 
           return (
@@ -279,6 +289,12 @@ export const LevelEditorScene = () => {
             </group>
           );
         })}
+      </group>
+
+      <group>
+        {draftLevel.waters.map((water) => (
+          <Water key={water.id} water={water} />
+        ))}
       </group>
 
       <group>

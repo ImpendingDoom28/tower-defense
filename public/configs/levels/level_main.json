@@ -15,6 +15,7 @@
     "tank": 2
   },
   "gridSize": 20,
+  "waters": [],
   "pathWaypoints": [
     [
       {

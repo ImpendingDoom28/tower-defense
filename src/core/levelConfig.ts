@@ -6,6 +6,7 @@ import type {
   Enemy,
   PathWaypoint,
   Projectile,
+  WaterBody,
   WaveConfig,
 } from "./types/game";
 
@@ -24,6 +25,19 @@ const pathWaypointSchema: z.ZodType<PathWaypoint> = z.object({
   x: z.number(),
   y: z.number(),
   z: z.number(),
+});
+
+const waterBodySchema: z.ZodType<WaterBody> = z.object({
+  id: z.number(),
+  gridX: z.number(),
+  gridZ: z.number(),
+  x: z.number(),
+  z: z.number(),
+  shape: buildingShapeSchema,
+  width: z.number(),
+  depth: z.number(),
+  height: z.number(),
+  color: z.string(),
 });
 
 const waveEnemyGroupSchema = z.object({
@@ -122,6 +136,7 @@ export const levelConfigSchema = z.object({
   gridSize: z.number(),
   tileColor: z.string().optional(),
   groundColor: z.string().optional(),
+  waters: z.array(waterBodySchema).default([]),
   pathWaypoints: z.array(z.array(pathWaypointSchema)),
   waveConfigs: z.array(waveConfigSchema),
   buildings: z.array(buildingSchema),

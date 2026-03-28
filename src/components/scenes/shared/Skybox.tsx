@@ -63,7 +63,7 @@ export const Skybox: FC<SkyboxProps> = ({
           <meshBasicMaterial
             color={starColor}
             depthWrite={false}
-            depthTest={false}
+            depthTest={true}
             opacity={star.intensity}
             transparent
           />

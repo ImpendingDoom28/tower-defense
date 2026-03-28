@@ -16,6 +16,7 @@ import { tileToWorldCoordinate } from "../../utils/levelEditor";
 type TileProps = {
   gridX: number;
   gridZ: number;
+  isWater: boolean;
   isHovered: boolean;
   canPlace: boolean;
   onClick: () => void;
@@ -24,7 +25,16 @@ type TileProps = {
 };
 
 export const Tile: FC<TileProps> = memo(
-  ({ gridX, gridZ, isHovered, canPlace, onClick, onHover, onHoverEnd }) => {
+  ({
+    gridX,
+    gridZ,
+    isWater,
+    isHovered,
+    canPlace,
+    onClick,
+    onHover,
+    onHoverEnd,
+  }) => {
     const tileSize = useGameStore(tileSizeSelector);
     const gridSize = useLevelStore(gridSizeSelector);
     const pathYOffset = useGameStore(pathYOffsetSelector);
@@ -48,14 +58,66 @@ export const Tile: FC<TileProps> = memo(
       [gridX, gridZ, gridSize, tileSize]
     );
 
-    const getColor = (): string => {
-      if (isHovered && canPlace) return getCssColorValue("primary");
-      if (isHovered && !canPlace) return getCssColorValue("destructive");
-      return getCssColorValue("scene-gray-800");
-    };
+    const materialProps = useMemo(() => {
+      if (isWater) {
+        const base = getCssColorValue("scene-water");
+        const emissiveHue = getCssColorValue("scene-water-emissive");
+        if (isHovered && canPlace) {
+          return {
+            color: getCssColorValue("primary"),
+            emissive: getCssColorValue("primary"),
+            emissiveIntensity: 0.35,
+            metalness: 0.35,
+            roughness: 0.22,
+          };
+        }
+        if (isHovered && !canPlace) {
+          return {
+            color: getCssColorValue("destructive"),
+            emissive: getCssColorValue("destructive"),
+            emissiveIntensity: 0.35,
+            metalness: 0.35,
+            roughness: 0.22,
+          };
+        }
+        return {
+          color: base,
+          emissive: emissiveHue,
+          emissiveIntensity: 0.12,
+          metalness: 0.28,
+          roughness: 0.18,
+        };
+      }
 
-    const opacity = isHovered ? 0.8 : 0.5;
-    const tileColor = getColor();
+      if (isHovered && canPlace) {
+        const c = getCssColorValue("primary");
+        return {
+          color: c,
+          emissive: c,
+          emissiveIntensity: 0.45,
+          metalness: 0.05,
+          roughness: 0.75,
+        };
+      }
+      if (isHovered && !canPlace) {
+        const c = getCssColorValue("destructive");
+        return {
+          color: c,
+          emissive: c,
+          emissiveIntensity: 0.45,
+          metalness: 0.05,
+          roughness: 0.75,
+        };
+      }
+      const land = getCssColorValue("scene-gray-800");
+      return {
+        color: land,
+        emissive: getCssColorValue("scene-black"),
+        emissiveIntensity: 0,
+        metalness: 0.05,
+        roughness: 0.88,
+      };
+    }, [isWater, isHovered, canPlace]);
 
     const onInnerPointerOver = useCallback(
       (e: ThreeEvent<PointerEvent>) => {
@@ -90,11 +152,13 @@ export const Tile: FC<TileProps> = memo(
       >
         <boxGeometry args={TILE_POSITION} />
         <meshStandardMaterial
-          transparent
-          color={tileColor}
-          emissive={tileColor}
-          opacity={opacity}
-          emissiveIntensity={0.3}
+          transparent={false}
+          opacity={1}
+          color={materialProps.color}
+          emissive={materialProps.emissive}
+          emissiveIntensity={materialProps.emissiveIntensity}
+          metalness={materialProps.metalness}
+          roughness={materialProps.roughness}
         />
       </mesh>
     );

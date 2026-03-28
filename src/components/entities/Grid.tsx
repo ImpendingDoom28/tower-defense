@@ -72,6 +72,7 @@ export const Grid: FC<GridProps> = memo(
               key={`${gridX}-${gridZ}`}
               gridX={gridX}
               gridZ={gridZ}
+              isWater={placementState.isWater}
               isHovered={isHovered}
               canPlace={canPlace}
               onClick={() => onTileClick(gridX, gridZ)}

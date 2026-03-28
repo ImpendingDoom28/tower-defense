@@ -28,6 +28,7 @@ import { GameEvent } from "../types/enums/events";
 export const useLevelSystem = () => {
   const {
     buildings,
+    waters,
     gridOffset,
     gridSize,
     setTowers,
@@ -73,13 +74,14 @@ export const useLevelSystem = () => {
         gridZ,
         towers,
         buildings,
+        waters,
         gridOffset,
         tileSize,
         pathWaypoints,
         pathWidth,
       });
     },
-    [towers, buildings, gridOffset, tileSize, pathWaypoints, pathWidth]
+    [towers, buildings, waters, gridOffset, tileSize, pathWaypoints, pathWidth]
   );
 
   // Towers

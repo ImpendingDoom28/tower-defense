@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import { getCssColorValue } from "../../components/ui/lib/cssUtils";
 import { levelConfigSchema, type LevelConfigData } from "../levelConfig";
+import { useGameStore } from "./useGameStore";
 import type {
   LevelEditorSelection,
   LevelEditorTool,
@@ -13,12 +14,14 @@ import { getTilePlacementState } from "../../utils/tilePlacement";
 import {
   computeWaveTotalEnemies,
   createEmptyLevelConfig,
+  filterWatersToGrid,
   getLevelGridOffset,
   normalizeImportedLevel,
   resizePathWaypoints,
   tileToWaypoint,
   waypointToTile,
   withRecalculatedBuildingCoordinates,
+  withRecalculatedWaterCoordinates,
 } from "../../utils/levelEditor";
 
 type LevelEditorStoreState = {
@@ -84,7 +87,7 @@ const DEFAULT_STATE: LevelEditorStoreState = {
   hasUnsavedChanges: false,
 };
 
-const buildIssues = (level: LevelConfigData) => {
+const buildIssues = (level: LevelConfigData, tileSize: number) => {
   const result = levelConfigSchema.safeParse(level);
   const customIssues: LevelEditorValidationIssue[] = [];
 
@@ -111,6 +114,23 @@ const buildIssues = (level: LevelConfigData) => {
     }
   });
 
+  const waters = level.waters ?? [];
+
+  level.pathWaypoints.forEach((path, pathIndex) => {
+    path.forEach((waypoint, waypointIndex) => {
+      const tile = waypointToTile(waypoint, level.gridSize, tileSize);
+      const onWater = waters.some(
+        (w) => w.gridX === tile.gridX && w.gridZ === tile.gridZ
+      );
+      if (onWater) {
+        customIssues.push({
+          path: `pathWaypoints.${pathIndex}.${waypointIndex}`,
+          message: "Waypoint cannot be on water.",
+        });
+      }
+    });
+  });
+
   if (result.success) {
     return customIssues;
   }
@@ -127,6 +147,15 @@ const buildIssues = (level: LevelConfigData) => {
 const getNextBuildingId = (level: LevelConfigData) => {
   const maxId = level.buildings.reduce(
     (currentMax, building) => Math.max(currentMax, building.id),
+    0
+  );
+
+  return maxId + 1;
+};
+
+const getNextWaterId = (level: LevelConfigData) => {
+  const maxId = level.waters.reduce(
+    (currentMax, water) => Math.max(currentMax, water.id),
     0
   );
 
@@ -208,6 +237,30 @@ const createBuildingDefaults = (
   );
 };
 
+const createWaterDefaults = (
+  gridX: number,
+  gridZ: number,
+  level: LevelConfigData,
+  tileSize: number
+) => {
+  return withRecalculatedWaterCoordinates(
+    {
+      id: getNextWaterId(level),
+      gridX,
+      gridZ,
+      x: gridX,
+      z: gridZ,
+      shape: "box",
+      width: tileSize * 0.96,
+      depth: tileSize * 0.96,
+      height: 0.06,
+      color: getCssColorValue("scene-water"),
+    },
+    level.gridSize,
+    tileSize
+  );
+};
+
 export const useLevelEditorStore = create<LevelEditorStore>((set, get) => ({
   ...DEFAULT_STATE,
 
@@ -274,6 +327,20 @@ export const useLevelEditorStore = create<LevelEditorStore>((set, get) => ({
             nextGridSize,
             tileSize
           ),
+          waters: filterWatersToGrid(
+            state.draftLevel.waters.map((w) =>
+              withRecalculatedWaterCoordinates(
+                {
+                  ...w,
+                  gridX: Math.max(0, Math.min(nextGridSize - 1, w.gridX)),
+                  gridZ: Math.max(0, Math.min(nextGridSize - 1, w.gridZ)),
+                },
+                nextGridSize,
+                tileSize
+              )
+            ),
+            nextGridSize
+          ),
           buildings: state.draftLevel.buildings.map((building) =>
             withRecalculatedBuildingCoordinates(
               {
@@ -297,6 +364,7 @@ export const useLevelEditorStore = create<LevelEditorStore>((set, get) => ({
         basic: state.draftLevel.enemyWeights?.basic ?? 1,
         fast: state.draftLevel.enemyWeights?.fast ?? 1,
         tank: state.draftLevel.enemyWeights?.tank ?? 1,
+        medic: state.draftLevel.enemyWeights?.medic ?? 1,
       };
 
       if (value === null) {
@@ -482,6 +550,22 @@ export const useLevelEditorStore = create<LevelEditorStore>((set, get) => ({
         waypointIndex: selectedWaypointIndex,
       } = state.selected;
 
+      const pathWidth = useGameStore.getState().pathWidth;
+      const waterCheck = getTilePlacementState({
+        gridX: tile.gridX,
+        gridZ: tile.gridZ,
+        towers: [],
+        buildings: state.draftLevel.buildings,
+        waters: state.draftLevel.waters,
+        gridOffset: getLevelGridOffset(state.draftLevel.gridSize, tileSize),
+        tileSize,
+        pathWaypoints: state.draftLevel.pathWaypoints,
+        pathWidth,
+      });
+      if (waterCheck.isWater) {
+        return state;
+      }
+
       const nextWaypoint = tileToWaypoint(
         tile,
         state.draftLevel.gridSize,
@@ -551,6 +635,9 @@ export const useLevelEditorStore = create<LevelEditorStore>((set, get) => ({
       const building = draftLevel.buildings.find(
         (item) => item.gridX === tile.gridX && item.gridZ === tile.gridZ
       );
+      const waterAtTile = draftLevel.waters.find(
+        (item) => item.gridX === tile.gridX && item.gridZ === tile.gridZ
+      );
       const waypointSelection = getWaypointSelectionForTile(
         draftLevel,
         tile,
@@ -597,6 +684,19 @@ export const useLevelEditorStore = create<LevelEditorStore>((set, get) => ({
           };
         }
 
+        if (waterAtTile) {
+          return {
+            draftLevel: {
+              ...draftLevel,
+              waters: draftLevel.waters.filter(
+                (item) => item.id !== waterAtTile.id
+              ),
+            },
+            selected: null,
+            hasUnsavedChanges: true,
+          };
+        }
+
         if (waypointSelection) {
           return {
             draftLevel: {
@@ -626,6 +726,7 @@ export const useLevelEditorStore = create<LevelEditorStore>((set, get) => ({
           gridZ: tile.gridZ,
           towers: [],
           buildings: draftLevel.buildings,
+          waters: draftLevel.waters,
           gridOffset: getLevelGridOffset(draftLevel.gridSize, tileSize),
           tileSize,
           pathWaypoints: draftLevel.pathWaypoints,
@@ -656,12 +757,69 @@ export const useLevelEditorStore = create<LevelEditorStore>((set, get) => ({
         };
       }
 
+      if (activeTool === "water") {
+        const placementState = getTilePlacementState({
+          gridX: tile.gridX,
+          gridZ: tile.gridZ,
+          towers: [],
+          buildings: draftLevel.buildings,
+          waters: draftLevel.waters,
+          gridOffset: getLevelGridOffset(draftLevel.gridSize, tileSize),
+          tileSize,
+          pathWaypoints: draftLevel.pathWaypoints,
+          pathWidth,
+        });
+
+        if (placementState.isOnPath) {
+          return state;
+        }
+
+        const hasWater = placementState.isWater;
+        const nextWaters = hasWater
+          ? draftLevel.waters.filter(
+              (w) => !(w.gridX === tile.gridX && w.gridZ === tile.gridZ)
+            )
+          : [
+              ...draftLevel.waters,
+              createWaterDefaults(tile.gridX, tile.gridZ, draftLevel, tileSize),
+            ];
+
+        return {
+          draftLevel: {
+            ...draftLevel,
+            waters: filterWatersToGrid(nextWaters, draftLevel.gridSize),
+          },
+          hasUnsavedChanges: true,
+        };
+      }
+
       const nextWaypoint = tileToWaypoint(tile, draftLevel.gridSize, tileSize);
       const ensuredPaths = ensurePathExists(
         draftLevel.pathWaypoints,
         selectedPathIndex
       );
       const currentPath = ensuredPaths[selectedPathIndex] ?? [];
+
+      const pathTargetPlacement = getTilePlacementState({
+        gridX: tile.gridX,
+        gridZ: tile.gridZ,
+        towers: [],
+        buildings: draftLevel.buildings,
+        waters: draftLevel.waters,
+        gridOffset: getLevelGridOffset(draftLevel.gridSize, tileSize),
+        tileSize,
+        pathWaypoints: draftLevel.pathWaypoints,
+        pathWidth,
+      });
+
+      if (
+        pathTargetPlacement.isWater &&
+        (activeTool === "drawPath" ||
+          activeTool === "setSpawn" ||
+          activeTool === "setBase")
+      ) {
+        return state;
+      }
 
       if (activeTool === "drawPath") {
         const previousWaypoint = currentPath[currentPath.length - 1];
@@ -888,7 +1046,8 @@ export const useLevelEditorStore = create<LevelEditorStore>((set, get) => ({
   },
 
   validateDraftLevel: () => {
-    const validationIssues = buildIssues(get().draftLevel);
+    const tileSize = useGameStore.getState().tileSize;
+    const validationIssues = buildIssues(get().draftLevel, tileSize);
     set({ validationIssues });
     return validationIssues.length === 0;
   },

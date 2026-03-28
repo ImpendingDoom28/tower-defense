@@ -1,6 +1,6 @@
 import type { EnemyType } from "./game";
 
-export type LevelEditorMode = "select" | "path" | "building" | "erase";
+export type LevelEditorMode = "select" | "path" | "building" | "erase" | "water";
 
 export type LevelEditorTool =
   | "select"
@@ -8,7 +8,8 @@ export type LevelEditorTool =
   | "drawPath"
   | "setSpawn"
   | "setBase"
-  | "erase";
+  | "erase"
+  | "water";
 
 export type LevelEditorPublishState = "drafting" | "needsFixes" | "ready";
 

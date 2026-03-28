@@ -2,12 +2,14 @@ import { FC, useMemo } from "react";
 
 import { TowerSystem } from "./TowerSystem";
 import { Building } from "../entities/Building";
+import { Water } from "../entities/Water";
 import { Enemy } from "../entities/Enemy";
 import { useLevelSystem } from "../../core/hooks/useLevelSystem";
 import {
   buildingsSelector,
   enemiesSelector,
   useLevelStore,
+  watersSelector,
 } from "../../core/stores/useLevelStore";
 import type {
   Tower as TowerInstance,
@@ -63,6 +65,7 @@ export const EntitiesSystem: FC<EntitiesSystemProps> = ({
 }) => {
   const levelSystem = useLevelSystem();
   const buildings = useLevelStore(buildingsSelector);
+  const waters = useLevelStore(watersSelector);
   const enemies = useLevelStore(enemiesSelector);
   const { getTilePlacementState, updateTower } = levelSystem;
 
@@ -95,6 +98,10 @@ export const EntitiesSystem: FC<EntitiesSystemProps> = ({
 
       {buildings.map((building) => (
         <Building key={building.id} building={building} />
+      ))}
+
+      {waters.map((water) => (
+        <Water key={water.id} water={water} />
       ))}
 
       {enemiesToRender.map((enemy) => (

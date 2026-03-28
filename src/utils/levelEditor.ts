@@ -3,6 +3,7 @@ import type {
   Building,
   EnemyType,
   PathWaypoint,
+  WaterBody,
   WaveConfig,
 } from "../core/types/game";
 import type { TileData } from "../core/types/utils";
@@ -81,6 +82,40 @@ export const withRecalculatedBuildingCoordinates = (
   };
 };
 
+export const withRecalculatedWaterCoordinates = (
+  water: WaterBody,
+  gridSize: number,
+  tileSize: number
+): WaterBody => {
+  return {
+    ...water,
+    x: tileToWorldCoordinate(water.gridX, gridSize, tileSize),
+    z: tileToWorldCoordinate(water.gridZ, gridSize, tileSize),
+  };
+};
+
+export const filterWatersToGrid = (
+  waters: WaterBody[],
+  gridSize: number
+): WaterBody[] => {
+  const filtered = waters.filter(
+    (w) =>
+      w.gridX >= 0 &&
+      w.gridX < gridSize &&
+      w.gridZ >= 0 &&
+      w.gridZ < gridSize
+  );
+  const seen = new Set<string>();
+  const out: WaterBody[] = [];
+  for (const w of filtered) {
+    const key = `${w.gridX},${w.gridZ}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(w);
+  }
+  return out;
+};
+
 export const createEmptyLevelConfig = (
   name: string = DEFAULT_LEVEL_NAME
 ): LevelConfigData => {
@@ -88,6 +123,7 @@ export const createEmptyLevelConfig = (
     name,
     startingMoney: DEFAULT_STARTING_MONEY,
     gridSize: DEFAULT_GRID_SIZE,
+    waters: [],
     pathWaypoints: [[]],
     waveConfigs: [],
     buildings: [],
@@ -133,9 +169,13 @@ export const normalizeImportedLevel = (
   level: LevelConfigData,
   tileSize: number
 ): LevelConfigData => {
+  const watersFiltered = filterWatersToGrid(level.waters ?? [], level.gridSize);
   return {
     ...level,
     name: level.name?.trim() || DEFAULT_LEVEL_NAME,
+    waters: watersFiltered.map((w) =>
+      withRecalculatedWaterCoordinates(w, level.gridSize, tileSize)
+    ),
     waveConfigs: withRecomputedWaveTotals(level.waveConfigs),
     buildings: level.buildings.map((building) =>
       withRecalculatedBuildingCoordinates(building, level.gridSize, tileSize)
@@ -147,9 +187,13 @@ export const createExportableLevel = (
   level: LevelConfigData,
   tileSize: number
 ): LevelConfigData => {
+  const watersFiltered = filterWatersToGrid(level.waters ?? [], level.gridSize);
   return {
     ...level,
     name: level.name.trim(),
+    waters: watersFiltered.map((w) =>
+      withRecalculatedWaterCoordinates(w, level.gridSize, tileSize)
+    ),
     waveConfigs: withRecomputedWaveTotals(level.waveConfigs),
     buildings: level.buildings.map((building) =>
       withRecalculatedBuildingCoordinates(building, level.gridSize, tileSize)

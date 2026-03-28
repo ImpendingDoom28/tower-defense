@@ -1,4 +1,4 @@
-import { Box, MousePointer2, Route, Eraser, ChevronLeft } from "lucide-react";
+import { Box, Droplets, MousePointer2, Route, Eraser, ChevronLeft } from "lucide-react";
 
 import { useLevelEditorStore } from "../../../core/stores/useLevelEditorStore";
 import type { LevelEditorMode, LevelEditorTool } from "../../../core/types/editor";
@@ -24,6 +24,7 @@ const MODES: ModeEntry[] = [
     accentClass: EDITOR_PATH_MODE_ACCENT_BG_CLASS,
   },
   { mode: "building", defaultTool: "placeBuilding", icon: Box, label: "Building", accentClass: "bg-blue-600" },
+  { mode: "water", defaultTool: "water", icon: Droplets, label: "Water", accentClass: "bg-cyan-600" },
   { mode: "erase", defaultTool: "erase", icon: Eraser, label: "Erase", accentClass: "bg-red-600" },
 ];
 
@@ -34,6 +35,7 @@ const TOOL_TO_MODE: Record<LevelEditorTool, LevelEditorMode> = {
   setSpawn: "path",
   setBase: "path",
   erase: "erase",
+  water: "water",
 };
 
 type LevelEditorModeRailProps = {

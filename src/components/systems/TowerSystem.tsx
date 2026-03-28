@@ -63,11 +63,9 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
       const towerConfig = towerTypes?.[selectedTowerType];
       if (!towerConfig) return null;
 
-      if (
-        hoveredTilePlacementState?.isOccupiedByTower ||
-        hoveredTilePlacementState?.isOccupiedByBuilding
-      )
+      if (!hoveredTilePlacementState || hoveredTilePlacementState.isBlocked) {
         return null;
+      }
 
       const worldX = tileToWorldCoordinate(hoveredTile.gridX, gridSize, tileSize);
       const worldZ = tileToWorldCoordinate(hoveredTile.gridZ, gridSize, tileSize);

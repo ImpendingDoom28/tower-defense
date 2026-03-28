@@ -181,3 +181,17 @@ export type Building = {
   height: number;
   color: string;
 };
+
+/** Level-placed water pool; same layout fields as {@link Building}, rendered as water. */
+export type WaterBody = {
+  id: number;
+  gridX: number;
+  gridZ: number;
+  x: number;
+  z: number;
+  shape: "box" | "cylinder";
+  width: number;
+  depth: number;
+  height: number;
+  color: string;
+};

@@ -11,12 +11,14 @@ const TOOL_TO_MODE: Record<LevelEditorTool, LevelEditorMode> = {
   setSpawn: "path",
   setBase: "path",
   erase: "erase",
+  water: "water",
 };
 
 const MODE_LABELS: Record<LevelEditorMode, string> = {
   select: "Select",
   path: "Path",
   building: "Building",
+  water: "Water",
   erase: "Erase",
 };
 
@@ -24,6 +26,7 @@ const MODE_DOT_COLORS: Record<LevelEditorMode, string> = {
   select: "bg-zinc-400",
   path: "bg-violet-400",
   building: "bg-blue-400",
+  water: "bg-cyan-400",
   erase: "bg-red-400",
 };
 

@@ -7,6 +7,7 @@ import type {
   PathWaypoint,
   Projectile,
   Tower,
+  WaterBody,
   WaveConfig,
 } from "../types/game";
 import type { LevelConfigData } from "../../core/levelConfig";
@@ -14,6 +15,7 @@ import { getCssColorValue } from "../../components/ui/lib/cssUtils";
 import {
   getLevelGridOffset,
   withRecalculatedBuildingCoordinates,
+  withRecalculatedWaterCoordinates,
 } from "../../utils/levelEditor";
 import { getUpgradeIndicatorColors } from "../../utils/enemyUpgradeVisuals";
 import { useGameStore } from "./useGameStore";
@@ -21,6 +23,7 @@ import { useGameStore } from "./useGameStore";
 type LevelStoreState = {
   // From level config
   gridSize: number;
+  waters: WaterBody[];
   pathWaypoints: PathWaypoint[][];
   totalWaves: number;
   waveConfigs: WaveConfig[];
@@ -66,6 +69,7 @@ const DEFAULT_STATE: LevelStoreState = {
   currentWave: 0,
   gridOffset: 0,
   gridSize: 0,
+  waters: [],
   totalWaves: 0,
   enemyWeights: null,
   pathWaypoints: [],
@@ -118,10 +122,15 @@ export const useLevelStore = create<LevelStore>((set) => ({
       )
     );
 
+    const waters = levelData.waters.map((w) =>
+      withRecalculatedWaterCoordinates(w, levelData.gridSize, tileSize)
+    );
+
     set({
       money: levelData.startingMoney,
       enemiesKilled: 0,
       gridSize: levelData.gridSize,
+      waters,
       pathWaypoints: levelData.pathWaypoints,
       totalWaves: levelData.waveConfigs.length,
       waveConfigs: levelData.waveConfigs,
@@ -217,6 +226,7 @@ export const useLevelStore = create<LevelStore>((set) => ({
 
 export const gridOffsetSelector = (state: LevelStore) => state.gridOffset;
 export const gridSizeSelector = (state: LevelStore) => state.gridSize;
+export const watersSelector = (state: LevelStore) => state.waters;
 export const pathWaypointsSelector = (state: LevelStore) => state.pathWaypoints;
 export const totalWavesSelector = (state: LevelStore) => state.totalWaves;
 export const waveConfigsSelector = (state: LevelStore) => state.waveConfigs;

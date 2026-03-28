@@ -16,7 +16,8 @@ A 3D tower defense game built with React, Tailwind CSS, and React Three Fiber.
   - Tankee: Slow but heavily armored enemy that causes more health loss
   - Medic: Periodically heals nearby allies (not itself); pulse timing respects game pause; a short ring burst plays when the area heal fires
 - **Enemy wave system** - 7 waves of increasing difficulty with configurable enemy compositions
-- **Level creator** - Dedicated `/editor` route with a mode rail, contextual inspector, and unified publish flow for placing buildings, drawing paths, configuring waves, and exporting schema-compatible level JSON files
+- **Level creator** - Dedicated `/editor` route with a mode rail, contextual inspector, and unified publish flow for placing buildings, drawing paths, painting non-buildable water bodies (same schema shape as buildings; stored in `waters` in level JSON), configuring waves, and exporting schema-compatible level JSON files
+- **Terrain** - Opaque grid tiles, thick multi-material ground mesh for a solid “rock” base, and water cells with a distinct wet material; paths cannot be drawn on water
 - **Enemy upgrade system** - After each wave (except before wave 1), pick one of three random upgrades; choices stack for the rest of the level and apply to all spawns. Full-screen blur modal blocks other UI until you choose. The same upgrade can be taken up to three times with stronger effects each tier; at three tiers it is maxed and removed from the pool. Upgrades: Armored (+health), Swift (+speed), Unstoppable (slow immune), Regenerating (HP regen), with tier-scaled gold rewards
 - **Economy system** - Earn money by killing enemies, spend it on towers
 - **Tower management** - Click on placed towers to view info and sell them (50% refund)

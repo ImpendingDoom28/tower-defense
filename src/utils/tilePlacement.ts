@@ -1,4 +1,9 @@
-import type { Building, PathWaypoint, Tower } from "../core/types/game";
+import type {
+  Building,
+  PathWaypoint,
+  Tower,
+  WaterBody,
+} from "../core/types/game";
 
 import { isGridTileOnPath } from "./pathUtils";
 
@@ -6,6 +11,7 @@ export type TilePlacementState = {
   isOccupiedByTower: boolean;
   isOccupiedByBuilding: boolean;
   isOnPath: boolean;
+  isWater: boolean;
   isBlocked: boolean;
 };
 
@@ -14,6 +20,7 @@ type GetTilePlacementStateParams = {
   gridZ: number;
   towers: Tower[];
   buildings: Building[];
+  waters: WaterBody[];
   gridOffset: number;
   tileSize: number;
   pathWaypoints: PathWaypoint[][];
@@ -25,6 +32,7 @@ export const getTilePlacementState = ({
   gridZ,
   towers,
   buildings,
+  waters,
   gridOffset,
   tileSize,
   pathWaypoints,
@@ -44,11 +52,16 @@ export const getTilePlacementState = ({
     pathWaypoints,
     pathWidth
   );
+  const isWater = waters.some(
+    (w) => w.gridX === gridX && w.gridZ === gridZ
+  );
 
   return {
     isOccupiedByTower,
     isOccupiedByBuilding,
     isOnPath,
-    isBlocked: isOccupiedByTower || isOccupiedByBuilding || isOnPath,
+    isWater,
+    isBlocked:
+      isOccupiedByTower || isOccupiedByBuilding || isOnPath || isWater,
   };
 };

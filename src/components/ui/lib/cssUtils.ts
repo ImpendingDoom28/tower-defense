@@ -18,6 +18,8 @@ const colorTokenMap = {
   "scene-slow": "--scene-slow",
   "scene-building-warning": "--scene-building-warning",
   "scene-sky-base": "--scene-sky-base",
+  "scene-water": "--scene-water",
+  "scene-water-emissive": "--scene-water-emissive",
 
   "editor-tool-select": "--editor-tool-select",
   "editor-tool-place-building": "--editor-tool-place-building",
@@ -25,6 +27,7 @@ const colorTokenMap = {
   "editor-tool-set-spawn": "--editor-tool-set-spawn",
   "editor-tool-set-base": "--editor-tool-set-base",
   "editor-tool-erase": "--editor-tool-erase",
+  "editor-tool-water": "--editor-tool-water",
   "editor-indicator-selected": "--editor-indicator-selected",
   "editor-indicator-edge": "--editor-indicator-edge",
   "editor-indicator-path": "--editor-indicator-path",
