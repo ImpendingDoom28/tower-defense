@@ -67,7 +67,6 @@ export const HUDMainMenu: FC<HUDMainMenuProps> = memo(
             )}
             {activeView === "levelPicker" && (
               <HUDLevelPicker
-                className="bg-transparent"
                 onBack={() => setShowLevelPicker(false)}
                 onSelectLevel={async (level) => {
                   setShowLevelPicker(false);

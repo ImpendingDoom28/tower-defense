@@ -10,10 +10,7 @@ const deg = UI_ACTION_DENIED_HUD_SHAKE_ROTATE_DEG;
 
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       keyframes: {
@@ -38,4 +35,4 @@ export default {
     },
   },
   plugins: [],
-}
+};

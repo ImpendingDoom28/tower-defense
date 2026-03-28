@@ -21,7 +21,7 @@ import {
 } from "../../utils/enemyUpgradeTierEffects";
 import { tileToWorldCoordinate } from "../../utils/levelEditor";
 import { getTilePlacementState as getSharedTilePlacementState } from "../../utils/tilePlacement";
-import { useNextId } from "./utils/useNextId";
+import { useEntityIds } from "../contexts/EntityIdContext";
 import { gameEvents } from "../../utils/eventEmitter";
 import { GameEvent } from "../types/enums/events";
 
@@ -57,10 +57,10 @@ export const useLevelSystem = () => {
     enemyUpgrades,
     towerHeight,
   } = useGameStore();
+  const { resetLevelEnemyUpgrades } = useUpgradeStore();
 
-  const getNextTowerId = useNextId();
-  const getNextEnemyId = useNextId();
-  const getNextProjectileId = useNextId();
+  const { getNextTowerId, getNextEnemyId, getNextProjectileId } =
+    useEntityIds();
 
   const calcPathIndex = useCallback(() => {
     return Math.floor(Math.random() * pathWaypoints.length);
@@ -407,8 +407,14 @@ export const useLevelSystem = () => {
     getNextTowerId(true);
     getNextEnemyId(true);
     getNextProjectileId(true);
-    useUpgradeStore.getState().resetLevelEnemyUpgrades();
-  }, [resetLevelState, getNextTowerId, getNextEnemyId, getNextProjectileId]);
+    resetLevelEnemyUpgrades();
+  }, [
+    resetLevelState,
+    getNextTowerId,
+    getNextEnemyId,
+    getNextProjectileId,
+    resetLevelEnemyUpgrades,
+  ]);
 
   return {
     placeTower,

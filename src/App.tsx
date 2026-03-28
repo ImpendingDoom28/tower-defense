@@ -4,6 +4,7 @@ import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { GamePage } from "./components/pages/GamePage";
 import { LevelEditorPage } from "./components/pages/LevelEditorPage";
 import { useAudioSystem } from "./core/hooks/useAudioSystem";
+import { EntityIdProvider } from "./core/contexts/EntityIdContext";
 
 const AppRoutes: FC = () => {
   const navigate = useNavigate();
@@ -14,7 +15,11 @@ const AppRoutes: FC = () => {
     <Routes>
       <Route
         path="/"
-        element={<GamePage onOpenLevelEditor={() => navigate("/editor")} />}
+        element={
+          <EntityIdProvider>
+            <GamePage onOpenLevelEditor={() => navigate("/editor")} />
+          </EntityIdProvider>
+        }
       />
       <Route
         path="/editor"

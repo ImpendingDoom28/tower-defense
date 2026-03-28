@@ -7,58 +7,24 @@
  * Integrates with the game's Projectile type and existing systems.
  */
 
-import { FC, memo, useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import type { ReactElement } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Instances, Instance } from "@react-three/drei";
 import * as THREE from "three";
 
-import {
-  createPoolController,
-  InstancedPoolRef,
-  InstancedPoolStats,
-  InstanceSlot,
-} from "../../utils/InstancedPool";
+import { InstancedPoolStats } from "../../utils/InstancedPool";
+import { patchEmissiveByInstanceColor } from "../../utils/instancedEmissivePatch";
 import { getCssColorValue } from "../../components/ui/lib/cssUtils";
 import type { Projectile, Enemy } from "../types/game";
 import { distance2D } from "../../utils/mathUtils";
-import { useNextId } from "./utils/useNextId";
+import { useEntityIds } from "../contexts/EntityIdContext";
+import { useInstancedEntity } from "./useInstancedEntity";
 
-// Reusable objects to avoid GC pressure in fireProjectile
 const tempDirection = new THREE.Vector3();
 const tempQuaternion = new THREE.Quaternion();
 const tempUpVector = new THREE.Vector3(0, 1, 0);
 const tempPosition = new THREE.Vector3();
 const tempScale = new THREE.Vector3();
-
-const patchEmissiveByInstanceColor = (shader: THREE.Shader) => {
-  shader.fragmentShader = shader.fragmentShader.replace(
-    "#include <emissivemap_fragment>",
-    `#include <emissivemap_fragment>
-#ifdef USE_COLOR
-  totalEmissiveRadiance *= vColor;
-#endif`
-  );
-};
-
-type InstanceSlotsProps = {
-  count: number;
-  slotRefs: React.MutableRefObject<(InstanceSlot | null)[]>;
-};
-
-const InstanceSlots: FC<InstanceSlotsProps> = memo(({ count, slotRefs }) => (
-  <>
-    {Array.from({ length: count }, (_, i) => (
-      <Instance
-        key={i}
-        ref={(el: unknown) => {
-          slotRefs.current[i] = el as InstanceSlot | null;
-        }}
-      />
-    ))}
-  </>
-));
-
-InstanceSlots.displayName = "InstanceSlots";
 
 type PooledProjectile = Projectile & {
   instanceIndex: number;
@@ -91,14 +57,10 @@ type InstancedProjectilesConfig = {
 };
 
 type InstancedProjectilesReturn = {
-  InstancedProjectiles: React.ReactElement;
+  InstancedProjectiles: ReactElement;
   fireProjectile: (params: FireProjectileParams) => Projectile;
   clearAllProjectiles: () => void;
   getActiveProjectiles: () => PooledProjectile[];
-  getStats: () => {
-    spheres: InstancedPoolStats | null;
-    beams: InstancedPoolStats | null;
-  };
 };
 
 export const useInstancedProjectiles = (
@@ -119,17 +81,61 @@ export const useInstancedProjectiles = (
     isPaused,
   } = config;
 
-  const sphereSlotRefs = useRef<(InstanceSlot | null)[]>([]);
-  const beamSlotRefs = useRef<(InstanceSlot | null)[]>([]);
-  const spherePoolRef = useRef<InstancedPoolRef | null>(null);
-  const beamPoolRef = useRef<InstancedPoolRef | null>(null);
+  const sphereInstancesContent = useMemo(
+    () => (
+      <>
+        <sphereGeometry args={[projectileSize, 8, 8]} />
+        <meshStandardMaterial
+          color={defaultColor}
+          emissive={defaultColor}
+          emissiveIntensity={emissiveIntensity}
+          toneMapped={false}
+          onBeforeCompile={patchEmissiveByInstanceColor}
+        />
+      </>
+    ),
+    [defaultColor, emissiveIntensity, projectileSize]
+  );
+
+  const beamInstancesContent = useMemo(
+    () => (
+      <>
+        <cylinderGeometry args={[0.05, 0.05, 1, 8]} />
+        <meshStandardMaterial
+          color={defaultColor}
+          emissive={defaultColor}
+          emissiveIntensity={beamEmissiveIntensity}
+          transparent
+          opacity={0.9}
+          toneMapped={false}
+          onBeforeCompile={patchEmissiveByInstanceColor}
+        />
+      </>
+    ),
+    [beamEmissiveIntensity, defaultColor]
+  );
+
+  const { pool: spherePool, InstancedEntity: InstancedSphereInstances } =
+    useInstancedEntity({
+      limit: maxProjectiles,
+      defaultColor,
+      frustumCulled: false,
+      instancesContent: sphereInstancesContent,
+    });
+
+  const { pool: beamPool, InstancedEntity: InstancedBeamInstances } =
+    useInstancedEntity({
+      limit: maxBeams,
+      defaultColor,
+      frustumCulled: false,
+      instancesContent: beamInstancesContent,
+    });
+
   const projectilesRef = useRef<Map<number, PooledProjectile>>(new Map());
-  const isInitializedRef = useRef(false);
   const enemiesByIdRef = useRef<Map<number, Enemy>>(new Map());
-  // Reusable array to avoid GC pressure in updateProjectilesFrame
   const toRemoveRef = useRef<number[]>([]);
 
-  const getNextProjectileId = useNextId();
+  const { getNextProjectileId } = useEntityIds();
 
   useEffect(() => {
     const nextEnemiesById = new Map<number, Enemy>();
@@ -140,44 +146,11 @@ export const useInstancedProjectiles = (
     enemiesByIdRef.current = nextEnemiesById;
   }, [enemies]);
 
-  const initializePools = useCallback(() => {
-    if (isInitializedRef.current) return;
-
-    spherePoolRef.current = createPoolController(
-      sphereSlotRefs,
-      maxProjectiles
-    );
-    beamPoolRef.current = createPoolController(beamSlotRefs, maxBeams);
-
-    const initColor = new THREE.Color(defaultColor);
-
-    for (let i = 0; i < maxProjectiles; i++) {
-      const slot = sphereSlotRefs.current[i];
-      if (slot) {
-        slot.position.set(0, -10000, 0);
-        slot.scale.set(0, 0, 0);
-        slot.color.copy(initColor);
-      }
-    }
-
-    for (let i = 0; i < maxBeams; i++) {
-      const slot = beamSlotRefs.current[i];
-      if (slot) {
-        slot.position.set(0, -10000, 0);
-        slot.scale.set(0, 0, 0);
-        slot.color.copy(initColor);
-      }
-    }
-
-    isInitializedRef.current = true;
-  }, [defaultColor, maxProjectiles, maxBeams]);
-
   useEffect(() => {
     const projectilesRefCurrent = projectilesRef.current;
 
     return () => {
       projectilesRefCurrent.clear();
-      isInitializedRef.current = false;
       getNextProjectileId(true);
     };
   }, [getNextProjectileId]);
@@ -190,20 +163,20 @@ export const useInstancedProjectiles = (
       projectilesRef.current.delete(projectileId);
 
       if (projectile.isBeam) {
-        beamPoolRef.current?.release(projectile.instanceIndex);
+        beamPool?.release(projectile.instanceIndex);
       } else {
-        spherePoolRef.current?.release(projectile.instanceIndex);
+        spherePool?.release(projectile.instanceIndex);
       }
 
       onRemove(projectileId);
     },
-    [onRemove]
+    [beamPool, onRemove, spherePool]
   );
 
   const fireProjectile = useCallback(
     (params: FireProjectileParams): Projectile => {
       const isBeam = params.projectileType === "beam";
-      const pool = isBeam ? beamPoolRef.current : spherePoolRef.current;
+      const pool = isBeam ? beamPool : spherePool;
 
       if (!pool) {
         console.warn("InstancedProjectiles: Pool not initialized");
@@ -212,7 +185,6 @@ export const useInstancedProjectiles = (
 
       const index = pool.acquire();
       if (index === -1) {
-        console.warn("InstancedProjectiles: Pool exhausted");
         return { ...params, id: -1 };
       }
 
@@ -265,7 +237,7 @@ export const useInstancedProjectiles = (
 
       return pooledProjectile;
     },
-    [defaultColor, getNextProjectileId]
+    [beamPool, defaultColor, getNextProjectileId, spherePool]
   );
 
   const updateProjectilesFrame = useCallback(
@@ -303,7 +275,7 @@ export const useInstancedProjectiles = (
           projectile.currentY += projectile.velocityY * delta;
           projectile.currentZ += projectile.velocityZ * delta;
 
-          spherePoolRef.current?.setPosition(
+          spherePool?.setPosition(
             projectile.instanceIndex,
             projectile.currentX,
             projectile.currentY,
@@ -347,7 +319,7 @@ export const useInstancedProjectiles = (
         removeProjectile(id);
       }
     },
-    [isPaused, beamDuration, hitThreshold, onHit, removeProjectile]
+    [isPaused, beamDuration, onHit, spherePool, hitThreshold, removeProjectile]
   );
 
   const clearAllProjectiles = useCallback((): void => {
@@ -355,25 +327,13 @@ export const useInstancedProjectiles = (
       onRemove(projectile.id);
     });
     projectilesRef.current.clear();
-    spherePoolRef.current?.releaseAll();
-    beamPoolRef.current?.releaseAll();
-  }, [onRemove]);
+    spherePool?.releaseAll();
+    beamPool?.releaseAll();
+  }, [beamPool, onRemove, spherePool]);
 
   const getActiveProjectiles = useCallback((): PooledProjectile[] => {
     return Array.from(projectilesRef.current.values());
   }, []);
-
-  const getStats = useCallback(
-    () => ({
-      spheres: spherePoolRef.current?.getStats() ?? null,
-      beams: beamPoolRef.current?.getStats() ?? null,
-    }),
-    []
-  );
-
-  useEffect(() => {
-    initializePools();
-  }, [initializePools]);
 
   useFrame((state, delta) => {
     updateProjectilesFrame(state.clock.elapsedTime, delta);
@@ -381,31 +341,8 @@ export const useInstancedProjectiles = (
 
   const InstancedProjectiles = (
     <>
-      <Instances limit={maxProjectiles} frustumCulled={false}>
-        <sphereGeometry args={[projectileSize, 8, 8]} />
-        <meshStandardMaterial
-          color={defaultColor}
-          emissive={defaultColor}
-          emissiveIntensity={emissiveIntensity}
-          toneMapped={false}
-          onBeforeCompile={patchEmissiveByInstanceColor}
-        />
-        <InstanceSlots count={maxProjectiles} slotRefs={sphereSlotRefs} />
-      </Instances>
-
-      <Instances limit={maxBeams} frustumCulled={false}>
-        <cylinderGeometry args={[0.05, 0.05, 1, 8]} />
-        <meshStandardMaterial
-          color={defaultColor}
-          emissive={defaultColor}
-          emissiveIntensity={beamEmissiveIntensity}
-          transparent
-          opacity={0.9}
-          toneMapped={false}
-          onBeforeCompile={patchEmissiveByInstanceColor}
-        />
-        <InstanceSlots count={maxBeams} slotRefs={beamSlotRefs} />
-      </Instances>
+      {InstancedSphereInstances}
+      {InstancedBeamInstances}
     </>
   );
 
@@ -414,7 +351,6 @@ export const useInstancedProjectiles = (
     fireProjectile,
     clearAllProjectiles,
     getActiveProjectiles,
-    getStats,
   };
 };
 

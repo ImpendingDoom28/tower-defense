@@ -15,14 +15,14 @@ export const HUDSidePanel: FC<HUDSidePanelProps> = ({
   side = "right",
 }) => {
   return (
-    <HUDWrapper className={cn("px-4", className)}>
+    <HUDWrapper className={cn(className)}>
       <div
         className={cn(
           "pointer-events-none relative z-10 flex h-full w-full",
           side === "right" ? "justify-end" : "justify-start"
         )}
       >
-        <div className="flex w-full h-full max-w-md pointer-events-auto md:max-w-lg">
+        <div className="flex w-full pointer-events-auto md:max-w-xl">
           {children}
         </div>
       </div>

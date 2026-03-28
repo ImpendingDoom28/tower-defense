@@ -1,7 +1,7 @@
 import { useCallback, useRef, useEffect } from "react";
 
 import { useGameStore } from "../stores/useGameStore";
-import { useNextId } from "./utils/useNextId";
+import { useEntityIds } from "../contexts/EntityIdContext";
 import { GameStatus } from "../types/game";
 import { loadGameConfig } from "../gameConfig";
 import { gameEvents } from "../../utils/eventEmitter";
@@ -28,7 +28,7 @@ export const useGameSystem = () => {
     initializeGameState,
   } = useGameStore();
 
-  const getNextEffectId = useNextId();
+  const { getNextEffectId } = useEntityIds();
 
   const previousGameStatusRef = useRef<GameStatus>(gameStatus);
 
