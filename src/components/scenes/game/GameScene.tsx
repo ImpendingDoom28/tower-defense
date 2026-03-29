@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import type { PlayableLevelId } from "../../../constants/playableLevels";
 import { Grid } from "../../entities/Grid";
 import { PlacementHighlightOverlay } from "../../entities/PlacementHighlightOverlay";
+import { RelayBuffPreviewOverlay } from "../../entities/RelayBuffPreviewOverlay";
 import { Path } from "../../entities/Path";
 import { GameAudioListenerSync } from "./GameAudioListenerSync";
 import { GameCamera } from "./GameCamera";
@@ -15,6 +16,7 @@ import type {
   ActiveEffect,
 } from "../../../core/types/game";
 import { WaveLoopSystem } from "../../systems/WaveLoopSystem";
+import { useLevelSystem } from "../../../core/hooks/useLevelSystem";
 import { WaveSystem } from "../../../core/hooks/useWaveSystem";
 import { TileData } from "../../../core/types/utils";
 import { EntitiesSystem } from "../../systems/EntitiesSystem";
@@ -77,6 +79,12 @@ export const GameScene: React.FC<GameSceneProps> = ({
   const pathWaypoints = useLevelStore(pathWaypointsSelector);
   const [hoveredTile, setHoveredTile] = useState<TileData | null>(null);
 
+  const { getTilePlacementState } = useLevelSystem();
+  const hoveredTilePlacementState =
+    hoveredTile !== null
+      ? getTilePlacementState(hoveredTile.gridX, hoveredTile.gridZ)
+      : null;
+
   const handleTileHover = useCallback(
     (gridX: number, gridZ: number) => {
       setHoveredTile({ gridX, gridZ });
@@ -123,6 +131,12 @@ export const GameScene: React.FC<GameSceneProps> = ({
 
       <PlacementHighlightOverlay
         hoveredTile={hoveredTile}
+        selectedTowerType={selectedTowerType}
+      />
+
+      <RelayBuffPreviewOverlay
+        hoveredTile={hoveredTile}
+        hoveredTilePlacementState={hoveredTilePlacementState}
         selectedTowerType={selectedTowerType}
       />
 

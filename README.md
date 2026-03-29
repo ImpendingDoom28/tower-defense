@@ -5,11 +5,13 @@ A 3D tower defense game built with React, Tailwind CSS, and React Three Fiber.
 ## Features
 
 - **Tile-based tower placement system** - Click tiles on the grid to place towers; invalid path placement shows red tower preview
-- **Four tower types**:
+- **Six tower types**:
   - Basic Tower: Fast firing, single target damage (targets nearest enemy)
   - Slow Tower: Slows enemies on hit with debuff effects
   - AOE Tower: Area of effect damage that hits multiple enemies
   - Laser Tower: Piercing beam that hits multiple enemies in a line (targets furthest enemy)
+  - Relay Tower: Support tower that buffs **edge-adjacent** combat towers (+damage and +range; multiple relays stack with diminishing returns). Does not attack; placement preview highlights neighbor tiles that already hold a combat tower
+  - Chain Lightning: First hit on the primary target, then the bolt travels and strikes up to three more enemies in order (each hop deals 15% less damage than the previous hit, multiplicative)
 - **Four enemy types**:
   - Troop: Standard enemy with balanced stats
   - Fastero: Fast-moving enemy with lower health

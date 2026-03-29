@@ -11,7 +11,14 @@ import type {
   WaveConfig,
 } from "./types/game";
 
-const towerTypeSchema = z.enum(["basic", "slow", "aoe", "laser"]);
+const towerTypeSchema = z.enum([
+  "basic",
+  "slow",
+  "aoe",
+  "laser",
+  "relay",
+  "chain",
+]);
 const enemyTypeSchema = z.enum(["basic", "fast", "tank", "medic"]);
 
 const healPulseConfigSchema = z.object({
@@ -19,7 +26,7 @@ const healPulseConfigSchema = z.object({
   intervalSeconds: z.number(),
   healAmount: z.number(),
 });
-const projectileTypeSchema = z.enum(["aoe", "single", "beam"]);
+const projectileTypeSchema = z.enum(["aoe", "single", "beam", "chain"]);
 const buildingShapeSchema = z.enum(["box", "cylinder"]);
 
 const pathWaypointSchema: z.ZodType<PathWaypoint> = z.object({

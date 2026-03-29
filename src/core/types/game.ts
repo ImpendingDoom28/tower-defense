@@ -10,7 +10,7 @@ export type GameStatus =
   | "won";
 
 // Tower types
-export type TowerType = "basic" | "slow" | "aoe" | "laser";
+export type TowerType = "basic" | "slow" | "aoe" | "laser" | "relay" | "chain";
 export type TowerTargeting = "nearest" | "furthest";
 
 // Enemy types
@@ -48,7 +48,7 @@ export type EnemyUpgradeConfig = {
   indicatorColor: string;
 };
 
-export type ProjectileType = "aoe" | "single" | "beam";
+export type ProjectileType = "aoe" | "single" | "beam" | "chain";
 
 // Path waypoint
 export type PathWaypoint = {
@@ -80,6 +80,18 @@ export type TowerConfig = {
   topShape?: "cone" | "sphere" | "cylinder" | "flat" | "coil";
   bodyWidthScale?: number;
   topScale?: number;
+
+  /** Relay: fraction added to neighbor damage per source before diminishing (e.g. 0.15 = +15% first relay). */
+  relayNeighborDamageBonusFraction?: number;
+  /** Relay: fraction added to neighbor range per source before diminishing. */
+  relayNeighborRangeBonusFraction?: number;
+  /** Relay: multiplier for each additional adjacent relay (default 0.5). */
+  relayDiminishingFactor?: number;
+
+  /** Chain: max hops after first hit (default 3). */
+  maxChainHops?: number;
+  /** Chain: damage multiplier per hop after first hit (default 0.85). */
+  chainDamageMultiplierPerHop?: number;
 };
 
 // Tower instance
@@ -147,6 +159,8 @@ export type Projectile = {
   aoeRadius?: number;
   maxPierce?: number;
   pierceEnemyIds?: number[];
+  /** Chain lightning: ordered extra hops; each hop applies when the bolt reaches that enemy. */
+  chainAdditionalHits?: Array<{ enemyId: number; damage: number }>;
 };
 
 // Wave enemy group

@@ -31,6 +31,8 @@ type TowerProps = {
   onClick?: () => void;
   isPreview?: boolean;
   isInvalidPlacement?: boolean;
+  /** Range ring and combat (when set, includes relay adjacency buffs). */
+  effectiveRange?: number;
 };
 
 export const Tower: FC<TowerProps> = memo(
@@ -40,6 +42,7 @@ export const Tower: FC<TowerProps> = memo(
     isSelected = false,
     isPreview = false,
     isInvalidPlacement = false,
+    effectiveRange,
   }) => {
     syncSharedMaterials();
     const { towerBaseRadius, towerHeight } = useGameStore();
@@ -198,9 +201,15 @@ export const Tower: FC<TowerProps> = memo(
           />
         </mesh>
         {/* Selection indicator */}
-        {isSelected && (
+        {isSelected && (effectiveRange ?? tower.range) > 0.01 && (
           <mesh position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <ringGeometry args={[tower.range * 0.9, tower.range, 32]} />
+            <ringGeometry
+              args={[
+                (effectiveRange ?? tower.range) * 0.9,
+                effectiveRange ?? tower.range,
+                32,
+              ]}
+            />
             <meshStandardMaterial
               color={tower.color}
               transparent

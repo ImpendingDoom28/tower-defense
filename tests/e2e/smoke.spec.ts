@@ -26,9 +26,7 @@ test("shows the in-game HUD after starting a run", async ({ page }) => {
   await expect(page.getByText("Empower Next Wave")).not.toBeVisible();
 });
 
-test("opens Enemy Almanac from the main menu and returns", async ({
-  page,
-}) => {
+test("opens Enemy Almanac from the main menu and returns", async ({ page }) => {
   await onOpenMainMenu(page);
 
   await page.getByRole("button", { name: "Enemy Almanac" }).click();
@@ -44,9 +42,7 @@ test("opens Enemy Almanac from the main menu and returns", async ({
   ).toBeVisible();
 });
 
-test("opens Audio Settings from the main menu and closes", async ({
-  page,
-}) => {
+test("opens Audio Settings from the main menu and closes", async ({ page }) => {
   await onOpenMainMenu(page);
 
   await page.getByRole("button", { name: "Audio Settings" }).click();
@@ -63,14 +59,16 @@ test("shows all tower types in the shop after starting a run", async ({
 }) => {
   await onOpenGame(page, { waitForTowerShop: true });
 
-  await expect(
-    page.getByRole("button", { name: /Slow Tower/i })
-  ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: /AOE Tower/i })
-  ).toBeVisible();
+  await expect(page.getByRole("button", { name: /Slow Tower/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /AOE Tower/i })).toBeVisible();
   await expect(
     page.getByRole("button", { name: /Laser Tower/i })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Relay Tower/i })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Chain Lightning/i })
   ).toBeVisible();
 });
 
@@ -81,15 +79,11 @@ test("opens the game menu from gameplay with Escape and resumes", async ({
 
   await page.keyboard.press("Escape");
 
-  await expect(
-    page.getByRole("heading", { name: "Game Menu" })
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Game Menu" })).toBeVisible();
 
   await page.getByRole("button", { name: "Resume" }).click();
 
-  await expect(
-    page.getByRole("heading", { name: "Tower Shop" })
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Tower Shop" })).toBeVisible();
 });
 
 test("shows the level picker with Deploy before starting a level", async ({
@@ -103,28 +97,27 @@ test("shows the level picker with Deploy before starting a level", async ({
   await expect(page.getByTestId("level-picker-level_1")).toBeVisible();
 });
 
-test(
-  "shows Empower Next Wave after wave 1 completes and clears after pick",
-  async ({ page }) => {
-    test.setTimeout(180_000);
+test("shows Empower Next Wave after wave 1 completes and clears after pick", async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
 
-    await onOpenGame(page, { waitForTowerShop: true });
+  await onOpenGame(page, { waitForTowerShop: true });
 
-    await onPlaceMultipleBasicTowers(page, [100, 50]);
+  await onPlaceMultipleBasicTowers(page, [100, 50]);
 
-    await page.getByRole("button", { name: "Start next wave" }).click();
+  await page.getByRole("button", { name: "Start next wave" }).click();
 
-    await expect(page.getByText("Empower Next Wave")).toBeVisible({
-      timeout: 120_000,
-    });
+  await expect(page.getByText("Empower Next Wave")).toBeVisible({
+    timeout: 120_000,
+  });
 
-    await page
-      .getByRole("button", {
-        name: /Armored|Swift|Unstoppable|Regenerating/,
-      })
-      .first()
-      .click();
+  await page
+    .getByRole("button", {
+      name: /Armored|Swift|Unstoppable|Regenerating/,
+    })
+    .first()
+    .click();
 
-    await expect(page.getByText("Empower Next Wave")).toBeHidden();
-  }
-);
+  await expect(page.getByText("Empower Next Wave")).toBeHidden();
+});

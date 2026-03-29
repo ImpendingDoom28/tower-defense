@@ -53,6 +53,7 @@ export const SOUND_CONFIGS: Record<GameEvent, SoundConfig> = {
     srces: {
       laser: "assets/audio/laser-shot.wav",
       basic: "assets/audio/basic-shot.mp3",
+      chain: "assets/audio/basic-shot.mp3",
     },
   },
   [GameEvent.ENEMY_KILLED]: {

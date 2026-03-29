@@ -16,6 +16,8 @@ export const useProjectileSystem = (enemySystem: EnemySystem) => {
     (projectile: Projectile, targetEnemy: Enemy, currentTime: number = 0) => {
       if (projectile.projectileType === "beam") {
         damageEnemy(targetEnemy.id, projectile.damage);
+      } else if (projectile.projectileType === "chain") {
+        damageEnemy(targetEnemy.id, projectile.damage);
       } else if (projectile.projectileType === "aoe" && projectile.aoeRadius) {
         const enemiesInRange = findEnemiesInRange(
           enemies,

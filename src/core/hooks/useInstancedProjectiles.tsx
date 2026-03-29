@@ -7,18 +7,32 @@
  * Integrates with the game's Projectile type and existing systems.
  */
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 import type { ReactElement } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-import { InstancedPoolStats } from "../../utils/InstancedPool";
+import {
+  InstancedPoolStats,
+  type InstancedPoolRef,
+} from "../../utils/InstancedPool";
 import { patchEmissiveByInstanceColor } from "../../utils/instancedEmissivePatch";
 import { getCssColorValue } from "../../components/ui/lib/cssUtils";
+import type { ChainAdditionalHit } from "../chainLightning";
 import type { Projectile, Enemy } from "../types/game";
 import { distance2D } from "../../utils/mathUtils";
 import { useEntityIds } from "../contexts/EntityIdContext";
 import { useInstancedEntity } from "./useInstancedEntity";
+
+const CHAIN_BOLT_RADIUS = 0.03;
+const CHAIN_BOLT_LENGTH = 0.5;
+const CHAIN_BOLT_EMISSIVE_INTENSITY = 2;
 
 const tempDirection = new THREE.Vector3();
 const tempQuaternion = new THREE.Quaternion();
@@ -26,9 +40,51 @@ const tempUpVector = new THREE.Vector3(0, 1, 0);
 const tempPosition = new THREE.Vector3();
 const tempScale = new THREE.Vector3();
 
+type VisualPoolKind = "sphere" | "beam" | "bolt";
+
+const resolveVisualPool = (
+  projectileType: Projectile["projectileType"]
+): VisualPoolKind => {
+  if (projectileType === "beam") return "beam";
+  if (projectileType === "chain") return "bolt";
+  return "sphere";
+};
+
+type ChainBoltKinematics = {
+  x: number;
+  y: number;
+  z: number;
+  vx: number;
+  vy: number;
+  vz: number;
+};
+
+const applyChainBoltTransform = (
+  pool: InstancedPoolRef | null,
+  index: number,
+  k: ChainBoltKinematics
+): void => {
+  if (!pool) return;
+
+  const speed = Math.sqrt(k.vx * k.vx + k.vy * k.vy + k.vz * k.vz);
+  if (speed > 1e-6) {
+    tempDirection.set(k.vx / speed, k.vy / speed, k.vz / speed);
+  } else {
+    tempDirection.set(0, 1, 0);
+  }
+  tempQuaternion.setFromUnitVectors(tempUpVector, tempDirection);
+  tempPosition.set(
+    k.x + tempDirection.x * (CHAIN_BOLT_LENGTH * 0.5),
+    k.y + tempDirection.y * (CHAIN_BOLT_LENGTH * 0.5),
+    k.z + tempDirection.z * (CHAIN_BOLT_LENGTH * 0.5)
+  );
+  tempScale.set(1, CHAIN_BOLT_LENGTH, 1);
+  pool.setTransform(index, tempPosition, tempQuaternion, tempScale);
+};
+
 type PooledProjectile = Projectile & {
   instanceIndex: number;
-  isBeam: boolean;
+  visualPool: VisualPoolKind;
   currentX: number;
   currentY: number;
   currentZ: number;
@@ -37,6 +93,180 @@ type PooledProjectile = Projectile & {
   velocityZ: number;
   beamElapsedTime: number;
   beamProcessed: boolean;
+  /** Remaining chain hops (primary target is separate); only used for chain bolts. */
+  chainQueue?: ChainAdditionalHit[];
+};
+
+const setBoltVelocityTowards = (
+  projectile: PooledProjectile,
+  endX: number,
+  endY: number,
+  endZ: number
+): void => {
+  const dx = endX - projectile.currentX;
+  const dy = endY - projectile.currentY;
+  const dz = endZ - projectile.currentZ;
+  const length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  if (length > 1e-6) {
+    projectile.velocityX = (dx / length) * projectile.speed;
+    projectile.velocityY = (dy / length) * projectile.speed;
+    projectile.velocityZ = (dz / length) * projectile.speed;
+  } else {
+    projectile.velocityX = 0;
+    projectile.velocityY = 0;
+    projectile.velocityZ = 0;
+  }
+};
+
+const tryContinueChainBoltAfterHit = (
+  projectile: PooledProjectile,
+  struckEnemy: Enemy,
+  boltPool: InstancedPoolRef | null,
+  enemiesById: Map<number, Enemy>
+): boolean => {
+  if (!projectile.chainQueue?.length) return false;
+  const nextHop = projectile.chainQueue.shift()!;
+  const nextEnemy = enemiesById.get(nextHop.enemyId);
+  if (!nextEnemy || nextEnemy.health <= 0) return false;
+
+  projectile.targetId = nextHop.enemyId;
+  projectile.damage = nextHop.damage;
+  const hitY = struckEnemy.size / 2;
+  projectile.currentX = struckEnemy.x;
+  projectile.currentY = hitY;
+  projectile.currentZ = struckEnemy.z;
+  projectile.startX = struckEnemy.x;
+  projectile.startY = hitY;
+  projectile.startZ = struckEnemy.z;
+  projectile.targetX = nextEnemy.x;
+  projectile.targetY = nextEnemy.size / 2;
+  projectile.targetZ = nextEnemy.z;
+  setBoltVelocityTowards(
+    projectile,
+    nextEnemy.x,
+    nextEnemy.size / 2,
+    nextEnemy.z
+  );
+  applyChainBoltTransform(boltPool, projectile.instanceIndex, {
+    x: projectile.currentX,
+    y: projectile.currentY,
+    z: projectile.currentZ,
+    vx: projectile.velocityX,
+    vy: projectile.velocityY,
+    vz: projectile.velocityZ,
+  });
+  return true;
+};
+
+type NonBeamStepContext = {
+  delta: number;
+  currentTime: number;
+  boltPool: InstancedPoolRef | null;
+  spherePool: InstancedPoolRef | null;
+  enemiesById: Map<number, Enemy>;
+  hitThreshold: number;
+  onHit: (p: Projectile, e: Enemy, t: number) => void;
+  toRemove: number[];
+};
+
+const stepNonBeamProjectile = (
+  projectile: PooledProjectile,
+  ctx: NonBeamStepContext
+): void => {
+  const {
+    delta,
+    currentTime,
+    boltPool,
+    spherePool,
+    enemiesById,
+    hitThreshold,
+    onHit,
+    toRemove,
+  } = ctx;
+
+  projectile.currentX += projectile.velocityX * delta;
+  projectile.currentY += projectile.velocityY * delta;
+  projectile.currentZ += projectile.velocityZ * delta;
+
+  if (projectile.visualPool === "bolt") {
+    applyChainBoltTransform(boltPool, projectile.instanceIndex, {
+      x: projectile.currentX,
+      y: projectile.currentY,
+      z: projectile.currentZ,
+      vx: projectile.velocityX,
+      vy: projectile.velocityY,
+      vz: projectile.velocityZ,
+    });
+  } else {
+    spherePool?.setPosition(
+      projectile.instanceIndex,
+      projectile.currentX,
+      projectile.currentY,
+      projectile.currentZ
+    );
+  }
+
+  const targetEnemy = enemiesById.get(projectile.targetId);
+
+  if (!targetEnemy || targetEnemy.health <= 0) {
+    toRemove.push(projectile.id);
+    return;
+  }
+
+  const distToTarget = distance2D(
+    projectile.currentX,
+    projectile.currentZ,
+    targetEnemy.x,
+    targetEnemy.z
+  );
+
+  if (distToTarget < hitThreshold) {
+    onHit(projectile, targetEnemy, currentTime);
+
+    if (
+      projectile.visualPool === "bolt" &&
+      tryContinueChainBoltAfterHit(
+        projectile,
+        targetEnemy,
+        boltPool,
+        enemiesById
+      )
+    ) {
+      return;
+    }
+
+    toRemove.push(projectile.id);
+    return;
+  }
+
+  const distFromStart = distance2D(
+    projectile.startX,
+    projectile.startZ,
+    projectile.currentX,
+    projectile.currentZ
+  );
+
+  if (distFromStart > projectile.range * 1.5) {
+    toRemove.push(projectile.id);
+  }
+};
+
+const processBeamProjectileHits = (
+  projectile: PooledProjectile,
+  enemiesById: Map<number, Enemy>,
+  onHit: (p: Projectile, e: Enemy, t: number) => void,
+  currentTime: number
+): void => {
+  if (projectile.beamProcessed) return;
+  const pierceIds = projectile.pierceEnemyIds;
+  if (!pierceIds?.length) return;
+  projectile.beamProcessed = true;
+  for (const enemyId of pierceIds) {
+    const enemy = enemiesById.get(enemyId);
+    if (enemy && enemy.health > 0) {
+      onHit(projectile, enemy, currentTime);
+    }
+  }
 };
 
 type FireProjectileParams = Omit<Projectile, "id">;
@@ -115,6 +345,26 @@ export const useInstancedProjectiles = (
     [beamEmissiveIntensity, defaultColor]
   );
 
+  const boltInstancesContent = useMemo(
+    () => (
+      <>
+        <cylinderGeometry
+          args={[CHAIN_BOLT_RADIUS, CHAIN_BOLT_RADIUS, 1, 8]}
+        />
+        <meshStandardMaterial
+          color={defaultColor}
+          emissive={defaultColor}
+          emissiveIntensity={CHAIN_BOLT_EMISSIVE_INTENSITY}
+          transparent
+          opacity={0.92}
+          toneMapped={false}
+          onBeforeCompile={patchEmissiveByInstanceColor}
+        />
+      </>
+    ),
+    [defaultColor]
+  );
+
   const { pool: spherePool, InstancedEntity: InstancedSphereInstances } =
     useInstancedEntity({
       limit: maxProjectiles,
@@ -131,13 +381,21 @@ export const useInstancedProjectiles = (
       instancesContent: beamInstancesContent,
     });
 
+  const { pool: boltPool, InstancedEntity: InstancedBoltInstances } =
+    useInstancedEntity({
+      limit: maxProjectiles,
+      defaultColor,
+      frustumCulled: false,
+      instancesContent: boltInstancesContent,
+    });
+
   const projectilesRef = useRef<Map<number, PooledProjectile>>(new Map());
   const enemiesByIdRef = useRef<Map<number, Enemy>>(new Map());
   const toRemoveRef = useRef<number[]>([]);
 
   const { getNextProjectileId } = useEntityIds();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const nextEnemiesById = new Map<number, Enemy>();
     for (const enemy of enemies) {
       nextEnemiesById.set(enemy.id, enemy);
@@ -162,21 +420,27 @@ export const useInstancedProjectiles = (
 
       projectilesRef.current.delete(projectileId);
 
-      if (projectile.isBeam) {
+      if (projectile.visualPool === "beam") {
         beamPool?.release(projectile.instanceIndex);
+      } else if (projectile.visualPool === "bolt") {
+        boltPool?.release(projectile.instanceIndex);
       } else {
         spherePool?.release(projectile.instanceIndex);
       }
 
       onRemove(projectileId);
     },
-    [beamPool, onRemove, spherePool]
+    [beamPool, boltPool, onRemove, spherePool]
   );
 
   const fireProjectile = useCallback(
     (params: FireProjectileParams): Projectile => {
-      const isBeam = params.projectileType === "beam";
-      const pool = isBeam ? beamPool : spherePool;
+      const visualPool = resolveVisualPool(params.projectileType);
+
+      let pool: InstancedPoolRef | null = null;
+      if (visualPool === "beam") pool = beamPool;
+      else if (visualPool === "bolt") pool = boltPool;
+      else pool = spherePool;
 
       if (!pool) {
         console.warn("InstancedProjectiles: Pool not initialized");
@@ -204,7 +468,7 @@ export const useInstancedProjectiles = (
         ...params,
         id,
         instanceIndex: index,
-        isBeam,
+        visualPool,
         currentX: params.startX,
         currentY: params.startY,
         currentZ: params.startZ,
@@ -213,11 +477,15 @@ export const useInstancedProjectiles = (
         velocityZ,
         beamElapsedTime: 0,
         beamProcessed: false,
+        chainQueue:
+          visualPool === "bolt"
+            ? [...(params.chainAdditionalHits ?? [])]
+            : undefined,
       };
 
       projectilesRef.current.set(id, pooledProjectile);
 
-      if (isBeam) {
+      if (visualPool === "beam") {
         const midX = (params.startX + params.targetX) / 2;
         const midY = (params.startY + params.targetY) / 2;
         const midZ = (params.startZ + params.targetZ) / 2;
@@ -228,6 +496,15 @@ export const useInstancedProjectiles = (
         tempScale.set(1, length, 1);
 
         pool.setTransform(index, tempPosition, tempQuaternion, tempScale);
+      } else if (visualPool === "bolt") {
+        applyChainBoltTransform(pool, index, {
+          x: params.startX,
+          y: params.startY,
+          z: params.startZ,
+          vx: velocityX,
+          vy: velocityY,
+          vz: velocityZ,
+        });
       } else {
         pool.setPosition(index, params.startX, params.startY, params.startZ);
         pool.setScale(index, 1, 1, 1);
@@ -237,7 +514,7 @@ export const useInstancedProjectiles = (
 
       return pooledProjectile;
     },
-    [beamPool, defaultColor, getNextProjectileId, spherePool]
+    [beamPool, boltPool, defaultColor, getNextProjectileId, spherePool]
   );
 
   const updateProjectilesFrame = useCallback(
@@ -248,70 +525,29 @@ export const useInstancedProjectiles = (
       toRemove.length = 0;
 
       projectilesRef.current.forEach((projectile) => {
-        if (projectile.isBeam) {
-          if (
-            !projectile.beamProcessed &&
-            projectile.pierceEnemyIds &&
-            projectile.pierceEnemyIds.length > 0
-          ) {
-            projectile.beamProcessed = true;
-
-            projectile.pierceEnemyIds.forEach((enemyId) => {
-              const enemy = enemiesByIdRef.current.get(enemyId);
-              if (enemy) {
-                if (enemy.health > 0) {
-                  onHit(projectile, enemy, currentTime);
-                }
-              }
-            });
-          }
+        if (projectile.visualPool === "beam") {
+          processBeamProjectileHits(
+            projectile,
+            enemiesByIdRef.current,
+            onHit,
+            currentTime
+          );
 
           projectile.beamElapsedTime += delta;
           if (projectile.beamElapsedTime >= beamDuration) {
             toRemove.push(projectile.id);
           }
         } else {
-          projectile.currentX += projectile.velocityX * delta;
-          projectile.currentY += projectile.velocityY * delta;
-          projectile.currentZ += projectile.velocityZ * delta;
-
-          spherePool?.setPosition(
-            projectile.instanceIndex,
-            projectile.currentX,
-            projectile.currentY,
-            projectile.currentZ
-          );
-
-          const targetEnemy = enemiesByIdRef.current.get(projectile.targetId);
-
-          if (!targetEnemy || targetEnemy.health <= 0) {
-            toRemove.push(projectile.id);
-            return;
-          }
-
-          const distToTarget = distance2D(
-            projectile.currentX,
-            projectile.currentZ,
-            targetEnemy.x,
-            targetEnemy.z
-          );
-
-          if (distToTarget < hitThreshold) {
-            onHit(projectile, targetEnemy, currentTime);
-            toRemove.push(projectile.id);
-            return;
-          }
-
-          const distFromStart = distance2D(
-            projectile.startX,
-            projectile.startZ,
-            projectile.currentX,
-            projectile.currentZ
-          );
-
-          if (distFromStart > projectile.range * 1.5) {
-            toRemove.push(projectile.id);
-          }
+          stepNonBeamProjectile(projectile, {
+            delta,
+            currentTime,
+            boltPool,
+            spherePool,
+            enemiesById: enemiesByIdRef.current,
+            hitThreshold,
+            onHit,
+            toRemove,
+          });
         }
       });
 
@@ -319,7 +555,15 @@ export const useInstancedProjectiles = (
         removeProjectile(id);
       }
     },
-    [isPaused, beamDuration, onHit, spherePool, hitThreshold, removeProjectile]
+    [
+      isPaused,
+      beamDuration,
+      boltPool,
+      onHit,
+      spherePool,
+      hitThreshold,
+      removeProjectile,
+    ]
   );
 
   const clearAllProjectiles = useCallback((): void => {
@@ -329,7 +573,8 @@ export const useInstancedProjectiles = (
     projectilesRef.current.clear();
     spherePool?.releaseAll();
     beamPool?.releaseAll();
-  }, [beamPool, onRemove, spherePool]);
+    boltPool?.releaseAll();
+  }, [beamPool, boltPool, onRemove, spherePool]);
 
   const getActiveProjectiles = useCallback((): PooledProjectile[] => {
     return Array.from(projectilesRef.current.values());
@@ -343,6 +588,7 @@ export const useInstancedProjectiles = (
     <>
       {InstancedSphereInstances}
       {InstancedBeamInstances}
+      {InstancedBoltInstances}
     </>
   );
 
@@ -360,4 +606,5 @@ export type {
   FireProjectileParams,
   PooledProjectile,
   InstancedPoolStats,
+  VisualPoolKind,
 };

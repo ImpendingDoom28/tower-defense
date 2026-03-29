@@ -1,15 +1,11 @@
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 
 import type { Enemy } from "../types/game";
 import type { LevelSystem } from "./useLevelSystem";
-import { enemiesSelector, useLevelStore } from "../stores/useLevelStore";
+import { useLevelStore } from "../stores/useLevelStore";
 
 export const useEnemySystem = (levelSystem: LevelSystem) => {
   const { removeEnemy, updateEnemy } = levelSystem;
-  const enemies = useLevelStore(enemiesSelector);
-  const enemyById = useMemo(() => {
-    return new Map(enemies.map((enemy) => [enemy.id, enemy]));
-  }, [enemies]);
 
   const onEnemyReachEnd = useCallback(
     (enemyId: number) => {
@@ -27,20 +23,21 @@ export const useEnemySystem = (levelSystem: LevelSystem) => {
 
   const damageEnemy = useCallback(
     (enemyId: number, damage: number): boolean => {
-      const enemy = enemyById.get(enemyId);
+      const enemy = useLevelStore
+        .getState()
+        .enemies.find((e) => e.id === enemyId);
       if (!enemy) return false;
 
       const newHealth = Math.max(0, enemy.health - damage);
 
       if (newHealth <= 0) {
         removeEnemy(enemyId, false);
-        return true; // Enemy was killed
-      } else {
-        updateEnemy(enemyId, { health: newHealth });
-        return false; // Enemy survived
+        return true;
       }
+      updateEnemy(enemyId, { health: newHealth });
+      return false;
     },
-    [enemyById, updateEnemy, removeEnemy]
+    [updateEnemy, removeEnemy]
   );
 
   // Apply slow debuff to enemy
@@ -53,7 +50,9 @@ export const useEnemySystem = (levelSystem: LevelSystem) => {
       duration: number,
       currentTime: number
     ) => {
-      const enemy = enemyById.get(enemyId);
+      const enemy = useLevelStore
+        .getState()
+        .enemies.find((e) => e.id === enemyId);
       if (!enemy) return;
 
       // Check for slow resistance (1 = fully immune)
@@ -70,7 +69,7 @@ export const useEnemySystem = (levelSystem: LevelSystem) => {
         slowUntil: slowUntil,
       });
     },
-    [enemyById, updateEnemy]
+    [updateEnemy]
   );
 
   return {

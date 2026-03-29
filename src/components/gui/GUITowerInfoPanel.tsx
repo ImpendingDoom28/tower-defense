@@ -6,8 +6,13 @@ import {
 } from "react";
 import type { ThreeEvent } from "@react-three/fiber";
 
+import { getEffectiveTowerCombatStats } from "../../core/relayBuffs";
 import type { Tower as TowerInstance } from "../../core/types/game";
-import { useGameStore } from "../../core/stores/useGameStore";
+import {
+  useGameStore,
+  towerTypesSelector,
+} from "../../core/stores/useGameStore";
+import { towersSelector, useLevelStore } from "../../core/stores/useLevelStore";
 import { UIButton } from "../ui/UIButton";
 import {
   UICard,
@@ -29,17 +34,38 @@ export const GUITowerInfoPanel: FC<GUITowerInfoPanelProps> = ({
   onSell,
 }) => {
   const { towerSellPriceMultiplier } = useGameStore();
+  const towerTypes = useGameStore(towerTypesSelector);
+  const towers = useLevelStore(towersSelector);
+
   const sellPrice = useMemo(() => {
     return Math.floor(tower.cost * towerSellPriceMultiplier);
   }, [tower.cost, towerSellPriceMultiplier]);
 
   const stats = useMemo(() => {
+    if (tower.type === "relay") {
+      const tpl = towerTypes?.relay;
+      const dmgPct = (tpl?.relayNeighborDamageBonusFraction ?? 0) * 100;
+      const rngPct = (tpl?.relayNeighborRangeBonusFraction ?? 0) * 100;
+      return [
+        { label: "Role", value: "Support" },
+        {
+          label: "Neighbor buff",
+          value: `+${dmgPct.toFixed(0)}% dmg / +${rngPct.toFixed(0)}% rng`,
+        },
+        { label: "Adjacency", value: "4-neighbor" },
+      ];
+    }
+
+    const eff = towerTypes
+      ? getEffectiveTowerCombatStats(tower, towers, towerTypes)
+      : { damage: tower.damage, range: tower.range };
+
     return [
-      { label: "Damage", value: tower.damage.toString() },
-      { label: "Range", value: tower.range.toFixed(1) },
+      { label: "Damage", value: eff.damage.toFixed(1) },
+      { label: "Range", value: eff.range.toFixed(1) },
       { label: "Fire Rate", value: `${tower.fireRate.toFixed(1)}s` },
     ];
-  }, [tower.damage, tower.fireRate, tower.range]);
+  }, [tower, towerTypes, towers]);
 
   const onStopScenePropagation = (
     event: ThreeEvent<MouseEvent> | ThreeEvent<PointerEvent>

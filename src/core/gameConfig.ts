@@ -8,8 +8,15 @@ import type {
 import { loadFile } from "../utils/fileLoader";
 
 const towerTargetingSchema = z.enum(["nearest", "furthest"]);
-const projectileTypeSchema = z.enum(["aoe", "single", "beam"]);
-const towerTypeSchema = z.enum(["basic", "slow", "aoe", "laser"]);
+const projectileTypeSchema = z.enum(["aoe", "single", "beam", "chain"]);
+const towerTypeSchema = z.enum([
+  "basic",
+  "slow",
+  "aoe",
+  "laser",
+  "relay",
+  "chain",
+]);
 const enemyTypeSchema = z.enum(["basic", "fast", "tank", "medic"]);
 
 const healPulseConfigSchema = z.object({
@@ -43,6 +50,11 @@ const towerConfigSchema: z.ZodType<TowerConfig> = z.object({
   topShape: z.enum(["cone", "sphere", "cylinder", "flat", "coil"]).optional(),
   bodyWidthScale: z.number().optional(),
   topScale: z.number().optional(),
+  relayNeighborDamageBonusFraction: z.number().optional(),
+  relayNeighborRangeBonusFraction: z.number().optional(),
+  relayDiminishingFactor: z.number().optional(),
+  maxChainHops: z.number().optional(),
+  chainDamageMultiplierPerHop: z.number().optional(),
 });
 
 const enemyConfigSchema: z.ZodType<EnemyConfig> = z.object({

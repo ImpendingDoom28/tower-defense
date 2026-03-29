@@ -169,6 +169,43 @@
       "targeting": "nearest",
       "topScale": 1,
       "topShape": "sphere"
+    },
+    "relay": {
+      "bodyWidthScale": 1,
+      "color": "#34d399",
+      "cost": 90,
+      "damage": 0,
+      "description": "Buffs adjacent combat towers: +damage and +range (extra relays stack with diminishing returns). Does not attack.",
+      "fireRate": 1,
+      "id": "relay",
+      "name": "Relay Tower",
+      "projectileSpeed": 0,
+      "projectileType": "single",
+      "range": 0,
+      "relayDiminishingFactor": 0.5,
+      "relayNeighborDamageBonusFraction": 0.15,
+      "relayNeighborRangeBonusFraction": 0.08,
+      "targeting": "nearest",
+      "topScale": 1,
+      "topShape": "cylinder"
+    },
+    "chain": {
+      "bodyWidthScale": 1,
+      "chainDamageMultiplierPerHop": 0.85,
+      "color": "#fbbf24",
+      "cost": 120,
+      "damage": 28,
+      "description": "Chain lightning jumps to nearby enemies (-15% damage per hop, up to 3 hops).",
+      "fireRate": 1.1,
+      "id": "chain",
+      "maxChainHops": 3,
+      "name": "Chain Lightning",
+      "projectileSpeed": 14,
+      "projectileType": "chain",
+      "range": 3.5,
+      "targeting": "nearest",
+      "topScale": 1,
+      "topShape": "coil"
     }
   },
   "waveDelay": 15000

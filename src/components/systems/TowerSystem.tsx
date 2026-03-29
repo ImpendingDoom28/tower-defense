@@ -7,6 +7,8 @@ import {
   distance2D,
   findEnemiesInLine,
 } from "../../utils/mathUtils";
+import { computeChainAdditionalHits } from "../../core/chainLightning";
+import { getEffectiveTowerCombatStats } from "../../core/relayBuffs";
 import { gameEvents } from "../../utils/eventEmitter";
 import type {
   Tower as TowerInstance,
@@ -59,6 +61,15 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
     const towers = useLevelStore(towersSelector);
     const enemies = useLevelStore(enemiesSelector);
 
+    const combatStatsByTowerId = useMemo(() => {
+      const map = new Map<number, { damage: number; range: number }>();
+      if (!towerTypes) return map;
+      for (const t of towers) {
+        map.set(t.id, getEffectiveTowerCombatStats(t, towers, towerTypes));
+      }
+      return map;
+    }, [towers, towerTypes]);
+
     const previewTower = useMemo(() => {
       if (!selectedTowerType || !hoveredTile) return null;
 
@@ -69,8 +80,16 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
         return null;
       }
 
-      const worldX = tileToWorldCoordinate(hoveredTile.gridX, gridSize, tileSize);
-      const worldZ = tileToWorldCoordinate(hoveredTile.gridZ, gridSize, tileSize);
+      const worldX = tileToWorldCoordinate(
+        hoveredTile.gridX,
+        gridSize,
+        tileSize
+      );
+      const worldZ = tileToWorldCoordinate(
+        hoveredTile.gridZ,
+        gridSize,
+        tileSize
+      );
 
       const preview: TowerInstance = {
         ...towerConfig,
@@ -100,11 +119,19 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
       const currentTime = state.clock.elapsedTime;
 
       towers.forEach((tower) => {
+        if (tower.type === "relay") return;
+
         const timeSinceLastFire = currentTime - tower.lastFireTime;
         if (timeSinceLastFire < tower.fireRate) return;
 
         const towerConfig = towerTypes?.[tower.type];
         if (!towerConfig) return;
+
+        const eff = getEffectiveTowerCombatStats(
+          tower,
+          towers,
+          towerTypes ?? {}
+        );
 
         let target: Enemy | null = null;
 
@@ -112,14 +139,14 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
           const enemiesInRange = enemies.filter((enemy) => {
             if (enemy.health <= 0) return false;
             const dist = distance2D(tower.x, tower.z, enemy.x, enemy.z);
-            return dist <= tower.range;
+            return dist <= eff.range;
           });
           target = findFurthestEnemy(enemiesInRange, tower.x, tower.z);
         } else {
           target = findNearestEnemy(enemies, tower.x, tower.z);
           if (
             target &&
-            distance2D(tower.x, tower.z, target.x, target.z) > tower.range
+            distance2D(tower.x, tower.z, target.x, target.z) > eff.range
           ) {
             target = null;
           }
@@ -128,6 +155,23 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
         if (!target) return;
 
         let pierceEnemyIds: number[] | undefined;
+        let chainAdditionalHits:
+          | Array<{ enemyId: number; damage: number }>
+          | undefined;
+
+        if (tower.type === "chain") {
+          const maxHops = tower.maxChainHops ?? 3;
+          const mult = tower.chainDamageMultiplierPerHop ?? 0.85;
+          chainAdditionalHits = computeChainAdditionalHits(
+            tower,
+            enemies,
+            target,
+            eff.damage,
+            eff.range,
+            maxHops,
+            mult
+          );
+        }
 
         if (tower.type === "laser" && tower.maxPierce) {
           const dx = target.x - tower.x;
@@ -164,9 +208,9 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
           startY:
             tower.type === "laser" ? towerHeight * 0.5 : towerHeight * 0.7,
           startZ: tower.z,
-          damage: tower.damage,
+          damage: eff.damage,
           speed: tower.projectileSpeed,
-          range: tower.range,
+          range: eff.range,
           color: tower.color,
           slowAmount: tower.slowAmount,
           slowDuration: tower.slowDuration,
@@ -178,9 +222,12 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
           targetZ: target.z,
           targetId: target.id,
           pierceEnemyIds: pierceEnemyIds,
+          chainAdditionalHits,
         };
 
-        fireProjectile(projectileData);
+        const fired = fireProjectile(projectileData);
+        if (fired.id <= 0) return;
+
         const emitterY =
           tower.type === "laser" ? towerHeight * 0.5 : towerHeight * 0.7;
         gameEvents.emit(GameEvent.TOWER_FIRE, {
@@ -199,19 +246,33 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
 
     return (
       <>
-        {towers.map((tower) => (
-          <Tower
-            key={tower.id}
-            tower={tower}
-            isSelected={selectedTower?.id === tower.id}
-            onClick={() => onTowerClick?.(tower)}
-          />
-        ))}
+        {towers.map((tower) => {
+          const eff = combatStatsByTowerId.get(tower.id) ?? {
+            damage: tower.damage,
+            range: tower.range,
+          };
+          return (
+            <Tower
+              key={tower.id}
+              tower={tower}
+              effectiveRange={eff.range}
+              isSelected={selectedTower?.id === tower.id}
+              onClick={() => onTowerClick?.(tower)}
+            />
+          );
+        })}
 
-        {previewTower && (
+        {previewTower && towerTypes && (
           <Tower
             key="preview"
             tower={previewTower}
+            effectiveRange={
+              getEffectiveTowerCombatStats(
+                previewTower,
+                [...towers, previewTower],
+                towerTypes
+              ).range
+            }
             isPreview={true}
             isInvalidPlacement={hoveredTilePlacementState?.isOnPath ?? false}
           />
