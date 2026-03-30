@@ -33,3 +33,4 @@ When writting js/ts code, use the following rules:
 - Remove unused imports if after your changes there are any.
 - Don't use barrel files (a.k.a. `index.js/index.ts` files).
 - Try to use DRY pattern as much, as you can. Check the codebase for the same lines you've written
+- For React refs you shouldn't read (or write) the `ref.current` value during rendering.

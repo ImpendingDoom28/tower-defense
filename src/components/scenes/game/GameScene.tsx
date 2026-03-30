@@ -92,7 +92,7 @@ export const GameScene: React.FC<GameSceneProps> = ({
 
       <Skybox />
       <Light />
-      <Ground />
+      {/* <Ground /> */}
 
       <GameCamera
         movementSpeed={10}

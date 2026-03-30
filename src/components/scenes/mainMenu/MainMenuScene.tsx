@@ -110,11 +110,9 @@ export const MainMenuScene: FC = () => {
       ))}
 
       <EntitiesSystem
-        onTowerClick={null}
         onSellTower={null}
         hoveredTile={null}
         selectedTower={null}
-        selectedTowerType={null}
         shouldStopMovement={false}
         onEnemyUpdate={onEnemyUpdate}
         onProjectileHit={onProjectileHit}

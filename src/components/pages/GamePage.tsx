@@ -1,4 +1,11 @@
-import { FC, Suspense, useCallback, useState } from "react";
+import {
+  FC,
+  Suspense,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { cn } from "../ui/lib/twUtils";
 import { Canvas } from "@react-three/fiber";
@@ -14,6 +21,7 @@ import { HUDGameMenu } from "../hud/HUDGameMenu";
 import { HUDUpgradePanel } from "../hud/HUDUpgradePanel";
 import { HUDLoading } from "../hud/HUDLoading";
 import { KeyboardHandlingSystem } from "../systems/KeyboardHandlingSystem";
+import { ShaderReadyGate } from "../systems/ShaderReadyGate";
 import { GAME_CANVAS_GL, GAME_CANVAS_STYLE } from "../../constants/canvas";
 import {
   PLAYABLE_LEVEL_IDS,
@@ -34,6 +42,7 @@ type GamePageProps = {
 export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
   const [activePlayableLevel, setActivePlayableLevel] =
     useState<PlayableLevelId>(PLAYABLE_LEVEL_IDS[0]);
+  const [areShadersReady, setAreShadersReady] = useState(false);
 
   const gameSystem = useGameSystem();
   const levelSystem = useLevelSystem();
@@ -100,22 +109,53 @@ export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
   const remainingEnemies = getRemainingEnemiesInWave();
   const isMenu = gameStatus === "menu";
 
-  const isGameReady = isGameConfigLoaded && (isMenu || isLevelConfigLoaded);
+  const shaderGateKey = useMemo(() => {
+    if (!isGameConfigLoaded) {
+      return null;
+    }
+    if (isMenu) {
+      return "menu";
+    }
+    if (!isLevelConfigLoaded) {
+      return null;
+    }
+    return `game-${activePlayableLevel}`;
+  }, [
+    activePlayableLevel,
+    isGameConfigLoaded,
+    isLevelConfigLoaded,
+    isMenu,
+  ]);
+
+  useLayoutEffect(() => {
+    setAreShadersReady(false);
+  }, [shaderGateKey]);
+
+  const isGameReady =
+    isGameConfigLoaded &&
+    (isMenu || isLevelConfigLoaded) &&
+    areShadersReady;
+
+  const loadingMessage = (() => {
+    if (!isGameConfigLoaded) {
+      return "Loading game...";
+    }
+    if (!isMenu && !isLevelConfigLoaded) {
+      return "Loading level...";
+    }
+    return "Preparing graphics...";
+  })();
 
   return (
     <PageWrapper>
-      {!isGameReady && (
-        <HUDLoading
-          message={isGameConfigLoaded ? "Loading level..." : "Loading game..."}
-        />
-      )}
+      {!isGameReady && <HUDLoading message={loadingMessage} />}
 
       <Canvas
         data-testid="game-canvas"
         style={GAME_CANVAS_STYLE}
         gl={GAME_CANVAS_GL}
       >
-        <Suspense fallback={null}>
+        <Suspense fallback={<HUDLoading />}>
           {isGameConfigLoaded && isMenu && <MainMenuScene />}
           {isGameConfigLoaded && !isMenu && (
             <GameScene
@@ -151,6 +191,15 @@ export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
                 className="top-[calc(100%-48px)]! left-40!"
               />
             </>
+          )}
+
+          {shaderGateKey !== null && (
+            <ShaderReadyGate
+              key={shaderGateKey}
+              onShadersReady={() => {
+                setAreShadersReady(true);
+              }}
+            />
           )}
           <KeyboardHandlingSystem />
         </Suspense>
