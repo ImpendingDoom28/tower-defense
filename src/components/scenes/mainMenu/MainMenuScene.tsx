@@ -106,7 +106,7 @@ export const MainMenuScene: FC = () => {
       <MainMenuCamera />
 
       {pathWaypoints.map((_, index) => (
-        <Path key={index} timeUntilNextWave={null} pathIndex={index} />
+        <Path key={index} pathIndex={index} />
       ))}
 
       <EntitiesSystem

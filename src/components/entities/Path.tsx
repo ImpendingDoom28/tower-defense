@@ -17,11 +17,10 @@ import { Portal } from "./Portal";
 import { EndBuilding } from "./EndBuilding";
 
 type PathProps = {
-  timeUntilNextWave: number | null;
   pathIndex: number;
 };
 
-export const Path: FC<PathProps> = memo(({ timeUntilNextWave, pathIndex }) => {
+export const Path: FC<PathProps> = memo(({ pathIndex }) => {
   const pathWaypoints = useLevelStore(pathWaypointsSelector);
   const tileSize = useGameStore(tileSizeSelector);
   const pathYOffset = useGameStore(pathYOffsetSelector);
@@ -108,10 +107,7 @@ export const Path: FC<PathProps> = memo(({ timeUntilNextWave, pathIndex }) => {
       />
 
       {/* Next wave preview */}
-      <GUINextWavePreview
-        timeUntilNextWave={timeUntilNextWave}
-        pathIndex={pathIndex}
-      />
+      <GUINextWavePreview pathIndex={pathIndex} />
     </group>
   );
 });

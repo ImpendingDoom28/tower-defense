@@ -11,3 +11,6 @@ export const useWaveStore = create<WaveStore>((set) => ({
     set({ timeUntilNextWave: time });
   },
 }));
+
+export const timeUntilNextWaveSelector = (state: WaveStore) =>
+  state.timeUntilNextWave;

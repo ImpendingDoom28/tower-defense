@@ -11,6 +11,7 @@ import {
 } from "../../core/stores/useLevelStore";
 import { HUDWrapper } from "./HUDWrapper";
 import { UIMoney } from "../ui/UIMoney";
+import { useWaveStore } from "../../core/stores/useWaveStore";
 
 type HUDGameStatsProps = {
   money: number;
@@ -18,7 +19,6 @@ type HUDGameStatsProps = {
   currentWave: number;
   remainingEnemies: number;
   gameStatus: GameStatus;
-  timeUntilNextWave: number | null;
   onStartWaveEarly: () => void;
   onStartFirstWave: () => void;
 };
@@ -29,10 +29,10 @@ export const HUDGameStats: FC<HUDGameStatsProps> = ({
   currentWave,
   remainingEnemies,
   gameStatus,
-  timeUntilNextWave,
   onStartWaveEarly,
   onStartFirstWave,
 }) => {
+  const { timeUntilNextWave } = useWaveStore();
   const totalWaves = useLevelStore(totalWavesSelector);
 
   const getHealthColor = (): string => {
@@ -57,7 +57,7 @@ export const HUDGameStats: FC<HUDGameStatsProps> = ({
             </div>
           </div>
           <div className="flex items-center">
-            <div className="flex flex-row justify-center items-center gap-1">
+            <div className="flex flex-row items-center justify-center gap-1">
               <UITypography variant="body">Wave:</UITypography>
               <UITypography variant="medium">
                 {`${currentWave} / ${totalWaves}`}

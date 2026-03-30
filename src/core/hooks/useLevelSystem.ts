@@ -51,7 +51,7 @@ export const useLevelSystem = () => {
     tileSize,
     loseHealth,
     setSelectedTower,
-    setSelectedTowerType,
+    setSelectedTowerTypeToPlace,
     towerSellPriceMultiplier,
     pathWidth,
     gameStatus,
@@ -113,7 +113,7 @@ export const useLevelSystem = () => {
       setTowers((prev) => [...prev, newTower]);
 
       spendMoney(towerConfig.cost);
-      setSelectedTowerType(null);
+      setSelectedTowerTypeToPlace(null);
       const emitterY =
         towerType === "laser" ? towerHeight * 0.5 : towerHeight * 0.7;
       gameEvents.emit(GameEvent.TOWER_PLACED, {
@@ -138,7 +138,7 @@ export const useLevelSystem = () => {
       getNextTowerId,
       setTowers,
       spendMoney,
-      setSelectedTowerType,
+      setSelectedTowerTypeToPlace,
       towerHeight,
     ]
   );

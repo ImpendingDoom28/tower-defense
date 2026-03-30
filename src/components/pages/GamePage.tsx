@@ -25,7 +25,6 @@ import { useProjectileSystem } from "../../core/hooks/useProjectileSystem";
 import { useWaveSystem } from "../../core/hooks/useWaveSystem";
 import { useLevelSystem } from "../../core/hooks/useLevelSystem";
 import { useUpgradesSystem } from "../../core/hooks/useUpgradesSystem";
-import type { Tower } from "../../core/types/game";
 import { PageWrapper } from "./PageWrapper";
 
 type GamePageProps = {
@@ -48,10 +47,7 @@ export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
     health,
     shouldDisableControls,
     gameStatus,
-    selectedTowerType,
     selectedTower,
-    setSelectedTowerType,
-    setSelectedTower,
     startGame,
     goToMainMenu,
     closeGameMenu,
@@ -80,42 +76,8 @@ export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
 
   const { showUpgradePanel, onEnemyUpgradePick } = upgradesSystem;
 
-  const {
-    getRemainingEnemiesInWave,
-    timeUntilNextWave,
-    startNextWaveEarly,
-    startFirstWave,
-  } = waveSystem;
-
-  const onTileClick = useCallback(
-    (gridX: number, gridZ: number) => {
-      if (
-        selectedTowerType &&
-        (gameStatus === "playing" || gameStatus === "paused")
-      ) {
-        placeTower(gridX, gridZ, selectedTowerType);
-      } else if (selectedTower) {
-        setSelectedTower(null);
-      }
-    },
-    [selectedTowerType, gameStatus, selectedTower, placeTower, setSelectedTower]
-  );
-
-  const onTowerClick = useCallback(
-    (tower: Tower) => {
-      if (selectedTower?.id === tower.id) {
-        setSelectedTower(null);
-      } else {
-        setSelectedTower(tower);
-        setSelectedTowerType(null);
-      }
-    },
-    [selectedTower, setSelectedTower, setSelectedTowerType]
-  );
-
-  const onDeselectTower = useCallback(() => {
-    setSelectedTowerType(null);
-  }, [setSelectedTowerType]);
+  const { getRemainingEnemiesInWave, startNextWaveEarly, startFirstWave } =
+    waveSystem;
 
   const onStartGameWithLevel = useCallback(
     async (level: PlayableLevelId) => {
@@ -157,18 +119,15 @@ export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
           {isGameConfigLoaded && isMenu && <MainMenuScene />}
           {isGameConfigLoaded && !isMenu && (
             <GameScene
+              placeTower={placeTower}
               onSpawnEffect={onSpawnEffect}
               onEndEffect={onEndEffect}
               onEffectComplete={onEffectComplete}
-              selectedTowerType={selectedTowerType}
               selectedTower={selectedTower}
               money={money}
               activeEffects={activeEffects}
               gameStatus={gameStatus}
               waveSystem={waveSystem}
-              timeUntilNextWave={timeUntilNextWave}
-              onTileClick={onTileClick}
-              onTowerClick={onTowerClick}
               onEnemyReachEnd={onEnemyReachEnd}
               onEnemyUpdate={onEnemyUpdate}
               onProjectileHit={onProjectileHit}
@@ -213,12 +172,7 @@ export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
                   showUpgradePanel && "pointer-events-none opacity-40"
                 )}
               >
-                <HUDTowerShop
-                  selectedTowerType={selectedTowerType}
-                  money={money}
-                  onSelectTower={setSelectedTowerType}
-                  onDeselectTower={onDeselectTower}
-                />
+                <HUDTowerShop money={money} />
 
                 <HUDGameStats
                   money={money}
@@ -226,7 +180,6 @@ export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
                   currentWave={currentWave}
                   remainingEnemies={remainingEnemies}
                   gameStatus={gameStatus}
-                  timeUntilNextWave={timeUntilNextWave}
                   onStartWaveEarly={startNextWaveEarly}
                   onStartFirstWave={startFirstWave}
                 />

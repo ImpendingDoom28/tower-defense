@@ -62,6 +62,9 @@
   --scene-sky-base: #0a0a0f;
   --scene-water: #0e7490; /* cyan-700 */
   --scene-water-emissive: #22d3ee; /* cyan-400 */
+  --scene-regolith-highlight: #6b7280; /* gray-500 — mineral flecks */
+  --scene-regolith-shadow: #1f2937; /* gray-800 — crater / grit */
+  --scene-regolith-rock: #525a63; /* cool gray rock props */
 
   /* Editor palette */
   --editor-tool-select: #374151; /* gray-700 */

@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 
 import type { PlayableLevelId } from "../../../constants/playableLevels";
 import { Grid } from "../../entities/Grid";
+import { PlanetTileDecorations } from "../../entities/PlanetTileDecorations";
 import { PlacementHighlightOverlay } from "../../entities/PlacementHighlightOverlay";
 import { RelayBuffPreviewOverlay } from "../../entities/RelayBuffPreviewOverlay";
 import { Path } from "../../entities/Path";
@@ -11,18 +12,18 @@ import type {
   Tower as TowerInstance,
   Enemy as EnemyInstance,
   Projectile as ProjectileInstance,
-  TowerType,
   GameStatus,
   ActiveEffect,
+  TowerType,
 } from "../../../core/types/game";
 import { WaveLoopSystem } from "../../systems/WaveLoopSystem";
-import { useLevelSystem } from "../../../core/hooks/useLevelSystem";
 import { WaveSystem } from "../../../core/hooks/useWaveSystem";
 import { TileData } from "../../../core/types/utils";
 import { EntitiesSystem } from "../../systems/EntitiesSystem";
 import { LevelSystem } from "../../systems/LevelSystem";
 import {
   pathWaypointsSelector,
+  towersSelector,
   useLevelStore,
 } from "../../../core/stores/useLevelStore";
 import { Ground } from "../shared/Ground";
@@ -30,20 +31,17 @@ import { Skybox } from "../shared/Skybox";
 import { Light } from "../shared/Light";
 
 type GameSceneProps = {
+  placeTower: (gridX: number, gridZ: number, towerType: TowerType) => void;
   activeEffects: ActiveEffect[];
   onSpawnEffect: (position: [number, number, number], color: string) => void;
   onEndEffect: (position: [number, number, number], color: string) => void;
   onEffectComplete: (effectId: number) => void;
-  selectedTowerType: TowerType | null;
   selectedTower: TowerInstance | null;
   shouldDisableControls: boolean;
   shouldStopMovement: boolean;
   gameStatus: GameStatus;
   waveSystem: WaveSystem;
   money: number;
-  timeUntilNextWave: number | null;
-  onTileClick: (gridX: number, gridZ: number) => void;
-  onTowerClick: (tower: TowerInstance) => void;
   onEnemyReachEnd: (enemyId: number) => void;
   onEnemyUpdate: (enemyId: number, updates: Partial<EnemyInstance>) => void;
   onProjectileHit: (
@@ -57,18 +55,15 @@ type GameSceneProps = {
 };
 
 export const GameScene: React.FC<GameSceneProps> = ({
+  placeTower,
   activeEffects,
   onSpawnEffect,
   onEndEffect,
   onEffectComplete,
-  selectedTowerType,
   selectedTower,
   shouldDisableControls,
   shouldStopMovement,
   waveSystem,
-  timeUntilNextWave,
-  onTileClick,
-  onTowerClick,
   onEnemyReachEnd,
   onEnemyUpdate,
   onProjectileHit,
@@ -77,13 +72,8 @@ export const GameScene: React.FC<GameSceneProps> = ({
   playableLevelId,
 }) => {
   const pathWaypoints = useLevelStore(pathWaypointsSelector);
+  const towers = useLevelStore(towersSelector);
   const [hoveredTile, setHoveredTile] = useState<TileData | null>(null);
-
-  const { getTilePlacementState } = useLevelSystem();
-  const hoveredTilePlacementState =
-    hoveredTile !== null
-      ? getTilePlacementState(hoveredTile.gridX, hoveredTile.gridZ)
-      : null;
 
   const handleTileHover = useCallback(
     (gridX: number, gridZ: number) => {
@@ -113,43 +103,33 @@ export const GameScene: React.FC<GameSceneProps> = ({
       <GameAudioListenerSync />
 
       {pathWaypoints.map((_, index) => (
-        <Path
-          key={index}
-          timeUntilNextWave={timeUntilNextWave}
-          pathIndex={index}
-        />
+        <Path key={index} pathIndex={index} />
       ))}
 
       <Grid
+        placeTower={placeTower}
         hoveredTile={hoveredTile}
-        onTileClick={onTileClick}
         onTileHover={handleTileHover}
         setHoveredTile={setHoveredTile}
         onTileHoverEnd={handleTileHoverEnd}
-        selectedTowerType={selectedTowerType}
       />
 
-      <PlacementHighlightOverlay
-        hoveredTile={hoveredTile}
-        selectedTowerType={selectedTowerType}
-      />
+      <PlanetTileDecorations pathWaypoints={pathWaypoints} towers={towers} />
+
+      <PlacementHighlightOverlay hoveredTile={hoveredTile} />
 
       <RelayBuffPreviewOverlay
         hoveredTile={hoveredTile}
-        hoveredTilePlacementState={hoveredTilePlacementState}
         selectedTower={selectedTower}
-        selectedTowerType={selectedTowerType}
       />
 
       <EntitiesSystem
-        onTowerClick={onTowerClick}
         onEnemyReachEnd={onEnemyReachEnd}
         onEnemyUpdate={onEnemyUpdate}
         onProjectileHit={onProjectileHit}
         onProjectileRemove={onProjectileRemove}
         onSellTower={onSellTower}
         hoveredTile={hoveredTile}
-        selectedTowerType={selectedTowerType}
         selectedTower={selectedTower}
         onSpawnEffect={onSpawnEffect}
         onEndEffect={onEndEffect}

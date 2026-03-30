@@ -8,24 +8,59 @@ import {
 } from "react";
 
 import { Tile } from "./Tile";
-import type { TowerType } from "../../core/types/game";
 import type { TileData } from "../../core/types/utils";
-import { useLevelStore } from "../../core/stores/useLevelStore";
+import {
+  gridSizeSelector,
+  useLevelStore,
+} from "../../core/stores/useLevelStore";
 import { useLevelSystem } from "../../core/hooks/useLevelSystem";
+import {
+  gameStatusSelector,
+  selectedTowerSelector,
+  selectedTowerTypeToPlaceSelector,
+  setSelectedTowerSelector,
+  useGameStore,
+} from "../../core/stores/useGameStore";
+import { TowerType } from "../../core/types/game";
 
 type GridProps = {
   hoveredTile: TileData | null;
   setHoveredTile: Dispatch<SetStateAction<TileData | null>>;
-  selectedTowerType: TowerType | null;
-  onTileClick: (gridX: number, gridZ: number) => void;
+  placeTower: (gridX: number, gridZ: number, towerType: TowerType) => void;
   onTileHover?: (gridX: number, gridZ: number) => void;
   onTileHoverEnd?: () => void;
 };
 
 export const Grid: FC<GridProps> = memo(
-  ({ hoveredTile, setHoveredTile, selectedTowerType, onTileClick }) => {
-    const { gridSize } = useLevelStore();
+  ({ hoveredTile, setHoveredTile, placeTower }) => {
+    const selectedTowerTypeToPlace = useGameStore(
+      selectedTowerTypeToPlaceSelector
+    );
+    const gridSize = useLevelStore(gridSizeSelector);
+    const gameStatus = useGameStore(gameStatusSelector);
+    const selectedTower = useGameStore(selectedTowerSelector);
+    const setSelectedTower = useGameStore(setSelectedTowerSelector);
     const { getTilePlacementState } = useLevelSystem();
+
+    const onTileClick = useCallback(
+      (gridX: number, gridZ: number) => {
+        if (
+          selectedTowerTypeToPlace &&
+          (gameStatus === "playing" || gameStatus === "paused")
+        ) {
+          placeTower(gridX, gridZ, selectedTowerTypeToPlace);
+        } else if (selectedTower) {
+          setSelectedTower(null);
+        }
+      },
+      [
+        selectedTowerTypeToPlace,
+        gameStatus,
+        selectedTower,
+        placeTower,
+        setSelectedTower,
+      ]
+    );
 
     const tiles = useMemo<TileData[]>(() => {
       const tileArray: TileData[] = [];
@@ -39,11 +74,11 @@ export const Grid: FC<GridProps> = memo(
 
     const canPlaceTower = useCallback(
       (isBlocked: boolean) => {
-        if (!selectedTowerType) return false;
+        if (!selectedTowerTypeToPlace) return false;
         if (isBlocked) return false;
         return true;
       },
-      [selectedTowerType]
+      [selectedTowerTypeToPlace]
     );
 
     const handleTileHover = useCallback(
@@ -61,11 +96,11 @@ export const Grid: FC<GridProps> = memo(
       <group>
         {tiles.map(({ gridX, gridZ }) => {
           const placementState = getTilePlacementState(gridX, gridZ);
-          const canPlace = canPlaceTower(placementState.isBlocked);
+          const canPlace = canPlaceTower(false);
           const isHovered =
             hoveredTile?.gridX === gridX &&
             hoveredTile?.gridZ === gridZ &&
-            selectedTowerType !== null;
+            selectedTowerTypeToPlace !== null;
 
           return (
             <Tile
@@ -73,6 +108,7 @@ export const Grid: FC<GridProps> = memo(
               gridX={gridX}
               gridZ={gridZ}
               isWater={placementState.isWater}
+              isOnPath={placementState.isOnPath}
               isHovered={isHovered}
               canPlace={canPlace}
               onClick={() => onTileClick(gridX, gridZ)}

@@ -1,12 +1,13 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3 } from "three";
+import { memo } from "react";
 
 import { getGameAudioContext } from "../../../core/audio/gameAudioContext";
 
 const forward = new Vector3();
 const up = new Vector3();
 
-export const GameAudioListenerSync = () => {
+export const GameAudioListenerSync = memo(() => {
   const { camera } = useThree();
 
   useFrame(() => {
@@ -34,4 +35,6 @@ export const GameAudioListenerSync = () => {
   });
 
   return null;
-};
+});
+
+GameAudioListenerSync.displayName = "GameAudioListenerSync";

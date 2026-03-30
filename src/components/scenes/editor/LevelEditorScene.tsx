@@ -3,6 +3,7 @@ import { useCallback, useMemo } from "react";
 import type { ThreeEvent } from "@react-three/fiber";
 
 import { EndBuilding } from "../../entities/EndBuilding";
+import { PlanetTileDecorations } from "../../entities/PlanetTileDecorations";
 import { Portal } from "../../entities/Portal";
 import { Water } from "../../entities/Water";
 import { Light } from "../shared/Light";
@@ -20,28 +21,16 @@ import {
 import { getTilePlacementState } from "../../../utils/tilePlacement";
 import {
   getLevelGridOffset,
-  tileToWorldCoordinate,
   withRecalculatedWaterCoordinates,
 } from "../../../utils/levelEditor";
-import { getCssColorValue, type ColorToken } from "../../ui/lib/cssUtils";
-import type { LevelEditorTool } from "../../../core/types/editor";
+import { getCssColorValue } from "../../ui/lib/cssUtils";
 import { LevelEditorCamera } from "./LevelEditorCamera";
+import {
+  LevelEditorTerrainTile,
+  LEVEL_EDITOR_TILE_HEIGHT,
+} from "./LevelEditorTerrainTile";
 
-const TILE_HEIGHT = 0.02;
 const BUILDING_OUTLINE_SCALE = 1.06;
-
-const toolTokenMap: Record<LevelEditorTool, ColorToken> = {
-  select: "editor-tool-select",
-  placeBuilding: "editor-tool-place-building",
-  drawPath: "editor-tool-draw-path",
-  setSpawn: "editor-tool-set-spawn",
-  setBase: "editor-tool-set-base",
-  erase: "editor-tool-erase",
-  water: "editor-tool-water",
-};
-
-const getToolPreviewColor = (tool: LevelEditorTool): string =>
-  getCssColorValue(toolTokenMap[tool]);
 
 const getWaypointColor = (
   isSelected: boolean,
@@ -146,48 +135,40 @@ export const LevelEditorScene = () => {
           const canHighlightEditorAction =
             canPlaceBuilding ||
             (activeTool === "water" && canPaintWater);
-          const baseTileColor = draftLevel.tileColor ?? getCssColorValue("editor-default-tile");
-          const color = isHovered
-            ? canHighlightEditorAction
-              ? getCssColorValue("editor-can-place")
-              : getToolPreviewColor(activeTool)
-            : placementState.isOnPath
-              ? getCssColorValue("scene-gray-800")
-              : placementState.isWater
-                ? getCssColorValue("scene-water")
-                : baseTileColor;
-          const emissive = isHovered ? color : getCssColorValue("scene-black");
+          const baseTileColor =
+            draftLevel.tileColor ?? getCssColorValue("editor-default-tile");
 
           return (
-            <mesh
+            <LevelEditorTerrainTile
               key={`${gridX}-${gridZ}`}
-              position={[
-                tileToWorldCoordinate(gridX, draftLevel.gridSize, tileSize),
-                0,
-                tileToWorldCoordinate(gridZ, draftLevel.gridSize, tileSize),
-              ]}
-              onClick={() => onTileClick(gridX, gridZ)}
-              onPointerOver={(event) => {
-                event.stopPropagation();
-                onTileHover(gridX, gridZ);
-              }}
-              onPointerOut={(event) => {
-                event.stopPropagation();
-                onTileHoverEnd();
-              }}
-            >
-              <boxGeometry args={[tileSize, TILE_HEIGHT, tileSize]} />
-              <meshStandardMaterial
-                transparent
-                opacity={isHovered ? 0.75 : 0.45}
-                color={color}
-                emissive={emissive}
-                emissiveIntensity={isHovered ? 0.25 : 0}
-              />
-            </mesh>
+              gridX={gridX}
+              gridZ={gridZ}
+              gridSize={draftLevel.gridSize}
+              tileSize={tileSize}
+              landBaseColor={baseTileColor}
+              placementState={placementState}
+              isHovered={isHovered}
+              canHighlightEditorAction={canHighlightEditorAction}
+              activeTool={activeTool}
+              onTileClick={() => onTileClick(gridX, gridZ)}
+              onTileHover={() => onTileHover(gridX, gridZ)}
+              onTileHoverEnd={onTileHoverEnd}
+            />
           );
         })}
       </group>
+
+      <PlanetTileDecorations
+        gridSize={draftLevel.gridSize}
+        tileSize={tileSize}
+        gridOffset={gridOffset}
+        pathWaypoints={draftLevel.pathWaypoints}
+        pathWidth={pathWidth}
+        waters={draftLevel.waters}
+        buildings={draftLevel.buildings}
+        towers={[]}
+        surfaceHalfHeight={LEVEL_EDITOR_TILE_HEIGHT / 2}
+      />
 
       <group>
         {draftLevel.pathWaypoints.map((path, pathIndex) => {

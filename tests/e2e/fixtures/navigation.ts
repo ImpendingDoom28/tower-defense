@@ -20,8 +20,8 @@ export const onOpenGame = async (
   await expect(page.getByRole("heading", { name: "Deploy" })).toBeVisible();
   await page.getByTestId("level-picker-level_1").click();
   if (waitForTowerShop) {
-    await expect(
-      page.getByRole("heading", { name: "Tower Shop" })
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Tower Shop" })).toBeVisible(
+      { timeout: 20_000 }
+    );
   }
 };

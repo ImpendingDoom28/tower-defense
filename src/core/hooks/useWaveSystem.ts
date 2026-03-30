@@ -76,7 +76,7 @@ export const useWaveSystem = (gameState: GameState) => {
   const pathWaypoints = useLevelStore(pathWaypointsSelector);
   const { addEnemy } = useLevelSystem();
 
-  const { timeUntilNextWave, setTimeUntilNextWave } = useWaveStore();
+  const { setTimeUntilNextWave } = useWaveStore();
 
   const spawnQueueRef = useRef<SpawnQueueItem[]>([]);
   const spawnQueueIndexRef = useRef<number>(0);
@@ -228,7 +228,10 @@ export const useWaveSystem = (gameState: GameState) => {
           totalPauseDurationRef.current += pauseDuration;
         }
 
-        if (pendingCountdownStartAfterUpgradeRef.current && isSimulationActive) {
+        if (
+          pendingCountdownStartAfterUpgradeRef.current &&
+          isSimulationActive
+        ) {
           pendingCountdownStartAfterUpgradeRef.current = false;
           isCountingDownRef.current = true;
           waveEndTimeRef.current = currentTime;
@@ -343,7 +346,9 @@ export const useWaveSystem = (gameState: GameState) => {
 
         const nextSpawn = spawnQueueRef.current[spawnQueueIndexRef.current];
         const timeSinceWaveStart =
-          currentTime - lastSpawnTimeRef.current - totalPauseDurationRef.current;
+          currentTime -
+          lastSpawnTimeRef.current -
+          totalPauseDurationRef.current;
 
         if (nextSpawn && timeSinceWaveStart >= nextSpawn.delay) {
           addEnemy(nextSpawn.type, nextSpawn.upgrades);
@@ -377,7 +382,6 @@ export const useWaveSystem = (gameState: GameState) => {
     updateWaveSpawning,
     startFirstWave,
     getRemainingEnemiesInWave,
-    timeUntilNextWave,
     startNextWaveEarly,
     resumeCountdownAfterUpgradePick,
   };

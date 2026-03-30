@@ -6,6 +6,7 @@ import { getCssColorValue } from "../ui/lib/cssUtils";
 import { useLevelSystem } from "../../core/hooks/useLevelSystem";
 import {
   pathYOffsetSelector,
+  selectedTowerTypeToPlaceSelector,
   tileSizeSelector,
   useGameStore,
 } from "../../core/stores/useGameStore";
@@ -13,7 +14,6 @@ import {
   gridSizeSelector,
   useLevelStore,
 } from "../../core/stores/useLevelStore";
-import type { TowerType } from "../../core/types/game";
 import type { TileData } from "../../core/types/utils";
 import { tileToWorldCoordinate } from "../../utils/levelEditor";
 
@@ -22,12 +22,12 @@ const PLANE_INSET = 0.98;
 const OVERLAY_OPACITY = 0.27;
 
 type PlacementHighlightOverlayProps = {
-  selectedTowerType: TowerType | null;
   hoveredTile: TileData | null;
 };
 
-export const PlacementHighlightOverlay: FC<PlacementHighlightOverlayProps> = memo(
-  ({ selectedTowerType, hoveredTile }) => {
+export const PlacementHighlightOverlay: FC<PlacementHighlightOverlayProps> =
+  memo(({ hoveredTile }) => {
+    const selectedTowerType = useGameStore(selectedTowerTypeToPlaceSelector);
     const gridSize = useLevelStore(gridSizeSelector);
     const tileSize = useGameStore(tileSizeSelector);
     const pathYOffset = useGameStore(pathYOffsetSelector);
@@ -58,10 +58,7 @@ export const PlacementHighlightOverlay: FC<PlacementHighlightOverlayProps> = mem
 
       for (let gridX = 0; gridX < gridSize; gridX++) {
         for (let gridZ = 0; gridZ < gridSize; gridZ++) {
-          if (
-            hoveredTile?.gridX === gridX &&
-            hoveredTile?.gridZ === gridZ
-          ) {
+          if (hoveredTile?.gridX === gridX && hoveredTile?.gridZ === gridZ) {
             continue;
           }
 
@@ -106,8 +103,7 @@ export const PlacementHighlightOverlay: FC<PlacementHighlightOverlayProps> = mem
         ))}
       </group>
     );
-  }
-);
+  });
 
 PlacementHighlightOverlay.displayName = "PlacementHighlightOverlay";
 
@@ -128,11 +124,7 @@ const OverlayPlane: FC<OverlayPlaneProps> = memo(
     }, []);
 
     return (
-      <mesh
-        ref={meshRef}
-        position={position}
-        rotation={[-Math.PI / 2, 0, 0]}
-      >
+      <mesh ref={meshRef} position={position} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[planeSize, planeSize]} />
         <meshBasicMaterial
           color={color}

@@ -6,6 +6,7 @@ import { getCssColorValue } from "../ui/lib/cssUtils";
 import { useLevelSystem } from "../../core/hooks/useLevelSystem";
 import {
   pathYOffsetSelector,
+  selectedTowerTypeToPlaceSelector,
   tileSizeSelector,
   useGameStore,
 } from "../../core/stores/useGameStore";
@@ -14,7 +15,7 @@ import {
   towersSelector,
   useLevelStore,
 } from "../../core/stores/useLevelStore";
-import type { Tower, TowerType } from "../../core/types/game";
+import type { Tower } from "../../core/types/game";
 import type { TileData } from "../../core/types/utils";
 import { tileToWorldCoordinate } from "../../utils/levelEditor";
 import type { TilePlacementState } from "../../utils/tilePlacement";
@@ -116,24 +117,23 @@ const buildRelayNeighborOverlayItems = ({
 };
 
 type RelayBuffPreviewOverlayProps = {
-  selectedTowerType: TowerType | null;
   selectedTower: Tower | null;
   hoveredTile: TileData | null;
-  hoveredTilePlacementState: TilePlacementState | null;
 };
 
 export const RelayBuffPreviewOverlay: FC<RelayBuffPreviewOverlayProps> = memo(
-  ({
-    selectedTowerType,
-    selectedTower,
-    hoveredTile,
-    hoveredTilePlacementState,
-  }) => {
+  ({ selectedTower, hoveredTile }) => {
+    const selectedTowerType = useGameStore(selectedTowerTypeToPlaceSelector);
     const gridSize = useLevelStore(gridSizeSelector);
     const towers = useLevelStore(towersSelector);
     const tileSize = useGameStore(tileSizeSelector);
     const pathYOffset = useGameStore(pathYOffsetSelector);
     const { getTilePlacementState } = useLevelSystem();
+
+    const hoveredTilePlacementState =
+      hoveredTile !== null
+        ? getTilePlacementState(hoveredTile.gridX, hoveredTile.gridZ)
+        : null;
 
     const buffColor = useMemo(() => {
       const c = new Color(getCssColorValue("scene-hp-high"));
@@ -151,13 +151,13 @@ export const RelayBuffPreviewOverlay: FC<RelayBuffPreviewOverlayProps> = memo(
     const planeSize = tileSize * PLANE_INSET;
 
     const buffCells = useMemo(() => {
-      const placementRelayActive =
-        selectedTowerType === "relay" &&
-        hoveredTile &&
-        hoveredTilePlacementState &&
-        !hoveredTilePlacementState.isBlocked;
+      const relayHoverPreview =
+        hoveredTile !== null &&
+        hoveredTilePlacementState !== null &&
+        !hoveredTilePlacementState.isBlocked &&
+        (selectedTowerType === "relay" || selectedTower?.type === "relay");
 
-      if (placementRelayActive) {
+      if (relayHoverPreview && hoveredTile !== null) {
         return buildRelayNeighborOverlayItems({
           sourceGridX: hoveredTile.gridX,
           sourceGridZ: hoveredTile.gridZ,
@@ -187,8 +187,8 @@ export const RelayBuffPreviewOverlay: FC<RelayBuffPreviewOverlayProps> = memo(
 
       return [];
     }, [
-      selectedTowerType,
       selectedTower,
+      selectedTowerType,
       hoveredTile,
       hoveredTilePlacementState,
       gridSize,

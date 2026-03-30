@@ -13,9 +13,8 @@ test("loads the main menu and enters gameplay HUD", async ({ page }) => {
 });
 
 test("shows the in-game HUD after starting a run", async ({ page }) => {
-  await onOpenGame(page);
+  await onOpenGame(page, { waitForTowerShop: true });
 
-  await expect(page.getByRole("heading", { name: "Tower Shop" })).toBeVisible();
   await expect(
     page.getByRole("button", { name: /Basic Tower/i })
   ).toBeVisible();

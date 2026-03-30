@@ -24,6 +24,10 @@ import {
   getPickTierForStackEntryIndex,
   getTotalRewardMultiplierFromStack,
 } from "../../utils/enemyUpgradeTierEffects";
+import {
+  timeUntilNextWaveSelector,
+  useWaveStore,
+} from "../../core/stores/useWaveStore";
 
 type EnemyPreviewModelProps = {
   enemyConfig: EnemyConfig;
@@ -70,14 +74,13 @@ const EnemyPreviewModel: FC<EnemyPreviewModelProps> = ({
 };
 
 type GUINextWavePreviewProps = {
-  timeUntilNextWave: number | null;
   pathIndex: number;
 };
 
 export const GUINextWavePreview: FC<GUINextWavePreviewProps> = ({
-  timeUntilNextWave,
   pathIndex,
 }) => {
+  const timeUntilNextWave = useWaveStore(timeUntilNextWaveSelector);
   const pathWaypoints = useLevelStore(pathWaypointsSelector);
   const totalWaves = useLevelStore(totalWavesSelector);
   const waveConfigs = useLevelStore(waveConfigsSelector);

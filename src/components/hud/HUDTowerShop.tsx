@@ -1,10 +1,11 @@
 import { FC, useMemo } from "react";
 
-import type { TowerType } from "../../core/types/game";
 import { UIButton } from "@/components/ui/UIButton";
 import { UITypography } from "../ui/UITypography";
 import {
   denyPulseSelector,
+  selectedTowerTypeToPlaceSelector,
+  setSelectedTowerTypeToPlaceSelector,
   towerTypesSelector,
   useGameStore,
 } from "../../core/stores/useGameStore";
@@ -15,23 +16,23 @@ import { cn } from "@/components/ui/lib/twUtils";
 import { TOWER_SHOP_MONEY_ICON_SIZE_PX } from "../../constants/uiActionDeniedFeedback";
 
 type HUDTowerShopProps = {
-  selectedTowerType: TowerType | null;
   money: number;
-  onSelectTower: (towerType: TowerType) => void;
-  onDeselectTower: () => void;
 };
 
-export const HUDTowerShop: FC<HUDTowerShopProps> = ({
-  selectedTowerType,
-  money,
-  onSelectTower,
-  onDeselectTower,
-}) => {
+export const HUDTowerShop: FC<HUDTowerShopProps> = ({ money }) => {
+  const setSelectedTowerType = useGameStore(
+    setSelectedTowerTypeToPlaceSelector
+  );
+  const selectedTowerType = useGameStore(selectedTowerTypeToPlaceSelector);
   const denyPulse = useGameStore(denyPulseSelector);
   const towerTypes = useGameStore(towerTypesSelector);
   const towerTypesValues = useMemo(() => {
     return Object.values(towerTypes ?? {}).sort((a, b) => a.cost - b.cost);
   }, [towerTypes]);
+
+  const onCancelSelection = () => {
+    setSelectedTowerType(null);
+  };
 
   return (
     <HUDWrapper className="bottom-auto w-80 top-4 left-4">
@@ -62,9 +63,9 @@ export const HUDTowerShop: FC<HUDTowerShopProps> = ({
 
             const onTowerClick = () => {
               if (isSelected) {
-                onDeselectTower();
+                onCancelSelection();
               } else if (canAfford) {
-                onSelectTower(tower.id);
+                setSelectedTowerType(tower.id);
               }
             };
 
@@ -103,7 +104,7 @@ export const HUDTowerShop: FC<HUDTowerShopProps> = ({
             );
           })}
           {selectedTowerType && (
-            <UIButton onClick={onDeselectTower} variant="destructive">
+            <UIButton onClick={onCancelSelection} variant="destructive">
               Cancel Selection
             </UIButton>
           )}

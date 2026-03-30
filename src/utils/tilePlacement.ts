@@ -52,16 +52,13 @@ export const getTilePlacementState = ({
     pathWaypoints,
     pathWidth
   );
-  const isWater = waters.some(
-    (w) => w.gridX === gridX && w.gridZ === gridZ
-  );
+  const isWater = waters.some((w) => w.gridX === gridX && w.gridZ === gridZ);
 
   return {
     isOccupiedByTower,
     isOccupiedByBuilding,
     isOnPath,
     isWater,
-    isBlocked:
-      isOccupiedByTower || isOccupiedByBuilding || isOnPath || isWater,
+    isBlocked: isOccupiedByTower || isOccupiedByBuilding || isOnPath || isWater,
   };
 };

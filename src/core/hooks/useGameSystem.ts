@@ -14,7 +14,6 @@ export const useGameSystem = () => {
     activeEffects,
     gameStatus,
     previousStatus,
-    selectedTowerType,
     selectedTower,
     debug,
     isGameConfigLoaded,
@@ -22,7 +21,6 @@ export const useGameSystem = () => {
     setActiveEffects,
     setGameStatus,
     setPreviousStatus,
-    setSelectedTowerType,
     setSelectedTower,
     setDebug,
     resetGameState,
@@ -40,7 +38,8 @@ export const useGameSystem = () => {
       setIsPageVisible(document.visibilityState === "visible");
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", onVisibilityChange);
   }, [setIsPageVisible]);
 
   const shouldDisableControls =
@@ -147,7 +146,6 @@ export const useGameSystem = () => {
     // State
     health,
     gameStatus,
-    selectedTowerType,
     selectedTower,
     activeEffects,
     shouldDisableControls,
@@ -162,7 +160,6 @@ export const useGameSystem = () => {
     goToMainMenu,
     openGameMenu,
     closeGameMenu,
-    setSelectedTowerType,
     setSelectedTower,
     setActiveEffects,
     toggleDebug,

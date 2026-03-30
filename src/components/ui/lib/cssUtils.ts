@@ -20,6 +20,9 @@ const colorTokenMap = {
   "scene-sky-base": "--scene-sky-base",
   "scene-water": "--scene-water",
   "scene-water-emissive": "--scene-water-emissive",
+  "scene-regolith-highlight": "--scene-regolith-highlight",
+  "scene-regolith-shadow": "--scene-regolith-shadow",
+  "scene-regolith-rock": "--scene-regolith-rock",
 
   "editor-tool-select": "--editor-tool-select",
   "editor-tool-place-building": "--editor-tool-place-building",

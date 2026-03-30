@@ -18,7 +18,13 @@ type GameStoreState = {
   enemyHealthLoss: number;
   health: number;
   activeEffects: ActiveEffect[];
-  selectedTowerType: TowerType | null;
+  /**
+   * The type of tower that is currently selected to place from the tower shop
+   */
+  selectedTowerTypeToPlace: TowerType | null;
+  /**
+   * The tower that is currently selected in the game (to view it's details)
+   */
   selectedTower: Tower | null;
 
   tileSize: number;
@@ -51,7 +57,7 @@ type GameStoreActions = {
   ) => void;
   setGameStatus: (status: GameStore["gameStatus"]) => void;
   setPreviousStatus: (status: GameStore["previousStatus"]) => void;
-  setSelectedTowerType: (type: TowerType | null) => void;
+  setSelectedTowerTypeToPlace: (type: TowerType | null) => void;
   setSelectedTower: (tower: Tower | null) => void;
   setDebug: (debug: boolean) => void;
   resetGameState: () => void;
@@ -66,7 +72,7 @@ const DEFAULT_STATE: GameStoreState = {
   towerTypes: null,
   enemyUpgrades: null,
   activeEffects: [],
-  selectedTowerType: null,
+  selectedTowerTypeToPlace: null,
   selectedTower: null,
   health: 0,
 
@@ -159,8 +165,8 @@ export const useGameStore = create<GameStore>((set) => ({
     set({ previousStatus: status });
   },
 
-  setSelectedTowerType: (type) => {
-    set({ selectedTowerType: type });
+  setSelectedTowerTypeToPlace: (type) => {
+    set({ selectedTowerTypeToPlace: type });
   },
 
   setSelectedTower: (tower) => {
@@ -212,3 +218,11 @@ export const denyPulseSelector = (state: GameStore) => state.denyPulse;
 export const incrementDenyPulseSelector = (state: GameStore) =>
   state.incrementDenyPulse;
 export const isPageVisibleSelector = (state: GameStore) => state.isPageVisible;
+export const selectedTowerTypeToPlaceSelector = (state: GameStore) =>
+  state.selectedTowerTypeToPlace;
+export const setSelectedTowerTypeToPlaceSelector = (state: GameStore) =>
+  state.setSelectedTowerTypeToPlace;
+export const selectedTowerSelector = (state: GameStore) => state.selectedTower;
+export const setSelectedTowerSelector = (state: GameStore) =>
+  state.setSelectedTower;
+export const gameStatusSelector = (state: GameStore) => state.gameStatus;
