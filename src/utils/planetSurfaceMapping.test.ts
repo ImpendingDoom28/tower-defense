@@ -1,0 +1,105 @@
+import { describe, expect, it } from "vitest";
+import { Vector3 } from "three";
+
+import { tileToWorldCoordinate } from "./levelEditor";
+import {
+  GROUND_POLE_EPSILON,
+  GROUND_SIZE_RADIUS_FACTOR,
+  flatFieldToSphereOverlayPlanePose,
+  flatFieldToSphereSurface,
+  getGridMaxTileTopWorldY,
+  getPlanetRadius,
+  getPlanetSphereCenter,
+  getPlanetSphereMeshPositionY,
+  getSurfaceQuaternion,
+} from "./planetSurfaceMapping";
+
+describe("planetSurfaceMapping", () => {
+  it("getPlanetRadius matches max(factor*ground, ground)", () => {
+    expect(getPlanetRadius(10, 1)).toBe(10 * GROUND_SIZE_RADIUS_FACTOR);
+    expect(getPlanetRadius(1, 1)).toBe(1 * GROUND_SIZE_RADIUS_FACTOR);
+  });
+
+  it("sphere center Y matches Ground mesh offset", () => {
+    const r = 100;
+    const c = getPlanetSphereCenter(r);
+    expect(c.x).toBe(0);
+    expect(c.z).toBe(0);
+    expect(c.y).toBe(-r - GROUND_POLE_EPSILON);
+    expect(getPlanetSphereMeshPositionY(r)).toBe(c.y);
+  });
+
+  it("flatFieldToSphereSurface places point on sphere shell", () => {
+    const radius = 100;
+    const center = getPlanetSphereCenter(radius);
+    const { surfacePoint, normal } = flatFieldToSphereSurface(0, 0, radius);
+    const delta = new Vector3().subVectors(surfacePoint, center);
+    expect(delta.length()).toBeCloseTo(radius, 5);
+    expect(normal.y).toBeCloseTo(1, 5);
+    expect(normal.x).toBeCloseTo(0, 5);
+    expect(normal.z).toBeCloseTo(0, 5);
+  });
+
+  it("is symmetric in wx and wz magnitude for equal offsets", () => {
+    const radius = 200;
+    const a = flatFieldToSphereSurface(5, 0, radius, undefined, new Vector3());
+    const b = flatFieldToSphereSurface(0, 5, radius, undefined, new Vector3());
+    expect(Math.abs(a.surfacePoint.y - b.surfacePoint.y)).toBeLessThan(1e-5);
+  });
+
+  it("getGridMaxTileTopWorldY is max of tile tops over grid", () => {
+    const gridSize = 3;
+    const tileSize = 1;
+    const tileHeightY = 0.12;
+    const radius = getPlanetRadius(gridSize, tileSize);
+    let expected = -Infinity;
+    for (let gx = 0; gx < gridSize; gx++) {
+      for (let gz = 0; gz < gridSize; gz++) {
+        const wx = tileToWorldCoordinate(gx, gridSize, tileSize);
+        const wz = tileToWorldCoordinate(gz, gridSize, tileSize);
+        const { surfacePoint, normal } = flatFieldToSphereSurface(wx, wz, radius);
+        const topY = surfacePoint.y + normal.y * tileHeightY;
+        expected = Math.max(expected, topY);
+      }
+    }
+    expect(
+      getGridMaxTileTopWorldY(gridSize, tileSize, tileHeightY, radius)
+    ).toBeCloseTo(expected, 5);
+  });
+
+  it("overlay plane +Z aligns with surface normal (matches PlaneGeometry)", () => {
+    const radius = 100;
+    const { normal } = flatFieldToSphereSurface(3, -2, radius);
+    const { quaternion } = flatFieldToSphereOverlayPlanePose(3, -2, radius, 0);
+    const planeNormal = new Vector3(0, 0, 1).applyQuaternion(quaternion);
+    expect(planeNormal.dot(normal)).toBeCloseTo(1, 5);
+  });
+
+  it("overlay plane tangent axes match Tile local X / -Z (no twist around normal)", () => {
+    const radius = 80;
+    const wx = 4.2;
+    const wz = -3.1;
+    const { normal } = flatFieldToSphereSurface(wx, wz, radius);
+    const qTile = getSurfaceQuaternion(normal);
+    const tileX = new Vector3(1, 0, 0).applyQuaternion(qTile);
+    const { quaternion } = flatFieldToSphereOverlayPlanePose(wx, wz, radius, 0);
+    const planeX = new Vector3(1, 0, 0).applyQuaternion(quaternion);
+    const planeY = new Vector3(0, 1, 0).applyQuaternion(quaternion);
+    expect(planeX.dot(tileX)).toBeCloseTo(1, 5);
+    expect(planeX.dot(normal)).toBeCloseTo(0, 5);
+    expect(planeY.dot(normal)).toBeCloseTo(0, 5);
+    expect(new Vector3().crossVectors(planeX, planeY).dot(normal)).toBeCloseTo(
+      1,
+      5
+    );
+  });
+
+  it("reuses out vectors when provided", () => {
+    const radius = 50;
+    const outP = new Vector3();
+    const outN = new Vector3();
+    const r = flatFieldToSphereSurface(2, 3, radius, outP, outN);
+    expect(r.surfacePoint).toBe(outP);
+    expect(r.normal).toBe(outN);
+  });
+});

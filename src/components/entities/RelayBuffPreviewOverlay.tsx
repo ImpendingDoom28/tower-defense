@@ -1,6 +1,6 @@
 import { FC, memo, useLayoutEffect, useMemo, useRef } from "react";
 
-import { Color, Mesh } from "three";
+import { Color, Mesh, Quaternion, Vector3 } from "three";
 
 import { getCssColorValue } from "../ui/lib/cssUtils";
 import { useLevelSystem } from "../../core/hooks/useLevelSystem";
@@ -18,6 +18,10 @@ import {
 import type { Tower } from "../../core/types/game";
 import type { TileData } from "../../core/types/utils";
 import { tileToWorldCoordinate } from "../../utils/levelEditor";
+import {
+  flatFieldToSphereOverlayPlanePose,
+  getPlanetRadius,
+} from "../../utils/planetSurfaceMapping";
 import type { TilePlacementState } from "../../utils/tilePlacement";
 
 const PLACEMENT_OVERLAY_Y_EPSILON = 0.018;
@@ -34,7 +38,8 @@ const NEIGHBOR_OFFSETS: ReadonlyArray<readonly [number, number]> = [
 
 type RelayNeighborOverlayItem = {
   key: string;
-  position: [number, number, number];
+  position: Vector3;
+  quaternion: Quaternion;
   color: string;
   opacity: number;
 };
@@ -50,6 +55,7 @@ const buildRelayNeighborOverlayItems = ({
   gridSize,
   tileSize,
   overlayY,
+  planetRadius,
   towers,
   getTilePlacementState,
   buffColor,
@@ -60,6 +66,7 @@ const buildRelayNeighborOverlayItems = ({
   gridSize: number;
   tileSize: number;
   overlayY: number;
+  planetRadius: number;
   towers: Tower[];
   getTilePlacementState: GetTilePlacementStateFn;
   buffColor: string;
@@ -81,12 +88,18 @@ const buildRelayNeighborOverlayItems = ({
 
     const wx = tileToWorldCoordinate(gridX, gridSize, tileSize);
     const wz = tileToWorldCoordinate(gridZ, gridSize, tileSize);
-    const position: [number, number, number] = [wx, overlayY, wz];
+    const { position, quaternion } = flatFieldToSphereOverlayPlanePose(
+      wx,
+      wz,
+      planetRadius,
+      overlayY
+    );
 
     if (towerOnCell && towerOnCell.type !== "relay") {
       items.push({
         key: `relay-buff-${gridX}-${gridZ}`,
         position,
+        quaternion,
         color: buffColor,
         opacity: OVERLAY_OPACITY_BUFF,
       });
@@ -108,6 +121,7 @@ const buildRelayNeighborOverlayItems = ({
     items.push({
       key: `relay-footprint-${gridX}-${gridZ}`,
       position,
+      quaternion,
       color: footprintColor,
       opacity: OVERLAY_OPACITY_FOOTPRINT,
     });
@@ -149,6 +163,10 @@ export const RelayBuffPreviewOverlay: FC<RelayBuffPreviewOverlayProps> = memo(
 
     const overlayY = pathYOffset + PLACEMENT_OVERLAY_Y_EPSILON;
     const planeSize = tileSize * PLANE_INSET;
+    const planetRadius = useMemo(
+      () => getPlanetRadius(gridSize, tileSize),
+      [gridSize, tileSize]
+    );
 
     const buffCells = useMemo(() => {
       const relayHoverPreview =
@@ -164,6 +182,7 @@ export const RelayBuffPreviewOverlay: FC<RelayBuffPreviewOverlayProps> = memo(
           gridSize,
           tileSize,
           overlayY,
+          planetRadius,
           towers,
           getTilePlacementState,
           buffColor,
@@ -178,6 +197,7 @@ export const RelayBuffPreviewOverlay: FC<RelayBuffPreviewOverlayProps> = memo(
           gridSize,
           tileSize,
           overlayY,
+          planetRadius,
           towers,
           getTilePlacementState,
           buffColor,
@@ -196,6 +216,7 @@ export const RelayBuffPreviewOverlay: FC<RelayBuffPreviewOverlayProps> = memo(
       towers,
       getTilePlacementState,
       overlayY,
+      planetRadius,
       buffColor,
       footprintColor,
     ]);
@@ -206,10 +227,11 @@ export const RelayBuffPreviewOverlay: FC<RelayBuffPreviewOverlayProps> = memo(
 
     return (
       <group>
-        {buffCells.map(({ key, position, color, opacity }) => (
+        {buffCells.map(({ key, position, quaternion, color, opacity }) => (
           <OverlayPlane
             key={key}
             position={position}
+            quaternion={quaternion}
             planeSize={planeSize}
             color={color}
             opacity={opacity}
@@ -223,14 +245,15 @@ export const RelayBuffPreviewOverlay: FC<RelayBuffPreviewOverlayProps> = memo(
 RelayBuffPreviewOverlay.displayName = "RelayBuffPreviewOverlay";
 
 type OverlayPlaneProps = {
-  position: [number, number, number];
+  position: Vector3;
+  quaternion: Quaternion;
   planeSize: number;
   color: string;
   opacity: number;
 };
 
 const OverlayPlane: FC<OverlayPlaneProps> = memo(
-  ({ position, planeSize, color, opacity }) => {
+  ({ position, quaternion, planeSize, color, opacity }) => {
     const meshRef = useRef<Mesh>(null);
 
     useLayoutEffect(() => {
@@ -240,7 +263,7 @@ const OverlayPlane: FC<OverlayPlaneProps> = memo(
     }, []);
 
     return (
-      <mesh ref={meshRef} position={position} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh ref={meshRef} position={position} quaternion={quaternion}>
         <planeGeometry args={[planeSize, planeSize]} />
         <meshBasicMaterial
           color={color}

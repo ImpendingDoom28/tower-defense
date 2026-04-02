@@ -27,8 +27,8 @@ import {
   useLevelStore,
 } from "../../../core/stores/useLevelStore";
 import { Ground } from "../shared/Ground";
-import { Skybox } from "../shared/Skybox";
 import { Light } from "../shared/Light";
+import { Skybox } from "../shared/Skybox";
 
 type GameSceneProps = {
   placeTower: (gridX: number, gridZ: number, towerType: TowerType) => void;
@@ -92,7 +92,7 @@ export const GameScene: React.FC<GameSceneProps> = ({
 
       <Skybox />
       <Light />
-      {/* <Ground /> */}
+      <Ground />
 
       <GameCamera
         movementSpeed={10}

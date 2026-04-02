@@ -3,6 +3,11 @@ import { FC, memo, useCallback, useEffect, useMemo } from "react";
 import type { ThreeEvent } from "@react-three/fiber";
 import { MeshStandardMaterial } from "three";
 
+import {
+  flatFieldToSphereTilePose,
+  getPlanetRadius,
+} from "../../utils/planetSurfaceMapping";
+
 import { getCssColorValue } from "../ui/lib/cssUtils";
 import {
   pathYOffsetSelector,
@@ -15,7 +20,7 @@ import {
 } from "../../core/stores/useLevelStore";
 import { hashGrid2D } from "../../core/tileGridHash";
 import { tileToWorldCoordinate } from "../../utils/levelEditor";
-import { createPlanetTileMaterial } from "./planetTileMaterial";
+import { createPlanetTileMaterial } from "../../utils/planetTileMaterial";
 
 type PlacementHoverKey = "idle" | "canPlace" | "cannotPlace";
 
@@ -57,13 +62,15 @@ export const Tile: FC<TileProps> = memo(
           depthSegments?: number | undefined,
         ]
       | undefined = [tileSize, pathYOffset, tileSize];
-    const position = useMemo<[number, number, number]>(
-      () => [
-        tileToWorldCoordinate(gridX, gridSize, tileSize),
-        0,
-        tileToWorldCoordinate(gridZ, gridSize, tileSize),
-      ],
-      [gridX, gridZ, gridSize, tileSize]
+    const planetPose = useMemo(
+      () =>
+        flatFieldToSphereTilePose(
+          tileToWorldCoordinate(gridX, gridSize, tileSize),
+          tileToWorldCoordinate(gridZ, gridSize, tileSize),
+          getPlanetRadius(gridSize, tileSize),
+          pathYOffset / 2
+        ),
+      [gridX, gridZ, gridSize, tileSize, pathYOffset]
     );
 
     const placementHoverKey = useMemo<PlacementHoverKey>(() => {
@@ -181,7 +188,8 @@ export const Tile: FC<TileProps> = memo(
 
     return (
       <mesh
-        position={position}
+        position={planetPose.position}
+        quaternion={planetPose.quaternion}
         material={material}
         onClick={onInnerClick}
         onPointerOver={onInnerPointerOver}

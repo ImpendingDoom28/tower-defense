@@ -1,6 +1,6 @@
 import { FC, memo, useLayoutEffect, useMemo, useRef } from "react";
 
-import { Color, Mesh } from "three";
+import { Color, Mesh, Quaternion, Vector3 } from "three";
 
 import { getCssColorValue } from "../ui/lib/cssUtils";
 import { useLevelSystem } from "../../core/hooks/useLevelSystem";
@@ -16,6 +16,10 @@ import {
 } from "../../core/stores/useLevelStore";
 import type { TileData } from "../../core/types/utils";
 import { tileToWorldCoordinate } from "../../utils/levelEditor";
+import {
+  flatFieldToSphereOverlayPlanePose,
+  getPlanetRadius,
+} from "../../utils/planetSurfaceMapping";
 
 const PLACEMENT_OVERLAY_Y_EPSILON = 0.016;
 const PLANE_INSET = 0.98;
@@ -44,7 +48,12 @@ export const PlacementHighlightOverlay: FC<PlacementHighlightOverlayProps> =
       return `#${c.getHexString()}`;
     }, []);
 
-    const overlayY = pathYOffset + PLACEMENT_OVERLAY_Y_EPSILON;
+    const planetRadius = useMemo(
+      () => getPlanetRadius(gridSize, tileSize),
+      [gridSize, tileSize]
+    );
+
+    const heightAlongNormal = pathYOffset + PLACEMENT_OVERLAY_Y_EPSILON;
     const planeSize = tileSize * PLANE_INSET;
 
     const cells = useMemo(() => {
@@ -52,7 +61,8 @@ export const PlacementHighlightOverlay: FC<PlacementHighlightOverlayProps> =
 
       const items: {
         key: string;
-        position: [number, number, number];
+        position: Vector3;
+        quaternion: Quaternion;
         color: string;
       }[] = [];
 
@@ -67,9 +77,17 @@ export const PlacementHighlightOverlay: FC<PlacementHighlightOverlayProps> =
           const wx = tileToWorldCoordinate(gridX, gridSize, tileSize);
           const wz = tileToWorldCoordinate(gridZ, gridSize, tileSize);
 
+          const { position, quaternion } = flatFieldToSphereOverlayPlanePose(
+            wx,
+            wz,
+            planetRadius,
+            heightAlongNormal
+          );
+
           items.push({
             key: `${gridX}-${gridZ}`,
-            position: [wx, overlayY, wz],
+            position,
+            quaternion,
             color: canPlace ? validColor : invalidColor,
           });
         }
@@ -82,7 +100,8 @@ export const PlacementHighlightOverlay: FC<PlacementHighlightOverlayProps> =
       gridSize,
       tileSize,
       getTilePlacementState,
-      overlayY,
+      planetRadius,
+      heightAlongNormal,
       validColor,
       invalidColor,
     ]);
@@ -93,10 +112,11 @@ export const PlacementHighlightOverlay: FC<PlacementHighlightOverlayProps> =
 
     return (
       <group>
-        {cells.map(({ key, position, color }) => (
+        {cells.map(({ key, position, quaternion, color }) => (
           <OverlayPlane
             key={key}
             position={position}
+            quaternion={quaternion}
             planeSize={planeSize}
             color={color}
           />
@@ -108,13 +128,14 @@ export const PlacementHighlightOverlay: FC<PlacementHighlightOverlayProps> =
 PlacementHighlightOverlay.displayName = "PlacementHighlightOverlay";
 
 type OverlayPlaneProps = {
-  position: [number, number, number];
+  position: Vector3;
+  quaternion: Quaternion;
   planeSize: number;
   color: string;
 };
 
 const OverlayPlane: FC<OverlayPlaneProps> = memo(
-  ({ position, planeSize, color }) => {
+  ({ position, quaternion, planeSize, color }) => {
     const meshRef = useRef<Mesh>(null);
 
     useLayoutEffect(() => {
@@ -124,7 +145,7 @@ const OverlayPlane: FC<OverlayPlaneProps> = memo(
     }, []);
 
     return (
-      <mesh ref={meshRef} position={position} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh ref={meshRef} position={position} quaternion={quaternion}>
         <planeGeometry args={[planeSize, planeSize]} />
         <meshBasicMaterial
           color={color}

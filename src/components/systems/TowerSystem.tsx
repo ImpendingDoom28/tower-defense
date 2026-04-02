@@ -23,10 +23,16 @@ import { useGameStore } from "../../core/stores/useGameStore";
 import {
   enemiesSelector,
   gridSizeSelector,
+  pathWaypointsSelector,
   towersSelector,
   useLevelStore,
 } from "../../core/stores/useLevelStore";
 import { tileToWorldCoordinate } from "../../utils/levelEditor";
+import {
+  flatCombatPointToWorldPosition,
+  getPlanetRadius,
+} from "../../utils/planetSurfaceMapping";
+import { getPositionAlongMultiplePaths } from "../../utils/pathUtils";
 import { GameEvent } from "../../core/types/enums/events";
 import type { TilePlacementState } from "../../utils/tilePlacement";
 import { getShouldStopMovement } from "../../core/getShouldStopMovement";
@@ -57,6 +63,7 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
   }) => {
     const { towerTypes, tileSize, towerHeight } = useGameStore();
     const gridSize = useLevelStore(gridSizeSelector);
+    const pathWaypoints = useLevelStore(pathWaypointsSelector);
     const towers = useLevelStore(towersSelector);
     const enemies = useLevelStore(enemiesSelector);
 
@@ -201,13 +208,33 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
           }
         }
 
+        const planetRadius = getPlanetRadius(gridSize, tileSize);
+        const targetPathPos = getPositionAlongMultiplePaths(
+          pathWaypoints,
+          target.pathIndex,
+          target.pathProgress
+        );
+        const emitterAlongNormal =
+          tower.type === "laser" ? towerHeight * 0.5 : towerHeight * 0.7;
+        const startWorld = flatCombatPointToWorldPosition(
+          tower.x,
+          tower.z,
+          emitterAlongNormal,
+          planetRadius
+        );
+        const targetWorld = flatCombatPointToWorldPosition(
+          target.x,
+          target.z,
+          targetPathPos.y + target.size,
+          planetRadius
+        );
+
         const projectileData: Omit<ProjectileInstance, "id"> = {
           towerId: tower.id,
           towerType: tower.type,
-          startX: tower.x,
-          startY:
-            tower.type === "laser" ? towerHeight * 0.5 : towerHeight * 0.7,
-          startZ: tower.z,
+          startX: startWorld.x,
+          startY: startWorld.y,
+          startZ: startWorld.z,
           damage: eff.damage,
           speed: tower.projectileSpeed,
           range: eff.range,
@@ -217,9 +244,9 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
           aoeRadius: tower.aoeRadius,
           maxPierce: tower.maxPierce,
           projectileType: tower.projectileType,
-          targetX: target.x,
-          targetY: target.size / 2,
-          targetZ: target.z,
+          targetX: targetWorld.x,
+          targetY: targetWorld.y,
+          targetZ: targetWorld.z,
           targetId: target.id,
           pierceEnemyIds: pierceEnemyIds,
           chainAdditionalHits,
@@ -228,15 +255,13 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
         const fired = fireProjectile(projectileData);
         if (fired.id <= 0) return;
 
-        const emitterY =
-          tower.type === "laser" ? towerHeight * 0.5 : towerHeight * 0.7;
         gameEvents.emit(GameEvent.TOWER_FIRE, {
           towerId: tower.id,
           towerType: tower.type,
           worldPosition: {
-            x: tower.x,
-            y: emitterY,
-            z: tower.z,
+            x: startWorld.x,
+            y: startWorld.y,
+            z: startWorld.z,
           },
         });
 

@@ -5,12 +5,19 @@ import {
   Matrix4,
   MeshStandardMaterial,
   Object3D,
+  Quaternion,
+  Vector3,
 } from "three";
 
 import { hashGrid2D } from "../../core/tileGridHash";
 import type { PathWaypoint, Tower } from "../../core/types/game";
 import { getTilePlacementState } from "../../utils/tilePlacement";
 import { tileToWorldCoordinate } from "../../utils/levelEditor";
+import {
+  flatFieldToSphereSurface,
+  getPlanetRadius,
+  getSurfaceQuaternion,
+} from "../../utils/planetSurfaceMapping";
 import { getCssColorValue } from "../ui/lib/cssUtils";
 import {
   buildingsSelector,
@@ -46,6 +53,7 @@ export const PlanetTileDecorations: FC<PlanetTileDecorationsProps> = memo(
 
     const meshRef = useRef<InstancedMesh>(null);
     const dummy = useMemo(() => new Object3D(), []);
+    const rotQuat = useMemo(() => new Quaternion(), []);
 
     const geometry = useMemo(() => new BoxGeometry(1, 1, 1), []);
     const material = useMemo(
@@ -71,6 +79,8 @@ export const PlanetTileDecorations: FC<PlanetTileDecorationsProps> = memo(
       const w = tileSize * 0.11;
       const h = tileSize * 0.055;
       const d = tileSize * 0.09;
+      const planetRadius = getPlanetRadius(gridSize, tileSize);
+      const scratchNormal = new Vector3();
 
       for (let gridX = 0; gridX < gridSize; gridX += 1) {
         for (let gridZ = 0; gridZ < gridSize; gridZ += 1) {
@@ -100,8 +110,18 @@ export const PlanetTileDecorations: FC<PlanetTileDecorationsProps> = memo(
           const ox = hx * tileSize * 0.3;
           const oz = hz * tileSize * 0.3;
 
-          dummy.position.set(wx + ox, surfaceHalfHeight + h * 0.5, wz + oz);
-          dummy.rotation.set(0, rot, 0);
+          const { surfacePoint, normal } = flatFieldToSphereSurface(
+            wx + ox,
+            wz + oz,
+            planetRadius
+          );
+          scratchNormal.copy(normal);
+          dummy.position
+            .copy(surfacePoint)
+            .addScaledVector(scratchNormal, surfaceHalfHeight + h * 0.5);
+          const baseQuat = getSurfaceQuaternion(scratchNormal);
+          rotQuat.setFromAxisAngle(scratchNormal, rot);
+          dummy.quaternion.copy(baseQuat).multiply(rotQuat);
           dummy.scale.set(w * scaleVar, h * scaleVar, d * scaleVar);
           dummy.updateMatrix();
           list.push(dummy.matrix.clone());
@@ -120,6 +140,7 @@ export const PlanetTileDecorations: FC<PlanetTileDecorationsProps> = memo(
       towers,
       surfaceHalfHeight,
       dummy,
+      rotQuat,
     ]);
 
     useLayoutEffect(() => {

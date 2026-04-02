@@ -1,16 +1,18 @@
 import { FC, useRef, useEffect, memo } from "react";
 import { useFrame } from "@react-three/fiber";
-import type { Mesh, Group } from "three";
+import type { Group, Mesh, Quaternion } from "three";
 
 import { getCssColorValue } from "../ui/lib/cssUtils";
 
 type PortalProps = {
   position: [number, number, number];
   pathYaw?: number;
+  quaternion?: Quaternion;
+  surfaceNormal?: [number, number, number];
 };
 
 export const Portal: FC<PortalProps> = memo(
-  ({ position, pathYaw = 0 }) => {
+  ({ position, pathYaw = 0, quaternion, surfaceNormal }) => {
     const outerRingRef = useRef<Mesh>(null);
     const middleRingRef = useRef<Mesh>(null);
     const innerRingRef = useRef<Mesh>(null);
@@ -57,7 +59,17 @@ export const Portal: FC<PortalProps> = memo(
       });
 
       if (groupRef.current) {
-        groupRef.current.position.y = position[1] + Math.sin(time * 1.2) * 0.05;
+        const pulse = Math.sin(time * 1.2) * 0.05;
+        if (surfaceNormal) {
+          const [nx, ny, nz] = surfaceNormal;
+          groupRef.current.position.set(
+            position[0] + nx * pulse,
+            position[1] + ny * pulse,
+            position[2] + nz * pulse
+          );
+        } else {
+          groupRef.current.position.y = position[1] + pulse;
+        }
       }
     });
 
@@ -68,7 +80,9 @@ export const Portal: FC<PortalProps> = memo(
       <group
         ref={groupRef}
         position={position}
-        rotation={[0, pathYaw + Math.PI / 2, 0]}
+        {...(quaternion
+          ? { quaternion }
+          : { rotation: [0, pathYaw + Math.PI / 2, 0] as [number, number, number] })}
       >
         <mesh ref={outerRingRef}>
           <torusGeometry args={[0.4, 0.04, 16, 32]} />
@@ -148,7 +162,9 @@ export const Portal: FC<PortalProps> = memo(
       prevProps.position[0] === nextProps.position[0] &&
       prevProps.position[1] === nextProps.position[1] &&
       prevProps.position[2] === nextProps.position[2] &&
-      (prevProps.pathYaw ?? 0) === (nextProps.pathYaw ?? 0)
+      (prevProps.pathYaw ?? 0) === (nextProps.pathYaw ?? 0) &&
+      prevProps.quaternion === nextProps.quaternion &&
+      prevProps.surfaceNormal === nextProps.surfaceNormal
     );
   }
 );

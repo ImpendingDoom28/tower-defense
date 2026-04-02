@@ -1,7 +1,7 @@
-import { FC, useRef, useEffect, useState, useMemo, memo } from "react";
+import { FC, useRef, useEffect, useState, useMemo, memo, useCallback } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Billboard } from "@react-three/drei";
-import type { Group, Mesh } from "three";
+import { Quaternion, Vector3, type Group, type Mesh } from "three";
 
 import {
   getPositionAlongMultiplePaths,
@@ -12,10 +12,19 @@ import type { Enemy as EnemyInstance } from "../../core/types/game";
 import { GUIDebugInfo } from "../gui/GUIDebugInfo";
 import { getShouldStopMovement } from "../../core/getShouldStopMovement";
 import {
+  gridSizeSelector,
   pathWaypointsSelector,
   useLevelStore,
 } from "../../core/stores/useLevelStore";
-import { useGameStore } from "../../core/stores/useGameStore";
+import {
+  tileSizeSelector,
+  useGameStore,
+} from "../../core/stores/useGameStore";
+import {
+  flatFieldToSphereSurface,
+  getPlanetRadius,
+  getSurfaceQuaternion,
+} from "../../utils/planetSurfaceMapping";
 import {
   createPauseClock,
   getEffectiveGameTime,
@@ -48,6 +57,36 @@ export const Enemy: FC<EnemyProps> = memo(
     debug = false,
   }) => {
     const pathWaypoints = useLevelStore(pathWaypointsSelector);
+    const gridSize = useLevelStore(gridSizeSelector);
+    const tileSize = useGameStore(tileSizeSelector);
+    const radius = useMemo(
+      () => getPlanetRadius(gridSize, tileSize),
+      [gridSize, tileSize]
+    );
+
+    const scratchSurface = useRef(new Vector3());
+    const scratchNormal = useRef(new Vector3());
+    const scratchGroupPos = useRef(new Vector3());
+    const scratchQuat = useRef(new Quaternion());
+
+    const applySphereFooting = useCallback(
+      (worldX: number, worldZ: number, pathY: number, halfHeight: number) => {
+        flatFieldToSphereSurface(
+          worldX,
+          worldZ,
+          radius,
+          scratchSurface.current,
+          scratchNormal.current
+        );
+        scratchGroupPos.current
+          .copy(scratchSurface.current)
+          .addScaledVector(scratchNormal.current, pathY + halfHeight);
+        getSurfaceQuaternion(scratchNormal.current, scratchQuat.current);
+        return { position: scratchGroupPos.current, quaternion: scratchQuat.current };
+      },
+      [radius]
+    );
+
     const shouldStopMovement = useGameStore((s) =>
       getShouldStopMovement(s.gameStatus, s.isPageVisible)
     );
@@ -75,13 +114,27 @@ export const Enemy: FC<EnemyProps> = memo(
           enemy.pathIndex,
           0
         );
+        flatFieldToSphereSurface(
+          spawnPosition.x,
+          spawnPosition.z,
+          radius,
+          scratchSurface.current,
+          scratchNormal.current
+        );
+        scratchGroupPos.current
+          .copy(scratchSurface.current)
+          .addScaledVector(scratchNormal.current, spawnPosition.y + 0.1);
         onSpawnEffect(
-          [spawnPosition.x, spawnPosition.y + 0.1, spawnPosition.z],
+          [
+            scratchGroupPos.current.x,
+            scratchGroupPos.current.y,
+            scratchGroupPos.current.z,
+          ],
           enemy.color
         );
         hasTriggeredSpawnEffect.current = true;
       }
-    }, [enemy, onSpawnEffect, pathWaypoints]);
+    }, [enemy, onSpawnEffect, pathWaypoints, radius]);
 
     useFrame((state, delta) => {
       if (!enemy || enemy.health <= 0) return;
@@ -151,8 +204,22 @@ export const Enemy: FC<EnemyProps> = memo(
             enemy.pathIndex,
             1
           );
+          flatFieldToSphereSurface(
+            endPosition.x,
+            endPosition.z,
+            radius,
+            scratchSurface.current,
+            scratchNormal.current
+          );
+          scratchGroupPos.current
+            .copy(scratchSurface.current)
+            .addScaledVector(scratchNormal.current, endPosition.y + 0.1);
           onEndEffect(
-            [endPosition.x, endPosition.y + 0.1, endPosition.z],
+            [
+              scratchGroupPos.current.x,
+              scratchGroupPos.current.y,
+              scratchGroupPos.current.z,
+            ],
             enemy.color
           );
           hasReachedEnd.current = true;
@@ -168,13 +235,15 @@ export const Enemy: FC<EnemyProps> = memo(
         newProgress
       );
 
-      // Update enemy position
       if (meshRef.current) {
-        meshRef.current.position.set(
+        const footing = applySphereFooting(
           position.x,
-          position.y + enemy.size / 2,
-          position.z
+          position.z,
+          position.y,
+          enemy.size / 2
         );
+        meshRef.current.position.copy(footing.position);
+        meshRef.current.quaternion.copy(footing.quaternion);
       }
 
       const live = useLevelStore
@@ -205,30 +274,40 @@ export const Enemy: FC<EnemyProps> = memo(
       }
     });
 
-    // Get initial position from enemy state
-    const initialPosition = useMemo(
-      () =>
-        getPositionAlongMultiplePaths(
-          pathWaypoints,
-          enemy.pathIndex,
-          enemy.pathProgress
-        ),
-      [enemy.pathProgress, enemy.pathIndex, pathWaypoints]
-    );
+    const initialFooting = useMemo(() => {
+      const pos = getPositionAlongMultiplePaths(
+        pathWaypoints,
+        enemy.pathIndex,
+        enemy.pathProgress
+      );
+      const r = getPlanetRadius(gridSize, tileSize);
+      const { surfacePoint, normal } = flatFieldToSphereSurface(
+        pos.x,
+        pos.z,
+        r
+      );
+      const p = surfacePoint
+        .clone()
+        .addScaledVector(normal, pos.y + enemy.size / 2);
+      return { position: p, quaternion: getSurfaceQuaternion(normal) };
+    }, [
+      enemy.pathProgress,
+      enemy.pathIndex,
+      pathWaypoints,
+      gridSize,
+      tileSize,
+      enemy.size,
+    ]);
 
     if (!enemy || enemy.health <= 0) return null;
 
-    // Calculate health percentage for visual
     const healthPercent = enemy.health / enemy.maxHealth;
 
     return (
       <group
         ref={meshRef}
-        position={[
-          initialPosition.x,
-          initialPosition.y + enemy.size / 2,
-          initialPosition.z,
-        ]}
+        position={initialFooting.position}
+        quaternion={initialFooting.quaternion}
       >
         {/* Upgrade indicators */}
         {enemy.upgrades.length > 0 &&

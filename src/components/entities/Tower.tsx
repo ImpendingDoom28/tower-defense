@@ -7,7 +7,19 @@ import type { Tower as TowerInstance } from "../../core/types/game";
 import { GUIDebugInfo } from "../gui/GUIDebugInfo";
 import { Vector3D } from "../../core/types/utils";
 import { getCssColorValue } from "../ui/lib/cssUtils";
-import { useGameStore } from "../../core/stores/useGameStore";
+import {
+  gridSizeSelector,
+  useLevelStore,
+} from "../../core/stores/useLevelStore";
+import {
+  tileSizeSelector,
+  useGameStore,
+} from "../../core/stores/useGameStore";
+import {
+  flatFieldToSphereSurface,
+  getPlanetRadius,
+  getSurfaceQuaternion,
+} from "../../utils/planetSurfaceMapping";
 
 const baseMaterial = new MeshStandardMaterial({ color: "#4b5563" });
 const basePreviewMaterial = new MeshStandardMaterial({
@@ -46,6 +58,8 @@ export const Tower: FC<TowerProps> = memo(
   }) => {
     syncSharedMaterials();
     const { towerBaseRadius, towerHeight } = useGameStore();
+    const gridSize = useLevelStore(gridSizeSelector);
+    const tileSize = useGameStore(tileSizeSelector);
     const towerBasePosition: Vector3D = [0, towerBaseRadius, 0];
     const towerBodyPosition: Vector3D = [
       0,
@@ -68,6 +82,19 @@ export const Tower: FC<TowerProps> = memo(
     );
 
     if (!tower) return null;
+
+    const footing = useMemo(() => {
+      const r = getPlanetRadius(gridSize, tileSize);
+      const { surfacePoint, normal } = flatFieldToSphereSurface(
+        tower.x,
+        tower.z,
+        r
+      );
+      return {
+        position: surfacePoint,
+        quaternion: getSurfaceQuaternion(normal),
+      };
+    }, [tower.x, tower.z, gridSize, tileSize]);
 
     const towerColor =
       isPreview && isInvalidPlacement
@@ -160,7 +187,8 @@ export const Tower: FC<TowerProps> = memo(
     return (
       <group
         ref={groupRef}
-        position={[tower.x, 0, tower.z]}
+        position={footing.position}
+        quaternion={footing.quaternion}
         onClick={
           isPreview
             ? undefined

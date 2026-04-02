@@ -26,11 +26,16 @@ import { patchEmissiveByInstanceColor } from "../../utils/instancedEmissivePatch
 import { getCssColorValue } from "../../components/ui/lib/cssUtils";
 import type { ChainAdditionalHit } from "../chainLightning";
 import type { Projectile, Enemy } from "../types/game";
-import { distance2D } from "../../utils/mathUtils";
+import { getPositionAlongMultiplePaths } from "../../utils/pathUtils";
+import {
+  flatCombatPointToWorldPosition,
+  getPlanetRadius,
+} from "../../utils/planetSurfaceMapping";
 import { useEntityIds } from "../contexts/EntityIdContext";
 import { useInstancedEntity } from "./useInstancedEntity";
 import { getShouldStopMovement } from "../getShouldStopMovement";
 import { useGameStore } from "../stores/useGameStore";
+import { useLevelStore } from "../stores/useLevelStore";
 
 const CHAIN_BOLT_RADIUS = 0.03;
 const CHAIN_BOLT_LENGTH = 0.5;
@@ -41,6 +46,9 @@ const tempQuaternion = new THREE.Quaternion();
 const tempUpVector = new THREE.Vector3(0, 1, 0);
 const tempPosition = new THREE.Vector3();
 const tempScale = new THREE.Vector3();
+const scratchTargetWorld = new THREE.Vector3();
+const scratchStruckWorld = new THREE.Vector3();
+const scratchNextWorld = new THREE.Vector3();
 
 type VisualPoolKind = "sphere" | "beam" | "bolt";
 
@@ -131,23 +139,53 @@ const tryContinueChainBoltAfterHit = (
   const nextEnemy = enemiesById.get(nextHop.enemyId);
   if (!nextEnemy || nextEnemy.health <= 0) return false;
 
+  const gridSize = useLevelStore.getState().gridSize;
+  const pathWaypoints = useLevelStore.getState().pathWaypoints;
+  const { tileSize } = useGameStore.getState();
+  const planetRadius = getPlanetRadius(gridSize, tileSize);
+
+  const struckPath = getPositionAlongMultiplePaths(
+    pathWaypoints,
+    struckEnemy.pathIndex,
+    struckEnemy.pathProgress
+  );
+  flatCombatPointToWorldPosition(
+    struckEnemy.x,
+    struckEnemy.z,
+    struckPath.y + struckEnemy.size,
+    planetRadius,
+    scratchStruckWorld
+  );
+
   projectile.targetId = nextHop.enemyId;
   projectile.damage = nextHop.damage;
-  const hitY = struckEnemy.size / 2;
-  projectile.currentX = struckEnemy.x;
-  projectile.currentY = hitY;
-  projectile.currentZ = struckEnemy.z;
-  projectile.startX = struckEnemy.x;
-  projectile.startY = hitY;
-  projectile.startZ = struckEnemy.z;
-  projectile.targetX = nextEnemy.x;
-  projectile.targetY = nextEnemy.size / 2;
-  projectile.targetZ = nextEnemy.z;
+  projectile.currentX = scratchStruckWorld.x;
+  projectile.currentY = scratchStruckWorld.y;
+  projectile.currentZ = scratchStruckWorld.z;
+  projectile.startX = scratchStruckWorld.x;
+  projectile.startY = scratchStruckWorld.y;
+  projectile.startZ = scratchStruckWorld.z;
+
+  const nextPath = getPositionAlongMultiplePaths(
+    pathWaypoints,
+    nextEnemy.pathIndex,
+    nextEnemy.pathProgress
+  );
+  flatCombatPointToWorldPosition(
+    nextEnemy.x,
+    nextEnemy.z,
+    nextPath.y + nextEnemy.size,
+    planetRadius,
+    scratchNextWorld
+  );
+  projectile.targetX = scratchNextWorld.x;
+  projectile.targetY = scratchNextWorld.y;
+  projectile.targetZ = scratchNextWorld.z;
   setBoltVelocityTowards(
     projectile,
-    nextEnemy.x,
-    nextEnemy.size / 2,
-    nextEnemy.z
+    scratchNextWorld.x,
+    scratchNextWorld.y,
+    scratchNextWorld.z
   );
   applyChainBoltTransform(boltPool, projectile.instanceIndex, {
     x: projectile.currentX,
@@ -215,11 +253,26 @@ const stepNonBeamProjectile = (
     return;
   }
 
-  const distToTarget = distance2D(
-    projectile.currentX,
-    projectile.currentZ,
+  const gridSize = useLevelStore.getState().gridSize;
+  const pathWaypoints = useLevelStore.getState().pathWaypoints;
+  const { tileSize } = useGameStore.getState();
+  const planetRadius = getPlanetRadius(gridSize, tileSize);
+  const pathPos = getPositionAlongMultiplePaths(
+    pathWaypoints,
+    targetEnemy.pathIndex,
+    targetEnemy.pathProgress
+  );
+  flatCombatPointToWorldPosition(
     targetEnemy.x,
-    targetEnemy.z
+    targetEnemy.z,
+    pathPos.y + targetEnemy.size,
+    planetRadius,
+    scratchTargetWorld
+  );
+  const distToTarget = Math.hypot(
+    projectile.currentX - scratchTargetWorld.x,
+    projectile.currentY - scratchTargetWorld.y,
+    projectile.currentZ - scratchTargetWorld.z
   );
 
   if (distToTarget < hitThreshold) {
@@ -241,11 +294,10 @@ const stepNonBeamProjectile = (
     return;
   }
 
-  const distFromStart = distance2D(
-    projectile.startX,
-    projectile.startZ,
-    projectile.currentX,
-    projectile.currentZ
+  const distFromStart = Math.hypot(
+    projectile.currentX - projectile.startX,
+    projectile.currentY - projectile.startY,
+    projectile.currentZ - projectile.startZ
   );
 
   if (distFromStart > projectile.range * 1.5) {

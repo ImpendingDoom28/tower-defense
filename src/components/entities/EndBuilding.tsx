@@ -1,19 +1,24 @@
 import { FC, memo } from "react";
+import type { Quaternion } from "three";
 
 import { getCssColorValue } from "../ui/lib/cssUtils";
 
 type EndBuildingProps = {
   position: [number, number, number];
+  quaternion?: Quaternion;
 };
 
 export const EndBuilding: FC<EndBuildingProps> = memo(
-  ({ position }) => {
+  ({ position, quaternion }) => {
     const buildingColor = getCssColorValue("scene-white");
     const buildingAccent = getCssColorValue("scene-gray-200");
     const roofColor = getCssColorValue("scene-gray-300");
 
     return (
-      <group position={position}>
+      <group
+        position={position}
+        {...(quaternion ? { quaternion } : {})}
+      >
         {/* Main building base */}
         <mesh position={[0, 0.4, 0]}>
           <boxGeometry args={[0.6, 0.8, 0.6]} />
@@ -87,7 +92,8 @@ export const EndBuilding: FC<EndBuildingProps> = memo(
     return (
       prevProps.position[0] === nextProps.position[0] &&
       prevProps.position[1] === nextProps.position[1] &&
-      prevProps.position[2] === nextProps.position[2]
+      prevProps.position[2] === nextProps.position[2] &&
+      prevProps.quaternion === nextProps.quaternion
     );
   }
 );

@@ -1,4 +1,4 @@
-import { FC, memo, useRef, useState } from "react";
+import { FC, memo } from "react";
 import { ArrowRight } from "lucide-react";
 
 import { UIButton, UIButtonProps } from "../../ui/UIButton";
@@ -15,12 +15,13 @@ import { cn } from "../../ui/lib/twUtils";
 import { GAME_NAME } from "../../../constants/game";
 import { BlurBackdrop } from "./BlurBackdrop";
 import { GithubButton } from "./GithubButton";
+import { useBlurBackdrop } from "../../../core/hooks/utils/useBlurBackdrop";
 
 type HUDMainMenuProps = MenuActions;
 
 export const HUDMainMenu: FC<HUDMainMenuProps> = memo(
   ({ onStartGameWithLevel, onOpenLevelEditor }) => {
-    const menuRef = useRef<HTMLDivElement>(null);
+    const { menuRef, blurDimensions, setBlurDimensions } = useBlurBackdrop();
 
     const {
       hasInteracted,
@@ -51,11 +52,6 @@ export const HUDMainMenu: FC<HUDMainMenuProps> = memo(
     const title = GAME_NAME.split(" ");
 
     const isMenu = activeView === "menu";
-
-    const [blurDimensions, setBlurDimensions] = useState({
-      width: `${menuRef.current?.clientHeight}px`,
-      height: `${menuRef.current?.clientWidth}px`,
-    });
 
     const renderedPart = () => {
       if (!isMenu) {

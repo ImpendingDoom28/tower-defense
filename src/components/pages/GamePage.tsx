@@ -120,21 +120,14 @@ export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
       return null;
     }
     return `game-${activePlayableLevel}`;
-  }, [
-    activePlayableLevel,
-    isGameConfigLoaded,
-    isLevelConfigLoaded,
-    isMenu,
-  ]);
+  }, [activePlayableLevel, isGameConfigLoaded, isLevelConfigLoaded, isMenu]);
 
   useLayoutEffect(() => {
     setAreShadersReady(false);
   }, [shaderGateKey]);
 
   const isGameReady =
-    isGameConfigLoaded &&
-    (isMenu || isLevelConfigLoaded) &&
-    areShadersReady;
+    isGameConfigLoaded && (isMenu || isLevelConfigLoaded) && areShadersReady;
 
   const loadingMessage = (() => {
     if (!isGameConfigLoaded) {
@@ -155,7 +148,7 @@ export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
         style={GAME_CANVAS_STYLE}
         gl={GAME_CANVAS_GL}
       >
-        <Suspense fallback={<HUDLoading />}>
+        <Suspense fallback={<HUDLoading message={loadingMessage} />}>
           {isGameConfigLoaded && isMenu && <MainMenuScene />}
           {isGameConfigLoaded && !isMenu && (
             <GameScene

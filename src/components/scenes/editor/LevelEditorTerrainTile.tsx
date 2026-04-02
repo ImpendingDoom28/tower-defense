@@ -8,7 +8,7 @@ import type { LevelEditorTool } from "../../../core/types/editor";
 import { hashGrid2D } from "../../../core/tileGridHash";
 import type { TilePlacementState } from "../../../utils/tilePlacement";
 import { tileToWorldCoordinate } from "../../../utils/levelEditor";
-import { createPlanetTileMaterial } from "../../entities/planetTileMaterial";
+import { createPlanetTileMaterial } from "../../../utils/planetTileMaterial";
 
 export const LEVEL_EDITOR_TILE_HEIGHT = 0.02;
 
@@ -56,11 +56,7 @@ export const LevelEditorTerrainTile: FC<LevelEditorTerrainTileProps> = memo(
     onTileHoverEnd,
   }) => {
     const material = useMemo(() => {
-      if (
-        !placementState.isOnPath &&
-        !placementState.isWater &&
-        !isHovered
-      ) {
+      if (!placementState.isOnPath && !placementState.isWater && !isHovered) {
         return createPlanetTileMaterial({
           baseColor: landBaseColor,
           emissive: getCssColorValue("scene-black"),
