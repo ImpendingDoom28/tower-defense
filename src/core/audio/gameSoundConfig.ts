@@ -1,4 +1,7 @@
-import { defineSoundConfigs, type WorldPosition } from "@webgamedevkit/audio-engine";
+import {
+  defineSoundConfigs,
+  type WorldPosition,
+} from "@webgamedevkit/audio-engine";
 
 import { GameEvent } from "../../core/types/enums/events";
 import type {
@@ -83,66 +86,66 @@ export const SOUND_CONFIGS = defineSoundConfigs<GameEvent>(
 );
 
 export type AudioEventDataMap = {
-  "tower_fire": {
+  tower_fire: {
     towerId: number;
     towerType: TowerType;
     worldPosition: WorldPosition;
   };
-  "enemy_killed": {
+  enemy_killed: {
     enemyId: number;
     enemyType: EnemyType;
     worldPosition: WorldPosition;
   };
-  "enemy_reached_end": {
+  enemy_reached_end: {
     enemyId: number;
     enemyType: EnemyType;
     worldPosition: WorldPosition;
   };
-  "projectile_hit": {
+  projectile_hit: {
     projectileId: number;
     enemyId: number;
     towerType: TowerType;
     projectileType: ProjectileType;
     worldPosition: WorldPosition;
   };
-  "wave_started": {
+  wave_started: {
     waveNumber: number;
     worldPosition: WorldPosition;
   };
-  "game_over": {
+  game_over: {
     gameOverType: "loss" | "win";
   };
-  "game_paused": {
+  game_paused: {
     gamePausedType: "pause";
   };
-  "ui_click": {
+  ui_click: {
     uiClickType?: "click" | "hover" | "select";
   };
-  "game_resumed": {
+  game_resumed: {
     gameResumedType: "resume";
   };
-  "game_won": {
+  game_won: {
     gameWonType: "win";
   };
-  "tower_placed": {
+  tower_placed: {
     towerId: number;
     towerType: TowerType;
     gridX: number;
     gridZ: number;
     worldPosition: WorldPosition;
   };
-  "tower_sold": {
+  tower_sold: {
     towerId: number;
     towerType: TowerType;
     worldPosition: WorldPosition;
   };
-  "ui_action_denied": {
+  ui_action_denied: {
     reason: "insufficient_funds";
     towerType: TowerType;
   };
-  "ui_action_hold_start": Record<string, never>;
-  "ui_action_hold_end": Record<string, never>;
-  "ui_action_hold_abort": {
+  ui_action_hold_start: Record<string, never>;
+  ui_action_hold_end: Record<string, never>;
+  ui_action_hold_abort: {
     progress: number;
   };
 };

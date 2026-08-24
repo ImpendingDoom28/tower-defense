@@ -1,14 +1,15 @@
 import {
   FC,
   memo,
+  ReactElement,
   ReactNode,
+  RefObject,
   useCallback,
   useEffect,
   useMemo,
   useRef,
 } from "react";
 import { Instances, Instance } from "@react-three/drei";
-import * as THREE from "three";
 
 import {
   createPoolController,
@@ -18,7 +19,7 @@ import {
 
 type InstanceSlotsProps = {
   count: number;
-  slotRefs: React.MutableRefObject<(InstanceSlot | null)[]>;
+  slotRefs: RefObject<(InstanceSlot | null)[]>;
 };
 
 const InstanceSlots: FC<InstanceSlotsProps> = memo(({ count, slotRefs }) => (
@@ -45,8 +46,8 @@ export type UseInstancedEntityConfig = {
 
 export type UseInstancedEntityReturn = {
   pool: InstancedPoolRef | null;
-  slotRefs: React.MutableRefObject<(InstanceSlot | null)[]>;
-  InstancedEntity: React.ReactElement;
+  slotRefs: RefObject<(InstanceSlot | null)[]>;
+  InstancedEntity: ReactElement;
 };
 
 export const useInstancedEntity = (
@@ -69,14 +70,12 @@ export const useInstancedEntity = (
       isInitializedRef.current = true;
     }
 
-    const initColor = new THREE.Color(defaultColor);
-
     for (let i = 0; i < limit; i++) {
       const slot = slotRefs.current[i];
       if (slot) {
         slot.position.set(0, -10000, 0);
         slot.scale.set(0, 0, 0);
-        slot.color.copy(initColor);
+        slot.color.set(defaultColor);
       }
     }
   }, [defaultColor, limit]);

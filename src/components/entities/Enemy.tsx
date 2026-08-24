@@ -27,6 +27,10 @@ import {
 } from "../../core/stores/useLevelStore";
 import { tileSizeSelector, useGameStore } from "../../core/stores/useGameStore";
 import {
+  pauseWhenTabHiddenSelector,
+  useSettingsStore,
+} from "../../core/stores/useSettingsStore";
+import {
   flatFieldToSphereSurface,
   getPlanetRadius,
   getSurfaceQuaternion,
@@ -93,8 +97,9 @@ export const Enemy: FC<EnemyProps> = memo(
       [radius]
     );
 
+    const pauseWhenTabHidden = useSettingsStore(pauseWhenTabHiddenSelector);
     const shouldStopMovement = useGameStore((s) =>
-      getShouldStopMovement(s.gameStatus, s.isPageVisible)
+      getShouldStopMovement(s.gameStatus, s.isPageVisible, pauseWhenTabHidden)
     );
     const shouldStopRef = useRef(shouldStopMovement);
     shouldStopRef.current = shouldStopMovement;

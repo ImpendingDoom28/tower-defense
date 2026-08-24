@@ -44,13 +44,13 @@ type GameStoreState = {
   gameStatus: GameStatus;
   previousStatus: GameStatus | null;
   debug: boolean;
-  showAudioSettings: boolean;
+  showSettings: boolean;
   denyPulse: Partial<Record<TowerType, number>>;
   isPageVisible: boolean;
 };
 
 type GameStoreActions = {
-  setShowAudioSettings: (show: boolean) => void;
+  setShowSettings: (show: boolean) => void;
   initializeGameState: (config: GameConfigData) => void;
   loseHealth: (amount: number) => void;
   setActiveEffects: (
@@ -83,7 +83,7 @@ const DEFAULT_STATE: GameStoreState = {
   previousStatus: null,
   gameStatus: "menu",
   debug: false,
-  showAudioSettings: false,
+  showSettings: false,
   denyPulse: {},
   enemyHealthLoss: 0,
   tileSize: 0,
@@ -140,8 +140,8 @@ export const useGameStore = create<GameStore>((set) => ({
     });
   },
 
-  setShowAudioSettings: (show: boolean) => {
-    set({ showAudioSettings: show });
+  setShowSettings: (show: boolean) => {
+    set({ showSettings: show });
   },
 
   loseHealth: (amount: number) => {
@@ -205,6 +205,7 @@ export const useGameStore = create<GameStore>((set) => ({
       selectedTower: null,
       previousStatus: null,
       denyPulse: {},
+      showSettings: false,
       gameStatus: "playing",
     }));
   },
@@ -215,10 +216,9 @@ export const useGameStore = create<GameStore>((set) => ({
 }));
 
 export const debugSelector = (state: GameStore) => state.debug;
-export const showAudioSettingsSelector = (state: GameStore) =>
-  state.showAudioSettings;
-export const setShowAudioSettingsSelector = (state: GameStore) =>
-  state.setShowAudioSettings;
+export const showSettingsSelector = (state: GameStore) => state.showSettings;
+export const setShowSettingsSelector = (state: GameStore) =>
+  state.setShowSettings;
 export const tileSizeSelector = (state: GameStore) => state.tileSize;
 export const enemyTypesSelector = (state: GameStore) => state.enemyTypes;
 export const pathWidthSelector = (state: GameStore) => state.pathWidth;

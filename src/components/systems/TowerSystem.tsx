@@ -42,6 +42,10 @@ import { getPositionAlongMultiplePaths } from "../../utils/pathUtils";
 import { GameEvent } from "../../core/types/enums/events";
 import type { TilePlacementState } from "../../utils/tilePlacement";
 import { getShouldStopMovement } from "../../core/getShouldStopMovement";
+import {
+  pauseWhenTabHiddenSelector,
+  useSettingsStore,
+} from "../../core/stores/useSettingsStore";
 
 type TowerSystemProps = {
   fireProjectile: (
@@ -70,9 +74,13 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
     const towerTypes = useGameStore(towerTypesSelector);
     const tileSize = useGameStore(tileSizeSelector);
     const towerHeight = useGameStore(towerHeightSelector);
+
     const gridSize = useLevelStore(gridSizeSelector);
     const pathWaypoints = useLevelStore(pathWaypointsSelector);
     const towers = useLevelStore(towersSelector);
+
+    const pauseWhenTabHidden = useSettingsStore(pauseWhenTabHiddenSelector);
+
     const world = useWorld();
 
     const combatStatsByTowerId = useMemo(() => {
@@ -128,7 +136,8 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
 
     useFrame((state) => {
       const { gameStatus, isPageVisible } = useGameStore.getState();
-      if (getShouldStopMovement(gameStatus, isPageVisible)) return;
+      if (getShouldStopMovement(gameStatus, isPageVisible, pauseWhenTabHidden))
+        return;
       if (gameStatus !== "playing" && gameStatus !== "menu") return;
 
       const currentTime = state.clock.elapsedTime;
@@ -172,8 +181,7 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
 
         let pierceEnemyIds: number[] | undefined;
         let chainAdditionalHits:
-          | Array<{ enemyId: number; damage: number }>
-          | undefined;
+          Array<{ enemyId: number; damage: number }> | undefined;
 
         if (tower.type === "chain") {
           const maxHops = tower.maxChainHops ?? 3;

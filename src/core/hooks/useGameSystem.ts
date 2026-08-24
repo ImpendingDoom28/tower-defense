@@ -19,11 +19,16 @@ import {
   setIsPageVisibleSelector,
   setPreviousStatusSelector,
   setSelectedTowerSelector,
+  setShowSettingsSelector,
   useGameStore,
 } from "../stores/useGameStore";
 import { useEntityIds } from "../contexts/EntityIdContext";
 import { GameStatus } from "../types/game";
 import { loadGameConfig } from "../gameConfig";
+import {
+  pauseWhenTabHiddenSelector,
+  useSettingsStore,
+} from "../stores/useSettingsStore";
 import { gameEvents } from "../../utils/eventEmitter";
 import { GameEvent } from "../types/enums/events";
 
@@ -36,6 +41,7 @@ export const useGameSystem = () => {
   const debug = useGameStore(debugSelector);
   const isGameConfigLoaded = useGameStore(isGameConfigLoadedSelector);
   const isPageVisible = useGameStore(isPageVisibleSelector);
+  const pauseWhenTabHidden = useSettingsStore(pauseWhenTabHiddenSelector);
 
   const setActiveEffects = useGameStore(setActiveEffectsSelector);
   const setGameStatus = useGameStore(setGameStatusSelector);
@@ -46,6 +52,7 @@ export const useGameSystem = () => {
   const startNewRun = useGameStore(startNewRunSelector);
   const initializeGameState = useGameStore(initializeGameStateSelector);
   const setIsPageVisible = useGameStore(setIsPageVisibleSelector);
+  const setShowSettings = useGameStore(setShowSettingsSelector);
 
   const { getNextEffectId } = useEntityIds();
 
@@ -64,7 +71,11 @@ export const useGameSystem = () => {
     gameStatus === "gameOver" ||
     gameStatus === "won" ||
     gameStatus === "gameMenu";
-  const shouldStopMovement = getShouldStopMovement(gameStatus, isPageVisible);
+  const shouldStopMovement = getShouldStopMovement(
+    gameStatus,
+    isPageVisible,
+    pauseWhenTabHidden
+  );
 
   // Load game config
   useEffect(() => {
@@ -116,9 +127,10 @@ export const useGameSystem = () => {
   }, [resetGameState, setGameStatus]);
 
   const openGameMenu = useCallback(() => {
+    setShowSettings(false);
     setPreviousStatus(gameStatus);
     setGameStatus("gameMenu");
-  }, [gameStatus, setGameStatus, setPreviousStatus]);
+  }, [gameStatus, setGameStatus, setPreviousStatus, setShowSettings]);
 
   const closeGameMenu = useCallback(() => {
     setGameStatus(previousStatus ?? "playing");

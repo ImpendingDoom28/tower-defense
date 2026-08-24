@@ -21,6 +21,8 @@ import {
   waveDelaySelector,
   isPageVisibleSelector,
 } from "../stores/useGameStore";
+import { useSettingsStore, pauseWhenTabHiddenSelector } from "../stores/useSettingsStore";
+import { shouldPauseForTabHidden } from "../getShouldStopMovement";
 import { useLevelSystem } from "./useLevelSystem";
 import { useUpgradeStore } from "../stores/useUpgradeStore";
 import { GameEvent } from "../types/enums/events";
@@ -69,6 +71,7 @@ const selectWeightedEnemy = (
 export const useWaveSystem = (gameState: GameState) => {
   const { winGame, gameStatus: initialGameStatus } = gameState;
   const isPageVisible = useGameStore(isPageVisibleSelector);
+  const pauseWhenTabHidden = useSettingsStore(pauseWhenTabHiddenSelector);
   const waveDelay = useGameStore(waveDelaySelector);
 
   const totalWaves = useLevelStore(totalWavesSelector);
@@ -94,15 +97,24 @@ export const useWaveSystem = (gameState: GameState) => {
   const isCountingDownRef = useRef<boolean>(false);
   const timeUntilNextWaveRef = useRef<number | null>(null);
   const pendingCountdownStartAfterUpgradeRef = useRef<boolean>(false);
-  const previousIsPageVisibleRef = useRef(isPageVisible);
-  const prevIsPageVisibleForLayoutRef = useRef(isPageVisible);
+  const previousIsPageVisibleRef = useRef(
+    !shouldPauseForTabHidden(isPageVisible, pauseWhenTabHidden)
+  );
+  const prevIsPageVisibleForLayoutRef = useRef(
+    shouldPauseForTabHidden(isPageVisible, pauseWhenTabHidden)
+  );
 
   useLayoutEffect(() => {
-    if (isPageVisible && !prevIsPageVisibleForLayoutRef.current) {
+    const isTabHiddenPaused = shouldPauseForTabHidden(
+      isPageVisible,
+      pauseWhenTabHidden
+    );
+
+    if (!isTabHiddenPaused && prevIsPageVisibleForLayoutRef.current) {
       previousIsPageVisibleRef.current = false;
     }
-    prevIsPageVisibleForLayoutRef.current = isPageVisible;
-  }, [isPageVisible]);
+    prevIsPageVisibleForLayoutRef.current = isTabHiddenPaused;
+  }, [isPageVisible, pauseWhenTabHidden]);
 
   useEffect(() => {
     if (currentWave === 0) {
@@ -215,11 +227,15 @@ export const useWaveSystem = (gameState: GameState) => {
   const updateWaveSpawning = useCallback(
     (currentTime: number) => {
       const { gameStatus, isPageVisible } = useGameStore.getState();
+      const isTabHiddenPaused = shouldPauseForTabHidden(
+        isPageVisible,
+        useSettingsStore.getState().pauseWhenTabHidden
+      );
       try {
         const wasSimulationActive =
           previousGameStatusRef.current === "playing" &&
           previousIsPageVisibleRef.current;
-        const isSimulationActive = gameStatus === "playing" && isPageVisible;
+        const isSimulationActive = gameStatus === "playing" && !isTabHiddenPaused;
 
         if (
           !wasSimulationActive &&
@@ -296,9 +312,9 @@ export const useWaveSystem = (gameState: GameState) => {
         }
 
         previousGameStatusRef.current = gameStatus;
-        previousIsPageVisibleRef.current = isPageVisible;
+        previousIsPageVisibleRef.current = !isTabHiddenPaused;
 
-        if (gameStatus !== "playing" || !isPageVisible) {
+        if (gameStatus !== "playing" || isTabHiddenPaused) {
           return;
         }
 

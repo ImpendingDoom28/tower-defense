@@ -70,12 +70,14 @@ test("opens Enemy Almanac from the main menu and returns", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("opens Audio Settings from the main menu and closes", async ({ page }) => {
+test("opens Settings from the main menu and closes", async ({ page }) => {
   await onOpenMainMenu(page);
 
-  await page.getByRole("button", { name: "Audio Settings" }).click();
+  await page.getByRole("button", { name: "Settings" }).click();
 
-  await expect(page.getByText("Audio Settings")).toBeVisible();
+  await expect(page.getByText("Audio")).toBeVisible();
+  await expect(page.getByText("General")).toBeVisible();
+  await expect(page.getByText("Pause when tab is hidden")).toBeVisible();
 
   await page.locator('[data-slot="card-title"] button').first().click();
 

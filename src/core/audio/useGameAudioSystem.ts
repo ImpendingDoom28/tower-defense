@@ -20,9 +20,16 @@ export const useGameAudioSystem = () => {
   });
 
   useEffect(() => {
+    const playGameEvent = async (
+      event: GameEvent,
+      data: AudioEventData<GameEvent>
+    ) => {
+      await play(event, mapEventToPlayPayload(event, data));
+    };
+
     const unsubscribers = Object.values(GameEvent).map((event) =>
       gameEvents.on<AudioEventData<GameEvent>>(event, (data) => {
-        void play(event, mapEventToPlayPayload(event, data));
+        void playGameEvent(event, data);
       })
     );
 

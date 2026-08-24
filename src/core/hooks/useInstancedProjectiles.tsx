@@ -29,6 +29,7 @@ import { useEntityIds } from "../contexts/EntityIdContext";
 import { useInstancedEntity } from "./useInstancedEntity";
 import { getShouldStopMovement } from "../getShouldStopMovement";
 import { useGameStore } from "../stores/useGameStore";
+import { useSettingsStore } from "../stores/useSettingsStore";
 import { useLevelStore } from "../stores/useLevelStore";
 import { world } from "../ecs/world";
 import { getEnemiesById } from "../ecs/selectors/enemySnapshots";
@@ -608,7 +609,14 @@ export const useInstancedProjectiles = (
   useFrame((state, delta) => {
     enemiesByIdRef.current = getEnemiesById(world);
     const { gameStatus, isPageVisible } = useGameStore.getState();
-    if (getShouldStopMovement(gameStatus, isPageVisible)) return;
+    if (
+      getShouldStopMovement(
+        gameStatus,
+        isPageVisible,
+        useSettingsStore.getState().pauseWhenTabHidden
+      )
+    )
+      return;
     updateProjectilesFrame(state.clock.elapsedTime, delta);
   });
 

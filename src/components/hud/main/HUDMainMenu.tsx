@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react";
 
 import { UIButton, UIButtonProps } from "../../ui/buttons/UIButton";
 import { UITypography } from "../../ui/UITypography";
-import { HUDAudioControls } from "../HUDAudioControls";
+import { HUDSettings } from "../HUDSettings";
 import { HUDAlmanac } from "../HUDAlmanac";
 import { HUDLevelPicker } from "../levelPicker/HUDLevelPicker";
 import { HUDWrapper } from "../HUDWrapper";
@@ -26,21 +26,23 @@ export const HUDMainMenu: FC<HUDMainMenuProps> = memo(
     const {
       hasInteracted,
       activeView,
-      setShowAlmanac,
-      setShowAudioSettings,
-      setShowLevelPicker,
+      onOpenSettings,
+      onOpenAlmanac,
+      onOpenLevelPicker,
+      onCloseAlmanac,
+      onCloseLevelPicker,
     } = useMenuState();
 
     const actions: Partial<UIButtonProps>[] = [
       {
         children: "Play",
-        onClick: () => setShowLevelPicker(true),
+        onClick: onOpenLevelPicker,
         variant: "default",
       },
-      { children: "Enemy Almanac", onClick: () => setShowAlmanac(true) },
+      { children: "Enemy Almanac", onClick: onOpenAlmanac },
       {
-        children: "Audio Settings",
-        onClick: () => setShowAudioSettings(true),
+        children: "Settings",
+        onClick: onOpenSettings,
       },
       {
         children: "Level Creator",
@@ -57,15 +59,13 @@ export const HUDMainMenu: FC<HUDMainMenuProps> = memo(
       if (!isMenu) {
         return (
           <HUDSidePanel side="left">
-            {activeView === "audio" && <HUDAudioControls />}
-            {activeView === "almanac" && (
-              <HUDAlmanac onBack={() => setShowAlmanac(false)} />
-            )}
+            {activeView === "settings" && <HUDSettings />}
+            {activeView === "almanac" && <HUDAlmanac onBack={onCloseAlmanac} />}
             {activeView === "levelPicker" && (
               <HUDLevelPicker
-                onBack={() => setShowLevelPicker(false)}
+                onBack={onCloseLevelPicker}
                 onSelectLevel={async (level) => {
-                  setShowLevelPicker(false);
+                  onCloseLevelPicker();
                   await onStartGameWithLevel(level);
                 }}
               />

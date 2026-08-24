@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import {
-  setShowAudioSettingsSelector,
-  showAudioSettingsSelector,
+  setShowSettingsSelector,
+  showSettingsSelector,
   useGameStore,
 } from "../../core/stores/useGameStore";
 
@@ -10,8 +10,8 @@ export const useMenuState = () => {
   const [hasInteracted, setHasInteracted] = useState(false);
   const [showAlmanac, setShowAlmanac] = useState(false);
   const [showLevelPicker, setShowLevelPicker] = useState(false);
-  const showAudioSettings = useGameStore(showAudioSettingsSelector);
-  const setShowAudioSettings = useGameStore(setShowAudioSettingsSelector);
+  const showSettings = useGameStore(showSettingsSelector);
+  const setShowSettings = useGameStore(setShowSettingsSelector);
 
   useEffect(() => {
     const onInteraction = () => {
@@ -31,8 +31,34 @@ export const useMenuState = () => {
     };
   }, [hasInteracted]);
 
+  const onOpenSettings = useCallback(() => {
+    setShowAlmanac(false);
+    setShowLevelPicker(false);
+    setShowSettings(true);
+  }, [setShowSettings]);
+
+  const onOpenAlmanac = useCallback(() => {
+    setShowSettings(false);
+    setShowLevelPicker(false);
+    setShowAlmanac(true);
+  }, [setShowSettings]);
+
+  const onOpenLevelPicker = useCallback(() => {
+    setShowSettings(false);
+    setShowAlmanac(false);
+    setShowLevelPicker(true);
+  }, [setShowSettings]);
+
+  const onCloseAlmanac = useCallback(() => {
+    setShowAlmanac(false);
+  }, []);
+
+  const onCloseLevelPicker = useCallback(() => {
+    setShowLevelPicker(false);
+  }, []);
+
   const getActiveView = () => {
-    if (showAudioSettings) return "audio" as const;
+    if (showSettings) return "settings" as const;
     if (showAlmanac) return "almanac" as const;
     if (showLevelPicker) return "levelPicker" as const;
     return "menu" as const;
@@ -46,8 +72,13 @@ export const useMenuState = () => {
     setShowAlmanac,
     showLevelPicker,
     setShowLevelPicker,
-    showAudioSettings,
-    setShowAudioSettings,
+    showSettings,
+    setShowSettings,
+    onOpenSettings,
+    onOpenAlmanac,
+    onOpenLevelPicker,
+    onCloseAlmanac,
+    onCloseLevelPicker,
     activeView,
   };
 };

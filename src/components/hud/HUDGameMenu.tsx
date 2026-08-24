@@ -3,8 +3,8 @@ import { ArrowLeft } from "lucide-react";
 
 import type { GameStatus } from "../../core/types/game";
 import {
-  setShowAudioSettingsSelector,
-  showAudioSettingsSelector,
+  setShowSettingsSelector,
+  showSettingsSelector,
   useGameStore,
 } from "../../core/stores/useGameStore";
 import { UIButton } from "../ui/buttons/UIButton";
@@ -17,7 +17,7 @@ import {
 } from "../ui/UICard";
 import { UITypography } from "../ui/UITypography";
 import { cn } from "../ui/lib/twUtils";
-import { HUDAudioControls } from "./HUDAudioControls";
+import { HUDSettings } from "./HUDSettings";
 import { HUDSidePanel } from "./HUDSidePanel";
 import { BlurBackdrop } from "./main/BlurBackdrop";
 import { useBlurBackdrop } from "../../core/hooks/utils/useBlurBackdrop";
@@ -38,8 +38,8 @@ export const HUDGameMenu: FC<HUDGameMenuProps> = ({
   className,
 }) => {
   const { menuRef, blurDimensions, setBlurDimensions } = useBlurBackdrop();
-  const setShowAudioSettings = useGameStore(setShowAudioSettingsSelector);
-  const showAudioSettings = useGameStore(showAudioSettingsSelector);
+  const setShowSettings = useGameStore(setShowSettingsSelector);
+  const showSettings = useGameStore(showSettingsSelector);
 
   if (gameStatus !== "gameMenu") return null;
 
@@ -53,8 +53,8 @@ export const HUDGameMenu: FC<HUDGameMenuProps> = ({
         hasInteracted
       />
       <HUDSidePanel side="left">
-        {showAudioSettings ? (
-          <HUDAudioControls className="w-full" />
+        {showSettings ? (
+          <HUDSettings className="w-full" />
         ) : (
           <UICard className={cn("w-full", className)} ref={menuRef}>
             <UICardHeader>
@@ -76,11 +76,8 @@ export const HUDGameMenu: FC<HUDGameMenuProps> = ({
             </UICardHeader>
             <UICardContent className="flex flex-col gap-4">
               <UIButton onClick={onRestart}>Restart</UIButton>
-              <UIButton
-                onClick={() => setShowAudioSettings(true)}
-                variant="outline"
-              >
-                Audio Settings
+              <UIButton onClick={() => setShowSettings(true)} variant="outline">
+                Settings
               </UIButton>
               <UIButton onClick={onGoToMainMenu} variant="secondary">
                 Go to Main Menu

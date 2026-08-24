@@ -15,6 +15,7 @@ import { HUDUpgradePanel } from "../hud/HUDUpgradePanel";
 import { HUDLoading } from "../hud/HUDLoading";
 import { KeyboardHandlingSystem } from "../systems/KeyboardHandlingSystem";
 import { ShaderReadyGate } from "../systems/ShaderReadyGate";
+import { BackgroundGameLoopSystem } from "../systems/BackgroundGameLoopSystem";
 import { GAME_CANVAS_GL, GAME_CANVAS_STYLE } from "../../constants/canvas";
 import {
   PLAYABLE_LEVEL_IDS,
@@ -137,6 +138,8 @@ export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
         style={GAME_CANVAS_STYLE}
         gl={GAME_CANVAS_GL}
       >
+        <BackgroundGameLoopSystem />
+
         {shaderGateKey !== null && (
           <ShaderReadyGate
             key={shaderGateKey}
