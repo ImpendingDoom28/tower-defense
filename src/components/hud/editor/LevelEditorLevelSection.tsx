@@ -1,10 +1,18 @@
 import { useEnemyTypeOptions } from "../../../core/hooks/useEnemyTypeOptions";
-import { tileSizeSelector, useGameStore } from "../../../core/stores/useGameStore";
+import {
+  tileSizeSelector,
+  useGameStore,
+} from "../../../core/stores/useGameStore";
 import { useLevelEditorStore } from "../../../core/stores/useLevelEditorStore";
 import {
   parseFiniteNumberFromEvent,
   parseNumberInputOr,
 } from "../../../utils/parseNumberInput";
+import {
+  MAX_GRID_SIZE,
+  MIN_GRID_SIZE,
+  clampGridSize,
+} from "../../../utils/gridSizeLimits";
 import {
   UIAccordionContent,
   UIAccordionItem,
@@ -44,20 +52,21 @@ export const LevelEditorLevelSection = () => {
           <UIInput
             type="number"
             value={draftLevel.startingMoney}
-            onChange={(event) =>
-              setStartingMoney(parseNumberInputOr(event, 0))
-            }
+            onChange={(event) => setStartingMoney(parseNumberInputOr(event, 0))}
           />
         </EditorField>
 
         <EditorField label="Grid Size">
           <UIInput
             type="number"
-            min={5}
+            min={MIN_GRID_SIZE}
+            max={MAX_GRID_SIZE}
             value={draftLevel.gridSize}
             onChange={(event) =>
               setGridSize(
-                parseNumberInputOr(event, draftLevel.gridSize),
+                clampGridSize(
+                  parseFiniteNumberFromEvent(event, draftLevel.gridSize)
+                ),
                 tileSize
               )
             }

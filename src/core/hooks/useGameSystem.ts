@@ -41,8 +41,6 @@ export const useGameSystem = () => {
   const debug = useGameStore(debugSelector);
   const isGameConfigLoaded = useGameStore(isGameConfigLoadedSelector);
   const isPageVisible = useGameStore(isPageVisibleSelector);
-  const pauseWhenTabHidden = useSettingsStore(pauseWhenTabHiddenSelector);
-
   const setActiveEffects = useGameStore(setActiveEffectsSelector);
   const setGameStatus = useGameStore(setGameStatusSelector);
   const setPreviousStatus = useGameStore(setPreviousStatusSelector);
@@ -53,6 +51,8 @@ export const useGameSystem = () => {
   const initializeGameState = useGameStore(initializeGameStateSelector);
   const setIsPageVisible = useGameStore(setIsPageVisibleSelector);
   const setShowSettings = useGameStore(setShowSettingsSelector);
+
+  const pauseWhenTabHidden = useSettingsStore(pauseWhenTabHiddenSelector);
 
   const { getNextEffectId } = useEntityIds();
 
@@ -73,6 +73,7 @@ export const useGameSystem = () => {
     gameStatus === "gameMenu";
   const shouldStopMovement = getShouldStopMovement(
     gameStatus,
+    shouldDisableControls,
     isPageVisible,
     pauseWhenTabHidden
   );

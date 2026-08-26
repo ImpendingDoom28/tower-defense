@@ -9,7 +9,6 @@ import {
 import { UIButton } from "../ui/buttons/UIButton";
 import { UISlider } from "../ui/UISlider";
 import { UITypography } from "../ui/UITypography";
-import { formatVolume } from "../../utils/formatters";
 
 type AudioSliderProps = {
   volume: number;
@@ -48,7 +47,7 @@ const AudioSlider: FC<AudioSliderProps> = ({
         >
           {label}
         </label>
-        <span className="text-xs text-gray-400">{formatVolume(volume)}%</span>
+        <span className="text-xs text-gray-400">{`${Math.round(volume).toString()}%`}</span>
       </div>
       <UISlider
         id={sliderId}

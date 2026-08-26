@@ -1,7 +1,8 @@
 import type { World } from "koota";
 
 import {
-  computeHealPulseHealthUpdates,
+  collectHealDeltas,
+  computeHealDeltaHealthUpdates,
   getInitialNextHealPulseAt,
 } from "../../../utils/enemyMedicPulse";
 import { enemyActions } from "../actions/enemyActions";
@@ -13,6 +14,7 @@ export const runMedicHealPulseSystem = (
 ): void => {
   const actions = enemyActions(world);
   const enemies = getEnemySnapshots(world);
+  const dueMedics: typeof enemies = [];
 
   for (const enemy of enemies) {
     if (!enemy.healPulse || enemy.health <= 0) continue;
@@ -31,16 +33,22 @@ export const runMedicHealPulseSystem = (
 
     if (effectiveTime < enemy.nextHealPulseAt) continue;
 
-    const updates = computeHealPulseHealthUpdates(enemy, enemies, healPulse);
-    for (const update of updates) {
-      actions.updateEnemy(update.enemyId, { health: update.health });
-    }
-
+    dueMedics.push(enemy);
     actions.updateEnemy(enemy.id, {
       nextHealPulseAt: getInitialNextHealPulseAt(
         effectiveTime,
         healPulse.intervalSeconds
       ),
     });
+  }
+
+  if (dueMedics.length === 0) return;
+
+  const healDeltas = collectHealDeltas(dueMedics, enemies);
+  const freshEnemies = getEnemySnapshots(world);
+  const updates = computeHealDeltaHealthUpdates(freshEnemies, healDeltas);
+
+  for (const update of updates) {
+    actions.updateEnemy(update.enemyId, { health: update.health });
   }
 };

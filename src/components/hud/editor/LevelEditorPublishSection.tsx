@@ -129,7 +129,7 @@ export const LevelEditorPublishSection = () => {
   };
 
   const onDownloadJson = () => {
-    const isValid = validateDraftLevel();
+    const isValid = validateDraftLevel(tileSize);
     if (!isValid) {
       setStatusMessage("Fix validation issues before exporting.");
       return;
@@ -157,7 +157,7 @@ export const LevelEditorPublishSection = () => {
   };
 
   const onValidate = () => {
-    const isValid = validateDraftLevel();
+    const isValid = validateDraftLevel(tileSize);
     setStatusMessage(
       isValid ? "Level is valid." : "Fix validation issues before exporting."
     );

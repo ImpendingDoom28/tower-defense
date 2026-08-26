@@ -1,39 +1,25 @@
-import { FC, useRef } from "react";
+import { FC } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useWorld } from "koota/react";
 
-import {
-  createPauseClock,
-  getEffectiveGameTime,
-  stepPauseClock,
-} from "../../utils/pauseClock";
 import { runMedicHealPulseSystem } from "../../core/ecs/systems/medicHealPulseSystem";
+import type { GetSimulationTime } from "../../core/hooks/useSimulationClock";
 
 type MedicHealPulseSystemProps = {
   shouldStopMovement: boolean;
+  getSimulationTime: GetSimulationTime;
 };
 
 export const MedicHealPulseSystem: FC<MedicHealPulseSystemProps> = ({
   shouldStopMovement,
+  getSimulationTime,
 }) => {
   const world = useWorld();
-  const pauseClockRef = useRef(createPauseClock());
-  const previousShouldStopMovementRef = useRef(shouldStopMovement);
-  const shouldStopRef = useRef(shouldStopMovement);
-
-  shouldStopRef.current = shouldStopMovement;
 
   useFrame((state) => {
-    const now = state.clock.elapsedTime;
-    const isPaused = shouldStopRef.current;
-    const wasPaused = previousShouldStopMovementRef.current;
+    if (shouldStopMovement) return;
 
-    stepPauseClock(pauseClockRef.current, now, isPaused, wasPaused);
-    previousShouldStopMovementRef.current = isPaused;
-
-    if (isPaused) return;
-
-    const effectiveTime = getEffectiveGameTime(now, pauseClockRef.current);
+    const effectiveTime = getSimulationTime(state.clock.elapsedTime);
     runMedicHealPulseSystem(world, effectiveTime);
   }, -1);
 

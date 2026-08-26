@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
 import {
+  pathWidthSelector,
   tileSizeSelector,
   useGameStore,
 } from "../../../core/stores/useGameStore";
@@ -33,6 +34,7 @@ const getPathButtonKey = (pathIndex: number, pathLength: number) =>
 
 export const LevelEditorPathSection = () => {
   const tileSize = useGameStore(tileSizeSelector);
+  const pathWidth = useGameStore(pathWidthSelector);
   const {
     draftLevel,
     activeTool,
@@ -147,13 +149,15 @@ export const LevelEditorPathSection = () => {
               onChangeGridX={(gridX) =>
                 updateSelectedWaypoint(
                   { gridX, gridZ: selectedWaypointTile.gridZ },
-                  tileSize
+                  tileSize,
+                  pathWidth
                 )
               }
               onChangeGridZ={(gridZ) =>
                 updateSelectedWaypoint(
                   { gridX: selectedWaypointTile.gridX, gridZ },
-                  tileSize
+                  tileSize,
+                  pathWidth
                 )
               }
             />

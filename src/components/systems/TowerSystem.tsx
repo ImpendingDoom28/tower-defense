@@ -136,7 +136,18 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
 
     useFrame((state) => {
       const { gameStatus, isPageVisible } = useGameStore.getState();
-      if (getShouldStopMovement(gameStatus, isPageVisible, pauseWhenTabHidden))
+      const shouldDisableControls =
+        gameStatus === "gameOver" ||
+        gameStatus === "won" ||
+        gameStatus === "gameMenu";
+      if (
+        getShouldStopMovement(
+          gameStatus,
+          shouldDisableControls,
+          isPageVisible,
+          pauseWhenTabHidden
+        )
+      )
         return;
       if (gameStatus !== "playing" && gameStatus !== "menu") return;
 

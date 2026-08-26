@@ -2,7 +2,7 @@ import { describe, expect, it, beforeEach } from "vitest";
 
 import { enemyActions } from "../ecs/actions/enemyActions";
 import { getEnemySnapshots } from "../ecs/selectors/enemySnapshots";
-import { world } from "../ecs/world";
+import { testWorld } from "../ecs/world";
 import type { Enemy } from "../types/game";
 
 const baseEnemy = (health: number): Enemy => ({
@@ -27,17 +27,17 @@ const baseEnemy = (health: number): Enemy => ({
 
 describe("sequential damage reads fresh enemy health from ECS", () => {
   beforeEach(() => {
-    enemyActions(world).clearAllEnemies();
-    enemyActions(world).spawnEnemy(baseEnemy(100));
+    enemyActions(testWorld).clearAllEnemies();
+    enemyActions(testWorld).spawnEnemy(baseEnemy(100));
   });
 
   it("second damage application uses updated health after first", () => {
-    const actions = enemyActions(world);
+    const actions = enemyActions(testWorld);
 
     actions.damageEnemy(1, 10);
-    expect(getEnemySnapshots(world)[0]?.health).toBe(90);
+    expect(getEnemySnapshots(testWorld)[0]?.health).toBe(90);
 
     actions.damageEnemy(1, 10);
-    expect(getEnemySnapshots(world)[0]?.health).toBe(80);
+    expect(getEnemySnapshots(testWorld)[0]?.health).toBe(80);
   });
 });

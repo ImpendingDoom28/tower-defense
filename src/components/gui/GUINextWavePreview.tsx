@@ -31,6 +31,7 @@ import {
 
 type EnemyPreviewModelProps = {
   enemyConfig: EnemyConfig;
+  name: string;
   count: number;
 };
 
@@ -47,6 +48,7 @@ const getStackTierRoman = (tier: EnemyUpgradeStackTier): string => {
 
 const EnemyPreviewModel: FC<EnemyPreviewModelProps> = ({
   enemyConfig,
+  name,
   count,
 }) => {
   return (
@@ -63,7 +65,7 @@ const EnemyPreviewModel: FC<EnemyPreviewModelProps> = ({
           style={{ backgroundColor: enemyConfig.color }}
         />
         <UITypography variant="small" className="font-medium truncate">
-          {enemyConfig.name}
+          {name}
         </UITypography>
       </div>
       <UITypography variant="verySmall" className="text-muted-foreground">
@@ -180,6 +182,7 @@ export const GUINextWavePreview: FC<GUINextWavePreviewProps> = ({
                   <EnemyPreviewModel
                     key={`${enemyGroup.type}-${index}`}
                     enemyConfig={enemyConfig}
+                    name={enemyGroup.type}
                     count={enemyGroup.count}
                   />
                 );

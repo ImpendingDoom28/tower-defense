@@ -6,14 +6,12 @@ import {
 } from "../../constants/uiActionDeniedFeedback";
 import { GameEvent } from "../../core/types/enums/events";
 
-import { TOWER_FIRE_SRCES, type TowerFireSrcKey } from "./gameSoundConfig";
+import {
+  isTowerFireSrcKey,
+  TOWER_FIRE_SRCES,
+  type TowerFireSrcKey,
+} from "./gameSoundConfig";
 import { generatePlaceholderSound } from "./generatePlaceholderSound";
-
-const TOWER_FIRE_SRC_KEYS = Object.keys(TOWER_FIRE_SRCES) as TowerFireSrcKey[];
-
-const isTowerFireSrcKey = (value: unknown): value is TowerFireSrcKey =>
-  typeof value === "string" &&
-  TOWER_FIRE_SRC_KEYS.includes(value as TowerFireSrcKey);
 
 const resolveTowerFireSrcKey = (data: unknown): TowerFireSrcKey => {
   if (

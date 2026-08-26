@@ -7,13 +7,10 @@ export const shouldPauseForTabHidden = (
 
 export const getShouldStopMovement = (
   gameStatus: GameStatus,
+  shouldDisableControls: boolean,
   isPageVisible: boolean,
   pauseWhenTabHidden: boolean
 ): boolean => {
-  const shouldDisableControls =
-    gameStatus === "gameOver" ||
-    gameStatus === "won" ||
-    gameStatus === "gameMenu";
   return (
     shouldDisableControls ||
     gameStatus === "paused" ||

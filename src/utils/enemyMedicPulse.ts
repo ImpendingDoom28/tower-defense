@@ -24,20 +24,56 @@ export type HealPulseHealthUpdate = {
   health: number;
 };
 
+export const collectHealDeltas = (
+  medics: Enemy[],
+  enemies: Enemy[]
+): Map<number, number> => {
+  const healDeltas = new Map<number, number>();
+
+  for (const medic of medics) {
+    if (!medic.healPulse) continue;
+
+    const targetIds = getHealPulseTargetIds(medic, enemies, medic.healPulse);
+    for (const enemyId of targetIds) {
+      healDeltas.set(
+        enemyId,
+        (healDeltas.get(enemyId) ?? 0) + medic.healPulse.healAmount
+      );
+    }
+  }
+
+  return healDeltas;
+};
+
+export const computeHealDeltaHealthUpdates = (
+  enemies: Enemy[],
+  healDeltas: ReadonlyMap<number, number>
+): HealPulseHealthUpdate[] => {
+  const updates: HealPulseHealthUpdate[] = [];
+
+  for (const enemy of enemies) {
+    const healDelta = healDeltas.get(enemy.id);
+    if (healDelta === undefined || enemy.health <= 0) continue;
+
+    updates.push({
+      enemyId: enemy.id,
+      health: Math.min(enemy.maxHealth, enemy.health + healDelta),
+    });
+  }
+
+  return updates;
+};
+
 export const computeHealPulseHealthUpdates = (
   medic: Enemy,
   enemies: Enemy[],
   healPulse: HealPulseConfig
 ): HealPulseHealthUpdate[] => {
-  const byId = new Map(enemies.map((e) => [e.id, e]));
-  const targets = getHealPulseTargetIds(medic, enemies, healPulse);
-  return targets.map((id) => {
-    const e = byId.get(id)!;
-    return {
-      enemyId: id,
-      health: Math.min(e.maxHealth, e.health + healPulse.healAmount),
-    };
-  });
+  const medicWithHealPulse = { ...medic, healPulse };
+  return computeHealDeltaHealthUpdates(
+    enemies,
+    collectHealDeltas([medicWithHealPulse], enemies)
+  );
 };
 
 export const getInitialNextHealPulseAt = (

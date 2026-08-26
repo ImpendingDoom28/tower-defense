@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { loadFile } from "../utils/fileLoader";
+import { MAX_GRID_SIZE, MIN_GRID_SIZE } from "../utils/gridSizeLimits";
 import type {
   Building,
   Enemy,
@@ -155,7 +156,7 @@ export type LevelConfigFiles = "level_main" | "level_1";
 export const levelConfigSchema = z.object({
   name: z.string().min(1),
   startingMoney: z.number(),
-  gridSize: z.number(),
+  gridSize: z.number().finite().int().min(MIN_GRID_SIZE).max(MAX_GRID_SIZE),
   tileColor: z.string().optional(),
   groundColor: z.string().optional(),
   waters: z.array(waterBodyConfigSchema).default([]),

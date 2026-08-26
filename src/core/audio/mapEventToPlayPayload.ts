@@ -4,14 +4,11 @@ import { GameEvent } from "../../core/types/enums/events";
 
 import {
   type AudioEventData,
+  isTowerFireSrcKey,
   SOUND_CONFIGS,
-  TOWER_FIRE_SRCES,
-  type TowerFireSrcKey,
 } from "./gameSoundConfig";
 
 type SoundConfigs = typeof SOUND_CONFIGS;
-
-const TOWER_FIRE_SRC_KEYS = Object.keys(TOWER_FIRE_SRCES) as TowerFireSrcKey[];
 
 const SPATIAL_EVENTS = new Set<GameEvent>([
   GameEvent.TOWER_PLACED,
@@ -34,26 +31,6 @@ const hasWorldPosition = (
   typeof (data as { worldPosition: { x: unknown } }).worldPosition.x ===
     "number";
 
-const isTowerFireSrcKey = (value: string): value is TowerFireSrcKey =>
-  TOWER_FIRE_SRC_KEYS.includes(value as TowerFireSrcKey);
-
-type TowerFirePlayPayload = PlayPayloadForEvent<
-  SoundConfigs,
-  typeof GameEvent.TOWER_FIRE
-> & {
-  srcKey: TowerFireSrcKey;
-};
-
-export function mapEventToPlayPayload(
-  event: typeof GameEvent.TOWER_FIRE,
-  data: AudioEventData<"tower_fire"> | undefined
-): TowerFirePlayPayload | undefined;
-
-export function mapEventToPlayPayload<E extends GameEvent>(
-  event: E,
-  data: AudioEventData<E> | undefined
-): PlayPayloadForEvent<SoundConfigs, E> | undefined;
-
 export function mapEventToPlayPayload(
   event: GameEvent,
   data: AudioEventData<GameEvent> | undefined
@@ -68,7 +45,7 @@ export function mapEventToPlayPayload(
 
     return {
       worldPosition: fireData.worldPosition,
-      srcKey: towerType && isTowerFireSrcKey(towerType) ? towerType : "basic",
+      srcKey: isTowerFireSrcKey(towerType) ? towerType : "basic",
     };
   }
 

@@ -1,9 +1,22 @@
-import { useCallback, useRef } from "react";
+import { useMemo } from "react";
 
-export const useNextId = () => {
-  const nextId = useRef(1);
-  return useCallback((reset?: boolean) => {
-    if (reset || nextId.current === Number.MAX_SAFE_INTEGER) nextId.current = 1;
-    return nextId.current++;
-  }, []);
+export const createIdCounter = () => {
+  let nextId = 1;
+
+  const getNextId = (reset?: boolean): number => {
+    if (reset || nextId === Number.MAX_SAFE_INTEGER) nextId = 1;
+    return nextId++;
+  };
+
+  const ensureAtLeast = (minId: number): void => {
+    if (!Number.isFinite(minId)) return;
+    nextId = Math.max(nextId, Math.max(1, Math.ceil(minId)));
+  };
+
+  return {
+    getNextId,
+    ensureAtLeast,
+  };
 };
+
+export const useNextId = () => useMemo(createIdCounter, []);

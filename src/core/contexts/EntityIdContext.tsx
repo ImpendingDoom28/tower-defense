@@ -1,16 +1,11 @@
-import {
-  createContext,
-  FC,
-  ReactNode,
-  useContext,
-  useMemo,
-} from "react";
+import { createContext, FC, ReactNode, useContext, useMemo } from "react";
 
 import { useNextId } from "../hooks/utils/useNextId";
 
 export type EntityIdContextValue = {
   getNextTowerId: (reset?: boolean) => number;
   getNextEnemyId: (reset?: boolean) => number;
+  ensureEnemyIdAtLeast: (minId: number) => void;
   getNextProjectileId: (reset?: boolean) => number;
   getNextEffectId: (reset?: boolean) => number;
 };
@@ -22,23 +17,33 @@ type EntityIdProviderProps = {
 };
 
 export const EntityIdProvider: FC<EntityIdProviderProps> = ({ children }) => {
-  const getNextTowerId = useNextId();
-  const getNextEnemyId = useNextId();
-  const getNextProjectileId = useNextId();
-  const getNextEffectId = useNextId();
+  const { getNextId: getNextTowerId } = useNextId();
+  const { getNextId: getNextEnemyId, ensureAtLeast: ensureEnemyIdAtLeast } =
+    useNextId();
+  const { getNextId: getNextProjectileId } = useNextId();
+  const { getNextId: getNextEffectId } = useNextId();
 
   const value = useMemo(
     (): EntityIdContextValue => ({
       getNextTowerId,
       getNextEnemyId,
+      ensureEnemyIdAtLeast,
       getNextProjectileId,
       getNextEffectId,
     }),
-    [getNextTowerId, getNextEnemyId, getNextProjectileId, getNextEffectId]
+    [
+      getNextTowerId,
+      getNextEnemyId,
+      ensureEnemyIdAtLeast,
+      getNextProjectileId,
+      getNextEffectId,
+    ]
   );
 
   return (
-    <EntityIdContext.Provider value={value}>{children}</EntityIdContext.Provider>
+    <EntityIdContext.Provider value={value}>
+      {children}
+    </EntityIdContext.Provider>
   );
 };
 

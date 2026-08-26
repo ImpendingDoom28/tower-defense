@@ -66,15 +66,12 @@ const toEnemySnapshot = (state: EnemyStateRecord): Enemy => ({
   healPulse: state.healPulse,
 });
 
-const mergeEnemyState = (
-  current: EnemyStateData,
-  updates: Partial<Enemy>
-): EnemyStateData => ({
-  ...current,
-  ...updates,
-});
-
-const emitEnemyKilled = (enemy: Enemy) => {
+const handleEnemyDeath = (enemy: Enemy) => {
+  const gameStatus = useGameStore.getState().gameStatus;
+  useLevelStore.getState().addMoney(enemy.reward);
+  if (gameStatus !== "menu") {
+    useLevelStore.getState().incrementEnemiesKilled();
+  }
   gameEvents.emit(GameEvent.ENEMY_KILLED, {
     enemyId: enemy.id,
     enemyType: enemy.type,
@@ -86,17 +83,13 @@ const emitEnemyKilled = (enemy: Enemy) => {
   });
 };
 
-const handleEnemyDeath = (enemy: Enemy) => {
-  const gameStatus = useGameStore.getState().gameStatus;
-  useLevelStore.getState().addMoney(enemy.reward);
-  if (gameStatus !== "menu") {
-    useLevelStore.getState().incrementEnemiesKilled();
-  }
-  emitEnemyKilled(enemy);
-};
-
 export const enemyActions = createActions((world) => ({
   spawnEnemy: (enemyData: Enemy): Entity => {
+    const existingEntity = enemyEntitiesById.get(enemyData.id);
+    if (existingEntity) {
+      existingEntity.destroy();
+    }
+
     const entity = world.spawn(IsEnemy, EnemyState);
     entity.set(EnemyState, enemyToState(enemyData));
 
@@ -122,7 +115,7 @@ export const enemyActions = createActions((world) => ({
     const hasChanges = updateKeys.some((key) => current[key] !== updates[key]);
     if (!hasChanges) return false;
 
-    const nextState = mergeEnemyState(current, updates);
+    const nextState = { ...current, ...updates };
 
     if (nextState.health <= 0) {
       handleEnemyDeath(toEnemySnapshot(nextState));
@@ -178,7 +171,7 @@ export const enemyActions = createActions((world) => ({
       return true;
     }
 
-    entity.set(EnemyState, mergeEnemyState(enemy, { health: newHealth }));
+    entity.set(EnemyState, { ...enemy, health: newHealth });
     return false;
   },
 
@@ -200,13 +193,11 @@ export const enemyActions = createActions((world) => ({
     const effectiveSlowMultiplier = 1 - (1 - slowMultiplier) * (1 - resistance);
     const slowUntil = currentTime + duration * (1 - resistance);
 
-    entity.set(
-      EnemyState,
-      mergeEnemyState(enemy, {
-        slowMultiplier: effectiveSlowMultiplier,
-        slowUntil,
-      })
-    );
+    entity.set(EnemyState, {
+      ...enemy,
+      slowMultiplier: effectiveSlowMultiplier,
+      slowUntil,
+    });
   },
 
   clearAllEnemies: (): void => {

@@ -8,6 +8,7 @@
  * and drei handles syncing to the GPU each frame.
  */
 
+import { RefObject } from "react";
 import * as THREE from "three";
 
 export type InstanceSlot = THREE.Group & { color: THREE.Color };
@@ -40,7 +41,7 @@ export type InstancedPoolRef = {
 const hiddenPosition = new THREE.Vector3(0, -10000, 0);
 
 export const createPoolController = (
-  slotRefs: React.MutableRefObject<(InstanceSlot | null)[]>,
+  slotRefs: RefObject<(InstanceSlot | null)[]>,
   maxInstances: number
 ): InstancedPoolRef => {
   const availableIndices: number[] = [];

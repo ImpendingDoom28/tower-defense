@@ -37,7 +37,7 @@ export const getPickTierForStackEntryIndex = (
   stack: readonly EnemyUpgradeId[],
   index: number
 ): EnemyUpgradeStackTier => {
-  const id = stack[index]!;
+  const id = stack[index];
   return (countUpgradePicks(stack.slice(0, index), id) +
     1) as EnemyUpgradeStackTier;
 };
@@ -55,16 +55,18 @@ export const getTieredUpgradeEffect = (
   switch (config.id) {
     case "armored": {
       const health =
-        tier === 1 ? h1 : tier === 2 ? 1 + (h1 - 1) * 1.15 : 1 + (h1 - 1) * 1.33;
-      const reward =
-        tier === 1 ? r1 : tier === 2 ? r1 * 1.1 : r1 * 1.25;
+        tier === 1
+          ? h1
+          : tier === 2
+            ? 1 + (h1 - 1) * 1.15
+            : 1 + (h1 - 1) * 1.33;
+      const reward = tier === 1 ? r1 : tier === 2 ? r1 * 1.1 : r1 * 1.25;
       return { healthMultiplier: health, rewardMultiplier: reward };
     }
     case "swift": {
       const speed =
         tier === 1 ? s1 : tier === 2 ? 1 + (s1 - 1) * 1.2 : 1 + (s1 - 1) * 1.45;
-      const reward =
-        tier === 1 ? r1 : tier === 2 ? r1 * 1.08 : r1 * 1.2;
+      const reward = tier === 1 ? r1 : tier === 2 ? r1 * 1.08 : r1 * 1.2;
       return { speedMultiplier: speed, rewardMultiplier: reward };
     }
     case "slowImmune":
@@ -75,8 +77,7 @@ export const getTieredUpgradeEffect = (
     case "regenerating": {
       const regen =
         tier === 1 ? regen1 : tier === 2 ? regen1 * 1.5 : regen1 * 2.25;
-      const reward =
-        tier === 1 ? r1 : tier === 2 ? r1 * 1.1 : r1 * 1.24;
+      const reward = tier === 1 ? r1 : tier === 2 ? r1 * 1.1 : r1 * 1.24;
       return {
         regeneration: regen,
         rewardMultiplier: reward,
@@ -114,7 +115,7 @@ export const getTotalRewardMultiplierFromStack = (
   if (!enemyUpgrades) return 1;
   let acc = 1;
   for (let i = 0; i < stack.length; i++) {
-    const id = stack[i]!;
+    const id = stack[i];
     const pickTier = (countUpgradePicks(stack.slice(0, i), id) +
       1) as EnemyUpgradeStackTier;
     const config = enemyUpgrades[id];

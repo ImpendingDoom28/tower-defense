@@ -46,24 +46,6 @@ class EventEmitter {
       });
     }
   }
-
-  /**
-   * Remove all listeners for an event, or all events if no event specified
-   */
-  removeAllListeners(event?: string): void {
-    if (event) {
-      this.listeners.delete(event);
-    } else {
-      this.listeners.clear();
-    }
-  }
-
-  /**
-   * Get the number of listeners for an event
-   */
-  listenerCount(event: string): number {
-    return this.listeners.get(event)?.size ?? 0;
-  }
 }
 
 // Export singleton instance

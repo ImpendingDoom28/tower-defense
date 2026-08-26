@@ -1,5 +1,6 @@
 import {
   defineSoundConfigs,
+  forEvents,
   type WorldPosition,
 } from "@webgamedevkit/audio-engine";
 
@@ -22,7 +23,13 @@ export const TOWER_FIRE_SRCES = {
 
 export type TowerFireSrcKey = keyof typeof TOWER_FIRE_SRCES;
 
-export const SOUND_CONFIGS = defineSoundConfigs<GameEvent>(
+const TOWER_FIRE_SRC_KEYS = Object.keys(TOWER_FIRE_SRCES) as TowerFireSrcKey[];
+
+export const isTowerFireSrcKey = (value: unknown): value is TowerFireSrcKey =>
+  typeof value === "string" &&
+  TOWER_FIRE_SRC_KEYS.includes(value as TowerFireSrcKey);
+
+export const SOUND_CONFIGS = defineSoundConfigs(
   GAME_AUDIO_CATEGORIES,
   {
     [GameEvent.TOWER_PLACED]: {
@@ -33,6 +40,7 @@ export const SOUND_CONFIGS = defineSoundConfigs<GameEvent>(
     },
     [GameEvent.TOWER_FIRE]: {
       category: "sfx",
+      srces: TOWER_FIRE_SRCES,
     },
     [GameEvent.ENEMY_KILLED]: {
       category: "sfx",
@@ -82,7 +90,8 @@ export const SOUND_CONFIGS = defineSoundConfigs<GameEvent>(
       category: "sfx",
       spatial: false,
     },
-  }
+  },
+  forEvents<GameEvent>()
 );
 
 export type AudioEventDataMap = {

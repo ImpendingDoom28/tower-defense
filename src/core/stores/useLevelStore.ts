@@ -78,6 +78,11 @@ const DEFAULT_STATE: LevelStoreState = {
   isLevelConfigLoaded: false,
 };
 
+export const getMaxEntityId = (
+  entities: ReadonlyArray<{ id: number }>
+): number =>
+  entities.reduce((currentMax, entity) => Math.max(currentMax, entity.id), 0);
+
 const buildLevelConfigEnemies = (
   levelData: LevelConfigData,
   enemyTypes: NonNullable<

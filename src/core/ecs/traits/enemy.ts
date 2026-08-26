@@ -22,6 +22,7 @@ export type EnemyStateData = {
   description?: string;
   pathProgress: number;
   pathIndex: number;
+  /** Expiry timestamp in pause-adjusted simulation time. */
   slowUntil: number;
   slowMultiplier: number;
   x: number;

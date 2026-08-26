@@ -33,6 +33,7 @@ import { useSettingsStore } from "../stores/useSettingsStore";
 import { useLevelStore } from "../stores/useLevelStore";
 import { world } from "../ecs/world";
 import { getEnemiesById } from "../ecs/selectors/enemySnapshots";
+import type { GetSimulationTime } from "./useSimulationClock";
 
 const CHAIN_BOLT_RADIUS = 0.03;
 const CHAIN_BOLT_LENGTH = 0.5;
@@ -331,6 +332,7 @@ type InstancedProjectilesConfig = {
   beamEmissiveIntensity?: number;
   hitThreshold?: number;
   beamDuration?: number;
+  getSimulationTime: GetSimulationTime;
   onHit: (projectile: Projectile, enemy: Enemy, currentTime: number) => void;
   onRemove: (projectileId: number) => void;
 };
@@ -354,6 +356,7 @@ export const useInstancedProjectiles = (
     beamEmissiveIntensity = 1.5,
     hitThreshold = 0.3,
     beamDuration = 0.15,
+    getSimulationTime,
     onHit,
     onRemove,
   } = config;
@@ -609,15 +612,21 @@ export const useInstancedProjectiles = (
   useFrame((state, delta) => {
     enemiesByIdRef.current = getEnemiesById(world);
     const { gameStatus, isPageVisible } = useGameStore.getState();
+    const pauseWhenTabHidden = useSettingsStore.getState().pauseWhenTabHidden;
+    const shouldDisableControls =
+      gameStatus === "gameOver" ||
+      gameStatus === "won" ||
+      gameStatus === "gameMenu";
     if (
       getShouldStopMovement(
         gameStatus,
+        shouldDisableControls,
         isPageVisible,
-        useSettingsStore.getState().pauseWhenTabHidden
+        pauseWhenTabHidden
       )
     )
       return;
-    updateProjectilesFrame(state.clock.elapsedTime, delta);
+    updateProjectilesFrame(getSimulationTime(state.clock.elapsedTime), delta);
   });
 
   const InstancedProjectiles = (

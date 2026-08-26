@@ -6,7 +6,7 @@ import { HUDLoading } from "./components/hud/HUDLoading";
 import { GamePage } from "./components/pages/GamePage";
 import { EntityIdProvider } from "./core/contexts/EntityIdContext";
 import { useGameAudioSystem } from "./core/audio/useGameAudioSystem";
-import { world } from "./core/ecs/world";
+import { editorWorld, world } from "./core/ecs/world";
 
 const LevelEditorPage = lazy(() =>
   import("./components/pages/LevelEditorPage").then((mod) => ({
@@ -34,7 +34,7 @@ const AppRoutes: FC = () => {
       <Route
         path="/editor"
         element={
-          <WorldProvider world={world}>
+          <WorldProvider world={editorWorld}>
             <EntityIdProvider>
               <Suspense
                 fallback={

@@ -8,18 +8,15 @@ export const createPauseClock = (): PauseClock => ({
   pauseSegmentStart: null,
 });
 
-export const stepPauseClock = (
-  clock: PauseClock,
-  now: number,
-  isPaused: boolean,
-  wasPaused: boolean
-): void => {
-  if (!wasPaused && isPaused) {
-    clock.pauseSegmentStart = now;
-  } else if (wasPaused && !isPaused && clock.pauseSegmentStart !== null) {
-    clock.pauseDurationTotal += now - clock.pauseSegmentStart;
-    clock.pauseSegmentStart = null;
-  }
+export const beginPauseSegment = (clock: PauseClock, now: number): void => {
+  clock.pauseSegmentStart = now;
+};
+
+export const endPauseSegment = (clock: PauseClock, now: number): void => {
+  if (clock.pauseSegmentStart === null) return;
+
+  clock.pauseDurationTotal += now - clock.pauseSegmentStart;
+  clock.pauseSegmentStart = null;
 };
 
 export const getEffectiveGameTime = (

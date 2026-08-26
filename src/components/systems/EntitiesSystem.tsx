@@ -29,6 +29,7 @@ import {
 } from "../../core/stores/useGameStore";
 import { useGameStore } from "../../core/stores/useGameStore";
 import { IsEnemy } from "../../core/ecs/traits/enemy";
+import { useSimulationClock } from "../../core/hooks/useSimulationClock";
 
 type EntitiesSystemProps = {
   activeEffects: ActiveEffect[];
@@ -74,11 +75,13 @@ export const EntitiesSystem: FC<EntitiesSystemProps> = memo(
     const buildings = useLevelStore(buildingsSelector);
     const waters = useLevelStore(watersSelector);
     const { getTilePlacementState, updateTower } = levelSystem;
+    const getSimulationTime = useSimulationClock(shouldStopMovement);
 
     const { InstancedProjectiles, fireProjectile } = useInstancedProjectiles({
       maxProjectiles: 500,
       maxBeams: 50,
       projectileSize: 0.1,
+      getSimulationTime,
       onHit: onProjectileHit,
       onRemove: onProjectileRemove,
     });
@@ -103,7 +106,10 @@ export const EntitiesSystem: FC<EntitiesSystemProps> = memo(
 
     return (
       <>
-        <MedicHealPulseSystem shouldStopMovement={shouldStopMovement} />
+        <MedicHealPulseSystem
+          shouldStopMovement={shouldStopMovement}
+          getSimulationTime={getSimulationTime}
+        />
 
         {buildings.map((building) => (
           <Building key={building.id} building={building} />
@@ -117,6 +123,8 @@ export const EntitiesSystem: FC<EntitiesSystemProps> = memo(
           <Enemy
             key={entity}
             entity={entity}
+            getSimulationTime={getSimulationTime}
+            shouldStopMovement={shouldStopMovement}
             onReachEnd={onEnemyReachEnd}
             onSpawnEffect={onSpawnEffect}
             onEndEffect={onEndEffect}

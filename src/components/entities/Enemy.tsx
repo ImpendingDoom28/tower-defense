@@ -19,7 +19,6 @@ import {
 } from "../../utils/pathUtils";
 import { getCssColorValue } from "../ui/lib/cssUtils";
 import { GUIDebugInfo } from "../gui/GUIDebugInfo";
-import { getShouldStopMovement } from "../../core/getShouldStopMovement";
 import {
   gridSizeSelector,
   pathWaypointsSelector,
@@ -27,39 +26,39 @@ import {
 } from "../../core/stores/useLevelStore";
 import { tileSizeSelector, useGameStore } from "../../core/stores/useGameStore";
 import {
-  pauseWhenTabHiddenSelector,
-  useSettingsStore,
-} from "../../core/stores/useSettingsStore";
-import {
   flatFieldToSphereSurface,
   getPlanetRadius,
   getSurfaceQuaternion,
 } from "../../utils/planetSurfaceMapping";
-import {
-  createPauseClock,
-  getEffectiveGameTime,
-  stepPauseClock,
-} from "../../utils/pauseClock";
 import { enemyActions } from "../../core/ecs/actions/enemyActions";
 import { EnemyState } from "../../core/ecs/traits/enemy";
+import type { GetSimulationTime } from "../../core/hooks/useSimulationClock";
 import { MedicHealBurstEffect } from "./effects/MedicHealBurstEffect";
 import { SlowEffect } from "./effects/SlowEffect";
 import { UpgradeEffect } from "./effects/UpgradeEffect";
 
 type EnemyProps = {
   entity: Entity;
+  getSimulationTime: GetSimulationTime;
+  shouldStopMovement: boolean;
   onReachEnd: ((enemyId: number) => void) | null;
   onSpawnEffect:
-    | ((position: [number, number, number], color: string) => void)
-    | null;
+    ((position: [number, number, number], color: string) => void) | null;
   onEndEffect:
-    | ((position: [number, number, number], color: string) => void)
-    | null;
+    ((position: [number, number, number], color: string) => void) | null;
   debug?: boolean;
 };
 
 export const Enemy: FC<EnemyProps> = memo(
-  ({ entity, onReachEnd, onSpawnEffect, onEndEffect, debug = false }) => {
+  ({
+    entity,
+    getSimulationTime,
+    shouldStopMovement,
+    onReachEnd,
+    onSpawnEffect,
+    onEndEffect,
+    debug = false,
+  }) => {
     const enemy = useTrait(entity, EnemyState);
     const actions = useActions(enemyActions);
 
@@ -97,21 +96,12 @@ export const Enemy: FC<EnemyProps> = memo(
       [radius]
     );
 
-    const pauseWhenTabHidden = useSettingsStore(pauseWhenTabHiddenSelector);
-    const shouldStopMovement = useGameStore((s) =>
-      getShouldStopMovement(s.gameStatus, s.isPageVisible, pauseWhenTabHidden)
-    );
-    const shouldStopRef = useRef(shouldStopMovement);
-    shouldStopRef.current = shouldStopMovement;
-
     const meshRef = useRef<Group>(null);
     const upgradeFirstRingRef = useRef<Mesh>(null);
     const hasTriggeredSpawnEffect = useRef(false);
     const hasReachedEnd = useRef(false);
     const [isSlowed, setIsSlowed] = useState(false);
     const isSlowedRef = useRef(false);
-    const pauseClockRef = useRef(createPauseClock());
-    const previousShouldStopMovementRef = useRef<boolean>(shouldStopMovement);
 
     useEffect(() => {
       if (!enemy) return;
@@ -153,14 +143,8 @@ export const Enemy: FC<EnemyProps> = memo(
       if (!live || live.health <= 0) return;
 
       const now = state.clock.elapsedTime;
-
-      const wasPaused = previousShouldStopMovementRef.current;
-      const isPaused = shouldStopRef.current;
-
-      stepPauseClock(pauseClockRef.current, now, isPaused, wasPaused);
-      previousShouldStopMovementRef.current = isPaused;
-
-      const adjustedTime = getEffectiveGameTime(now, pauseClockRef.current);
+      const isPaused = shouldStopMovement;
+      const adjustedTime = getSimulationTime(now);
 
       if (
         !isPaused &&

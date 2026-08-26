@@ -2,7 +2,6 @@ import { create } from "zustand";
 
 import { getCssColorValue } from "../../components/ui/lib/cssUtils";
 import { levelConfigSchema, type LevelConfigData } from "../levelConfig";
-import { useGameStore } from "./useGameStore";
 import type {
   LevelEditorSelection,
   LevelEditorTool,
@@ -11,6 +10,11 @@ import type {
 import type { EnemyType, PathWaypoint, WaveConfig } from "../types/game";
 import type { TileData } from "../types/utils";
 import { getTilePlacementState } from "../../utils/tilePlacement";
+import {
+  MAX_GRID_SIZE,
+  MIN_GRID_SIZE,
+  clampGridSize,
+} from "../../utils/gridSizeLimits";
 import {
   clampWaterToGrid,
   computeWaveTotalEnemies,
@@ -55,7 +59,11 @@ type LevelEditorStoreActions = {
   ) => void;
   removeSelectedBuilding: () => void;
   selectWaypoint: (pathIndex: number, waypointIndex: number) => void;
-  updateSelectedWaypoint: (tile: TileData, tileSize: number) => void;
+  updateSelectedWaypoint: (
+    tile: TileData,
+    tileSize: number,
+    pathWidth: number
+  ) => void;
   removeSelectedWaypoint: () => void;
   handleTileAction: (
     tile: TileData,
@@ -71,7 +79,7 @@ type LevelEditorStoreActions = {
     updates: Partial<WaveConfig["enemies"][number]>
   ) => void;
   removeWaveEnemyGroup: (waveIndex: number, enemyGroupIndex: number) => void;
-  validateDraftLevel: () => boolean;
+  validateDraftLevel: (tileSize: number) => boolean;
   clearValidationIssues: () => void;
 };
 
@@ -95,6 +103,18 @@ const buildIssues = (level: LevelConfigData, tileSize: number) => {
     customIssues.push({
       path: "name",
       message: "Level name is required.",
+    });
+  }
+
+  if (
+    !Number.isFinite(level.gridSize) ||
+    !Number.isInteger(level.gridSize) ||
+    level.gridSize < MIN_GRID_SIZE ||
+    level.gridSize > MAX_GRID_SIZE
+  ) {
+    customIssues.push({
+      path: "gridSize",
+      message: `Grid size must be a whole number from ${MIN_GRID_SIZE} to ${MAX_GRID_SIZE}.`,
     });
   }
 
@@ -303,7 +323,7 @@ export const useLevelEditorStore = create<LevelEditorStore>((set, get) => ({
 
   setGridSize: (gridSize, tileSize) => {
     set((state) => {
-      const nextGridSize = Math.max(5, Math.round(gridSize));
+      const nextGridSize = clampGridSize(gridSize);
 
       return {
         draftLevel: {
@@ -519,7 +539,7 @@ export const useLevelEditorStore = create<LevelEditorStore>((set, get) => ({
     });
   },
 
-  updateSelectedWaypoint: (tile, tileSize) => {
+  updateSelectedWaypoint: (tile, tileSize, pathWidth) => {
     set((state) => {
       if (state.selected?.type !== "waypoint") {
         return state;
@@ -530,7 +550,6 @@ export const useLevelEditorStore = create<LevelEditorStore>((set, get) => ({
         waypointIndex: selectedWaypointIndex,
       } = state.selected;
 
-      const pathWidth = useGameStore.getState().pathWidth;
       const waterCheck = getTilePlacementState({
         gridX: tile.gridX,
         gridZ: tile.gridZ,
@@ -1025,8 +1044,7 @@ export const useLevelEditorStore = create<LevelEditorStore>((set, get) => ({
     });
   },
 
-  validateDraftLevel: () => {
-    const tileSize = useGameStore.getState().tileSize;
+  validateDraftLevel: (tileSize: number) => {
     const validationIssues = buildIssues(get().draftLevel, tileSize);
     set({ validationIssues });
     return validationIssues.length === 0;

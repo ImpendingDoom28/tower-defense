@@ -4,7 +4,6 @@ import {
   DEFAULT_WATER_BODY_HEIGHT,
   DEFAULT_WATER_BODY_WIDTH,
   type Building,
-  type EnemyType,
   type PathWaypoint,
   type WaterBody,
   type WaterBodyConfig,
@@ -235,17 +234,5 @@ export const resizePathWaypoints = (
         tileSize
       )
     )
-  );
-};
-
-export const getDefaultEnemyWeights = (
-  enemyTypes: EnemyType[]
-): Record<EnemyType, number> => {
-  return enemyTypes.reduce(
-    (weights, enemyType) => ({
-      ...weights,
-      [enemyType]: 1,
-    }),
-    {} as Record<EnemyType, number>
   );
 };

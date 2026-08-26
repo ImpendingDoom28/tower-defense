@@ -2,12 +2,7 @@ import { Seconds } from "./utils";
 
 // Game status types
 export type GameStatus =
-  | "menu"
-  | "playing"
-  | "paused"
-  | "gameMenu"
-  | "gameOver"
-  | "won";
+  "menu" | "playing" | "paused" | "gameMenu" | "gameOver" | "won";
 
 // Tower types
 export type TowerType = "basic" | "slow" | "aoe" | "laser" | "relay" | "chain";
@@ -24,10 +19,7 @@ export type HealPulseConfig = {
 
 // Enemy upgrade types
 export type EnemyUpgradeId =
-  | "armored"
-  | "swift"
-  | "slowImmune"
-  | "regenerating";
+  "armored" | "swift" | "slowImmune" | "regenerating";
 
 export type EnemyUpgradeStackTier = 1 | 2 | 3;
 

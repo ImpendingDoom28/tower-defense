@@ -1,8 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import type { Enemy, HealPulseConfig } from "../core/types/game";
+import { enemyActions } from "../core/ecs/actions/enemyActions";
+import { getEnemySnapshots } from "../core/ecs/selectors/enemySnapshots";
+import { runMedicHealPulseSystem } from "../core/ecs/systems/medicHealPulseSystem";
+import { testWorld } from "../core/ecs/world";
 
 import {
+  collectHealDeltas,
+  computeHealDeltaHealthUpdates,
   computeHealPulseHealthUpdates,
   didHealPulseJustReschedule,
   getHealPulseTargetIds,
@@ -97,6 +103,68 @@ describe("computeHealPulseHealthUpdates", () => {
       healPulse
     );
     expect(u2).toEqual([{ enemyId: 2, health: 50 }]);
+  });
+});
+
+describe("stacked medic healing", () => {
+  const createMedic = (id: number, x: number): Enemy =>
+    baseEnemy({
+      id,
+      x,
+      z: 0,
+      type: "medic",
+      healPulse,
+    });
+
+  beforeEach(() => {
+    enemyActions(testWorld).clearAllEnemies();
+  });
+
+  it("adds same-frame healing from two medics", () => {
+    const medics = [
+      { ...createMedic(1, -0.5), nextHealPulseAt: 1 },
+      { ...createMedic(2, 0.5), nextHealPulseAt: 1 },
+    ];
+    const ally = baseEnemy({
+      id: 3,
+      x: 0,
+      z: 0,
+      health: 20,
+      maxHealth: 50,
+    });
+    const enemies = [...medics, ally];
+
+    const actions = enemyActions(testWorld);
+    for (const enemy of enemies) {
+      actions.spawnEnemy(enemy);
+    }
+    runMedicHealPulseSystem(testWorld, 1);
+
+    const updatedAlly = getEnemySnapshots(testWorld).find(
+      (enemy) => enemy.id === ally.id
+    );
+    expect(updatedAlly?.health).toBe(50);
+  });
+
+  it("caps stacked healing at maxHealth", () => {
+    const medics = [createMedic(1, -0.5), createMedic(2, 0.5)];
+    const ally = baseEnemy({
+      id: 3,
+      x: 0,
+      z: 0,
+      health: 40,
+      maxHealth: 50,
+    });
+    const enemies = [...medics, ally];
+
+    const updates = computeHealDeltaHealthUpdates(
+      enemies,
+      collectHealDeltas(medics, enemies)
+    );
+
+    expect(updates.find((update) => update.enemyId === ally.id)?.health).toBe(
+      50
+    );
   });
 });
 
