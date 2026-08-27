@@ -36,13 +36,13 @@ const upVector = new Vector3(0, 1, 0);
 type GameCameraProps = {
   movementSpeed?: number;
   rotationSensitivity?: number;
-  shouldDisableControls: boolean;
+  shouldStopMovement: boolean;
 };
 
 export const GameCamera = ({
   movementSpeed = 10,
   rotationSensitivity = 0.002,
-  shouldDisableControls,
+  shouldStopMovement,
 }: GameCameraProps) => {
   const gridSize = useLevelStore(gridSizeSelector);
   const tileSize = useGameStore(tileSizeSelector);
@@ -78,7 +78,7 @@ export const GameCamera = ({
   }, [incrementDenyPulse]);
 
   useEffect(() => {
-    if (shouldDisableControls) {
+    if (shouldStopMovement) {
       moveState.current = {
         forward: false,
         backward: false,
@@ -205,7 +205,7 @@ export const GameCamera = ({
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [rotationSensitivity, shouldDisableControls]);
+  }, [rotationSensitivity, shouldStopMovement]);
 
   useEffect(() => {
     camera.rotation.order = "YXZ";
@@ -220,7 +220,7 @@ export const GameCamera = ({
   }, [camera]);
 
   useFrame((state, delta) => {
-    if (!initialized.current || shouldDisableControls) {
+    if (!initialized.current || shouldStopMovement) {
       return;
     }
 

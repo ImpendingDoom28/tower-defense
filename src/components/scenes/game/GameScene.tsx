@@ -60,7 +60,6 @@ export const GameScene: React.FC<GameSceneProps> = ({
   onEndEffect,
   onEffectComplete,
   selectedTower,
-  shouldDisableControls,
   shouldStopMovement,
   waveSystem,
   onEnemyReachEnd,
@@ -95,7 +94,7 @@ export const GameScene: React.FC<GameSceneProps> = ({
       <GameCamera
         movementSpeed={10}
         rotationSensitivity={0.002}
-        shouldDisableControls={shouldDisableControls}
+        shouldStopMovement={shouldStopMovement}
       />
 
       <AudioListenerSync />

@@ -452,6 +452,15 @@ export const useInstancedProjectiles = (
     };
   }, [getNextProjectileId]);
 
+  const pools = useMemo(
+    () => ({
+      beam: beamPool,
+      bolt: boltPool,
+      sphere: spherePool,
+    }),
+    [beamPool, boltPool, spherePool]
+  );
+
   const removeProjectile = useCallback(
     (projectileId: number): void => {
       const projectile = projectilesRef.current.get(projectileId);
@@ -459,37 +468,25 @@ export const useInstancedProjectiles = (
 
       projectilesRef.current.delete(projectileId);
 
-      if (projectile.visualPool === "beam") {
-        beamPool?.release(projectile.instanceIndex);
-      } else if (projectile.visualPool === "bolt") {
-        boltPool?.release(projectile.instanceIndex);
-      } else {
-        spherePool?.release(projectile.instanceIndex);
-      }
+      const visualPool = pools[projectile.visualPool];
+      if (!visualPool) return;
+
+      visualPool.release(projectile.instanceIndex);
 
       onRemove(projectileId);
     },
-    [beamPool, boltPool, onRemove, spherePool]
+    [pools, onRemove]
   );
 
   const fireProjectile = useCallback(
     (params: FireProjectileParams): Projectile => {
       const visualPool = resolveVisualPool(params.projectileType);
 
-      let pool: InstancedPoolRef | null = null;
-      if (visualPool === "beam") pool = beamPool;
-      else if (visualPool === "bolt") pool = boltPool;
-      else pool = spherePool;
-
-      if (!pool) {
-        console.warn("InstancedProjectiles: Pool not initialized");
-        return { ...params, id: -1 };
-      }
+      const pool = pools[visualPool];
+      if (!pool) return { ...params, id: -1 };
 
       const index = pool.acquire();
-      if (index === -1) {
-        return { ...params, id: -1 };
-      }
+      if (index === -1) return { ...params, id: -1 };
 
       const id = getNextProjectileId();
       const color = params.color ?? defaultColor;
@@ -553,7 +550,7 @@ export const useInstancedProjectiles = (
 
       return pooledProjectile;
     },
-    [beamPool, boltPool, defaultColor, getNextProjectileId, spherePool]
+    [defaultColor, getNextProjectileId, pools]
   );
 
   const updateProjectilesFrame = useCallback(
@@ -600,10 +597,8 @@ export const useInstancedProjectiles = (
       onRemove(projectile.id);
     });
     projectilesRef.current.clear();
-    spherePool?.releaseAll();
-    beamPool?.releaseAll();
-    boltPool?.releaseAll();
-  }, [beamPool, boltPool, onRemove, spherePool]);
+    Object.values(pools).forEach((pool) => pool?.releaseAll());
+  }, [pools, onRemove]);
 
   const getActiveProjectiles = useCallback((): PooledProjectile[] => {
     return Array.from(projectilesRef.current.values());
