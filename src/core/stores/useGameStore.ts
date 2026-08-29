@@ -11,7 +11,7 @@ import type {
   EnemyUpgradeConfig,
   Tower,
 } from "../types/game";
-import { GameConfigData } from "../../core/gameConfig";
+import { GameConfigData } from "../configs/gameConfig";
 import { getIsDocumentVisible } from "../../utils/isDocumentVisible";
 
 type GameStoreState = {
@@ -242,7 +242,8 @@ export const selectedTowerSelector = (state: GameStore) => state.selectedTower;
 export const setSelectedTowerSelector = (state: GameStore) =>
   state.setSelectedTower;
 export const gameStatusSelector = (state: GameStore) => state.gameStatus;
-export const previousStatusSelector = (state: GameStore) => state.previousStatus;
+export const previousStatusSelector = (state: GameStore) =>
+  state.previousStatus;
 export const healthSelector = (state: GameStore) => state.health;
 export const activeEffectsSelector = (state: GameStore) => state.activeEffects;
 export const isGameConfigLoadedSelector = (state: GameStore) =>
@@ -258,7 +259,8 @@ export const setGameStatusSelector = (state: GameStore) => state.setGameStatus;
 export const setPreviousStatusSelector = (state: GameStore) =>
   state.setPreviousStatus;
 export const setDebugSelector = (state: GameStore) => state.setDebug;
-export const resetGameStateSelector = (state: GameStore) => state.resetGameState;
+export const resetGameStateSelector = (state: GameStore) =>
+  state.resetGameState;
 export const startNewRunSelector = (state: GameStore) => state.startNewRun;
 export const loseHealthSelector = (state: GameStore) => state.loseHealth;
 export const setIsPageVisibleSelector = (state: GameStore) =>

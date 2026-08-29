@@ -8,7 +8,7 @@ import {
 import {
   loadLevelConfigFile,
   type LevelConfigData,
-} from "../../../core/levelConfig";
+} from "../../../core/configs/levelConfig";
 import {
   tileSizeSelector,
   useGameStore,

@@ -22,7 +22,7 @@ import {
   type PlayableLevelId,
 } from "../../constants/playableLevels";
 import { useGameSystem } from "../../core/hooks/useGameSystem";
-import { useEnemySystem } from "../../core/hooks/useEnemySystem";
+import { useEnemyActions } from "../../core/hooks/useEnemyActions";
 import { useProjectileSystem } from "../../core/hooks/useProjectileSystem";
 import { useWaveSystem } from "../../core/hooks/useWaveSystem";
 import { useLevelSystem } from "../../core/hooks/useLevelSystem";
@@ -41,8 +41,8 @@ export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
   const gameSystem = useGameSystem();
   const levelSystem = useLevelSystem();
 
-  const enemySystem = useEnemySystem(levelSystem);
-  const projectileSystem = useProjectileSystem(enemySystem);
+  const enemyActions = useEnemyActions();
+  const projectileSystem = useProjectileSystem(enemyActions);
   const waveSystem = useWaveSystem(gameSystem);
   const upgradesSystem = useUpgradesSystem(waveSystem);
 
@@ -73,7 +73,7 @@ export const GamePage: FC<GamePageProps> = ({ onOpenLevelEditor }) => {
     isLevelConfigLoaded,
   } = levelSystem;
 
-  const { onEnemyReachEnd } = enemySystem;
+  const { onEnemyReachEnd } = enemyActions;
 
   const { onProjectileHit, onProjectileRemove } = projectileSystem;
 

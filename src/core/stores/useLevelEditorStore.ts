@@ -1,7 +1,10 @@
 import { create } from "zustand";
 
 import { getCssColorValue } from "../../components/ui/lib/cssUtils";
-import { levelConfigSchema, type LevelConfigData } from "../levelConfig";
+import {
+  levelConfigSchema,
+  type LevelConfigData,
+} from "../configs/levelConfig";
 import type {
   LevelEditorSelection,
   LevelEditorTool,

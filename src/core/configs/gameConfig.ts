@@ -4,8 +4,8 @@ import type {
   TowerConfig,
   EnemyConfig,
   EnemyUpgradeConfig,
-} from "./types/game";
-import { loadFile } from "../utils/fileLoader";
+} from "../types/game";
+import { loadFile } from "../../utils/fileLoader";
 
 const towerTargetingSchema = z.enum(["nearest", "furthest"]);
 const projectileTypeSchema = z.enum(["aoe", "single", "beam", "chain"]);

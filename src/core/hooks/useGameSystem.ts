@@ -24,7 +24,7 @@ import {
 } from "../stores/useGameStore";
 import { useEntityIds } from "../contexts/EntityIdContext";
 import { GameStatus } from "../types/game";
-import { loadGameConfig } from "../gameConfig";
+import { loadGameConfig } from "../configs/gameConfig";
 import {
   pauseWhenTabHiddenSelector,
   useSettingsStore,

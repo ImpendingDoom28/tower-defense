@@ -301,20 +301,6 @@ export const useLevelSystem = () => {
     ]
   );
 
-  const updateEnemy = useCallback(
-    (enemyId: number, updates: Partial<Enemy>) => {
-      actions.updateEnemy(enemyId, updates);
-    },
-    [actions]
-  );
-
-  const removeEnemy = useCallback(
-    (enemyId: number, reachedEnd = false) => {
-      actions.removeEnemy(enemyId, reachedEnd);
-    },
-    [actions]
-  );
-
   const addProjectile = useCallback(
     (projectile: Omit<Projectile, "id">): Projectile => {
       const newProjectile: Projectile = {
@@ -357,8 +343,6 @@ export const useLevelSystem = () => {
     sellTower,
 
     addEnemy,
-    updateEnemy,
-    removeEnemy,
 
     addProjectile,
     updateProjectile,

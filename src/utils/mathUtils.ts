@@ -80,19 +80,6 @@ export function findEnemiesInRange(
 }
 
 /**
- * Normalize a vector
- */
-export function normalize(
-  x: number,
-  y: number,
-  z: number
-): { x: number; y: number; z: number } {
-  const length = Math.sqrt(x * x + y * y + z * z);
-  if (length === 0) return { x: 0, y: 0, z: 0 };
-  return { x: x / length, y: y / length, z: z / length };
-}
-
-/**
  * Find all enemies in a line from start point through target point
  * Returns enemies sorted by distance from start point (closest first)
  */

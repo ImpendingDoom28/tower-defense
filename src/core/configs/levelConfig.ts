@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import { loadFile } from "../utils/fileLoader";
-import { MAX_GRID_SIZE, MIN_GRID_SIZE } from "../utils/gridSizeLimits";
+import { loadFile } from "../../utils/fileLoader";
+import { MAX_GRID_SIZE, MIN_GRID_SIZE } from "../../utils/gridSizeLimits";
 import type {
   Building,
   Enemy,
@@ -10,7 +10,7 @@ import type {
   WaterBody,
   WaterBodyConfig,
   WaveConfig,
-} from "./types/game";
+} from "../types/game";
 
 const towerTypeSchema = z.enum([
   "basic",

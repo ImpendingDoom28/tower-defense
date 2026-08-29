@@ -23,7 +23,7 @@ import {
 import {
   loadLevelConfigFile,
   parseLevelConfigData,
-} from "../../../core/levelConfig";
+} from "../../../core/configs/levelConfig";
 import { useLevelEditorStore } from "../../../core/stores/useLevelEditorStore";
 import {
   buildLevelFileName,

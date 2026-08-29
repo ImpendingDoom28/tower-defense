@@ -2,25 +2,23 @@ import { useCallback } from "react";
 import { useActions } from "koota/react";
 
 import type { Enemy } from "../types/game";
-import type { LevelSystem } from "./useLevelSystem";
 import { enemyActions } from "../ecs/actions/enemyActions";
 
-export const useEnemySystem = (levelSystem: LevelSystem) => {
-  const { removeEnemy, updateEnemy } = levelSystem;
+export const useEnemyActions = () => {
   const actions = useActions(enemyActions);
 
   const onEnemyReachEnd = useCallback(
     (enemyId: number) => {
-      removeEnemy(enemyId, true);
+      actions.removeEnemy(enemyId, true);
     },
-    [removeEnemy]
+    [actions]
   );
 
   const onEnemyUpdate = useCallback(
     (enemyId: number, updates: Partial<Enemy>) => {
-      updateEnemy(enemyId, updates);
+      actions.updateEnemy(enemyId, updates);
     },
-    [updateEnemy]
+    [actions]
   );
 
   const damageEnemy = useCallback(
@@ -50,4 +48,4 @@ export const useEnemySystem = (levelSystem: LevelSystem) => {
   };
 };
 
-export type EnemySystem = ReturnType<typeof useEnemySystem>;
+export type EnemyActions = ReturnType<typeof useEnemyActions>;

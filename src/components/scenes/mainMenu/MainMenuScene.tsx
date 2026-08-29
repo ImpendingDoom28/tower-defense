@@ -8,7 +8,7 @@ import { useLevelStore } from "../../../core/stores/useLevelStore";
 import { useLevelSystem } from "../../../core/hooks/useLevelSystem";
 import { EntitiesSystem } from "../../systems/EntitiesSystem";
 import { useProjectileSystem } from "../../../core/hooks/useProjectileSystem";
-import { useEnemySystem } from "../../../core/hooks/useEnemySystem";
+import { useEnemyActions } from "../../../core/hooks/useEnemyActions";
 import {
   enemyTypesSelector,
   useGameStore,
@@ -50,7 +50,7 @@ const selectWeightedEnemyType = (
 export const MainMenuScene: FC = () => {
   const gameSystem = useGameSystem();
   const levelSystem = useLevelSystem();
-  const enemySystem = useEnemySystem(levelSystem);
+  const enemySystem = useEnemyActions(levelSystem);
   const { onProjectileHit, onProjectileRemove } =
     useProjectileSystem(enemySystem);
 

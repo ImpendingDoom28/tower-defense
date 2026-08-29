@@ -25,7 +25,7 @@ const baseEnemy = (health: number): Enemy => ({
   upgrades: [],
 });
 
-describe("sequential damage reads fresh enemy health from ECS", () => {
+describe("useEnemyActions", () => {
   beforeEach(() => {
     enemyActions(testWorld).clearAllEnemies();
     enemyActions(testWorld).spawnEnemy(baseEnemy(100));

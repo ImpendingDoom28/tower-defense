@@ -1,4 +1,4 @@
-import type { LevelConfigData } from "../core/levelConfig";
+import type { LevelConfigData } from "../core/configs/levelConfig";
 import {
   DEFAULT_WATER_BODY_DEPTH,
   DEFAULT_WATER_BODY_HEIGHT,

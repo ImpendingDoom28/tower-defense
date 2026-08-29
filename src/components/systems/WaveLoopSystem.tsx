@@ -9,9 +9,7 @@ type WaveLoopSystemProps = {
 
 export const WaveLoopSystem: FC<WaveLoopSystemProps> = ({ waveSystem }) => {
   useFrame((state) => {
-    if (waveSystem) {
-      waveSystem.updateWaveSpawning(state.clock.elapsedTime * 1000);
-    }
+    waveSystem.updateWaveSpawning(state.clock.elapsedTime * 1000);
   });
 
   return null;

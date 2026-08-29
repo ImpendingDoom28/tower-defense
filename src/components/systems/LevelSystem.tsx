@@ -4,7 +4,7 @@ import { getMaxEntityId, useLevelStore } from "../../core/stores/useLevelStore";
 import {
   type LevelConfigFiles,
   loadLevelConfigFile,
-} from "../../core/levelConfig";
+} from "../../core/configs/levelConfig";
 import { tileSizeSelector, useGameStore } from "../../core/stores/useGameStore";
 import { useEntityIds } from "../../core/contexts/EntityIdContext";
 

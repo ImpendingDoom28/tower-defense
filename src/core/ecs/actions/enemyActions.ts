@@ -40,7 +40,7 @@ const enemyToState = (enemyData: Enemy): EnemyStateData => ({
   healPulse: enemyData.healPulse,
 });
 
-const toEnemySnapshot = (state: EnemyStateRecord): Enemy => ({
+export const toEnemySnapshot = (state: EnemyStateRecord): Enemy => ({
   id: state.id,
   type: state.type,
   name: state.name,
@@ -207,5 +207,3 @@ export const enemyActions = createActions((world) => ({
     enemyEntitiesById.clear();
   },
 }));
-
-export { toEnemySnapshot };

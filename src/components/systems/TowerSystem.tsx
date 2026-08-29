@@ -7,6 +7,7 @@ import {
   findFurthestEnemy,
   distance2D,
   findEnemiesInLine,
+  findEnemiesInRange,
 } from "../../utils/mathUtils";
 import { computeChainAdditionalHits } from "../../core/chainLightning";
 import { getEffectiveTowerCombatStats } from "../../core/relayBuffs";
@@ -172,11 +173,12 @@ export const TowerSystem: FC<TowerSystemProps> = memo(
         let target: Enemy | null = null;
 
         if (towerConfig.targeting === "furthest") {
-          const enemiesInRange = enemies.filter((enemy) => {
-            if (enemy.health <= 0) return false;
-            const dist = distance2D(tower.x, tower.z, enemy.x, enemy.z);
-            return dist <= eff.range;
-          });
+          const enemiesInRange = findEnemiesInRange(
+            enemies,
+            tower.x,
+            tower.z,
+            eff.range
+          );
           target = findFurthestEnemy(enemiesInRange, tower.x, tower.z);
         } else {
           target = findNearestEnemy(enemies, tower.x, tower.z);

@@ -1,8 +1,10 @@
-import * as THREE from "three";
+import type { WebGLProgramParametersWithUniforms } from "three";
 
 const EMISSIVE_TINT_BY_INSTANCE_COLOR = "totalEmissiveRadiance *= vColor.rgb;";
 
-export const patchEmissiveByInstanceColor = (shader: THREE.Shader) => {
+export const patchEmissiveByInstanceColor = (
+  shader: WebGLProgramParametersWithUniforms
+) => {
   if (shader.fragmentShader.includes(EMISSIVE_TINT_BY_INSTANCE_COLOR)) {
     return;
   }

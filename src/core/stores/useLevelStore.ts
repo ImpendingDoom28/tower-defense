@@ -10,7 +10,7 @@ import type {
   WaterBody,
   WaveConfig,
 } from "../types/game";
-import type { LevelConfigData } from "../../core/levelConfig";
+import type { LevelConfigData } from "../configs/levelConfig";
 import { getCssColorValue } from "../../components/ui/lib/cssUtils";
 import {
   getLevelGridOffset,

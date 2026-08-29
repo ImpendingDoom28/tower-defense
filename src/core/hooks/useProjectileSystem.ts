@@ -3,15 +3,15 @@ import { useCallback } from "react";
 import { findEnemiesInRange } from "../../utils/mathUtils";
 import { gameEvents } from "../../utils/eventEmitter";
 import type { Enemy, Projectile } from "../types/game";
-import type { EnemySystem } from "./useEnemySystem";
+import type { EnemyActions } from "./useEnemyActions";
 import { useLevelStore } from "../stores/useLevelStore";
 import { GameEvent } from "../types/enums/events";
 import { world } from "../ecs/world";
 import { getEnemySnapshots } from "../ecs/selectors/enemySnapshots";
 
-export const useProjectileSystem = (enemySystem: EnemySystem) => {
+export const useProjectileSystem = (enemyActions: EnemyActions) => {
   const removeProjectile = useLevelStore((state) => state.removeProjectile);
-  const { damageEnemy, slowEnemy } = enemySystem;
+  const { damageEnemy, slowEnemy } = enemyActions;
 
   const onProjectileHit = useCallback(
     (projectile: Projectile, targetEnemy: Enemy, currentTime: number = 0) => {
